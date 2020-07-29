@@ -10,7 +10,7 @@ DevSecOps is all about putting security into DevOps. But to keep up with the pac
 
 [OWASP Proactive Controls](https://owasp.org/www-project-proactive-controls/) lists the top 10 security controls every developer has to follow while coding any application. Consider this set as the starting point when you have to design, write or test code in the DevSecOps cycle. 
 
-You can also follow the [OWASP Software Assurance Maturity Model (SAMM)](https://owaspsamm.org/model/) to establish what actions to consider as security requirements according to your maturity level.
+You can also follow the [OWASP Software Assurance Maturity Model (SAMM)](https://owaspsamm.org/model/) to establish what to consider for security requirements (and more) according to your maturity level.
 
 ### What to add in a pipeline
 ![DevSecOps pipeline](/assets/images/DevSecOps-pipeline.png)
