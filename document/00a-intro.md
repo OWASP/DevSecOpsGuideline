@@ -6,5 +6,6 @@ As a simple definition, The shift-left security strategy is a way or solution to
 Of course, security is a profession and we need highly skilled people to play security-related roles but in this approach, any designer, software architecture, developer, DevOps engineer, and ...  together with security guys have liability about security. 
 
 ### Dev+Sec+Ops
-Imagining these 3 deferent areas for covering each other is something like the following image, So in conclusion with the above words, we need to implement some tools and working on promoting a DevSecOps culture too.
-![DevSecOps](/document/assets/images/DevSecOps.png)
+<img align="left" width="200" height="180" src="/document/assets/images/DevSecOps.png">
+
+Supose that these 3 deferent areas for covering each other is something like the following image, So in conclusion with the above words, we need to implement some tools and working on promoting a DevSecOps culture too.
