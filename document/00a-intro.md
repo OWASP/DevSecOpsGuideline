@@ -6,6 +6,13 @@ As a simple definition, The shift-left security strategy is a way or solution to
 Of course, security is a profession and we need highly skilled people to play security-related roles but in this approach, any designer, software architecture, developer, DevOps engineer, and ...  together with security guys have liability about security. 
 
 ### Dev+Sec+Ops
-<img align="left" width="200" height="180" src="/document/assets/images/DevSecOps.png">
+<img align="right" width="200" height="180" src="/document/assets/images/DevSecOps.png">
 
-Supose that these 3 deferent areas for covering each other is something like the following image, So in conclusion with the above words, we need to implement some tools and working on promoting a DevSecOps culture too.
+Suppose that these 3 deferent areas for covering each other is something like the image, So in conclusion with the above words, we need to implement some tools and working on promoting a DevSecOps culture too. 
+
+### The DevSecOps culture:
+As you heard before we want to talk about the Shift-left security. It means we should consider security from design (in a simple definition) which target is moving security sooner in the development process. 
+Let me a bit explain it, suppose that you are working in a DevOps based team and you are traditionally doing security test (Yes, end of all QA tests and before going to production), What's Happen? 
+Well, all bugs should be fixed ASAP, Developer team is under pressure to fix issues, QA tests should be performed again, and security test again. this means the cost will be increased, money and time. In the end, you sacrifice agility for security things do not like a business team. But what is the solution? 
+
+The solution is embedding security in the process and did not put it as a final step. Considering security in design by threat modeling and break down huge security tests to smaller security testing and put as parts of the development pipeline. 
