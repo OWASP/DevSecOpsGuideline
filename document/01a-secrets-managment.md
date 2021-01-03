@@ -1,9 +1,9 @@
 ## Take care secrets and credentials in git repositories
 
 <img align="right" width="180" height="200" src="/document/assets/images/Cred scanning.png">
-After commit a pull request to a Git repo, <em>How to can make sure about didn't push some credentials to the repo?</em>
+After commiting a pull request to a Git repo, <em>How to can make sure about didn't push some credentials to the repo?</em>
 We should find a way to scan your GitHub repository and detect any sensitive information such as password, secret key, confidential, etc.
-Today if you go to bug bounties write-ups you can find a lot of reports related to this concern. Some credentials were hard-coded or pushed by a mistake. In a simple and ideal logic perspective this process is something like the picture.<br/>
+Today if you go to bug bounties write-ups you can find a lot of reports related to this concern. Some credentials were hard-coded or pushed by a mistake. In a simple and ideal logical perspective, this process is something like the picture.<br/>
 
 The ideal approach is detecting and preventing push sensitive data before storing into the git repo (Because basically, you can find all pushed data in the git history) BTW, another method is scanning the git repo find and change them before public leakage. 
 
