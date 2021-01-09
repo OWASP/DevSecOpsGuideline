@@ -22,3 +22,23 @@ The solution is embedding security in the process and did not put it as a final 
 
 In the following picture you can see differences between DevOps and DevSecOps cycle. 
 <img src="/document/assets/images/DevOps vs DevSecOps.png">
+
+
+### Testing
+When, we are talking about testing we should have in mind we have different definitions in testing which is can change our route to atchiving a secure DevSecOps cycle. Let's take look into this defenitions. 
+#### Different test paths
+1. **Positive testing**  
+Positive testing is a kind of software testing that is performed by assuming everything will be as expected. It is performed with the assumption that only valid and relevant things will happen. data set and all other functionalities will be as expected.
+2. **Negative testing**  
+Negative testing is a type of software testing that is performed to check the system for unexpected conditions. Negative testing plays a much important role in high-performance software development. It checks whether on such unexpected conditions what will be the behavior of the software.
+
+#### Methods of testing
+1. **Static testing**  
+Static Testing is a type of a Software Testing method which is performed to check the defects in software without actually executing the code of the software application. Static testing is performed in early stage of development to avoid errors as it is easier to find sources of failures and it can be fixed easily. The errors that can’t not be found using Dynamic Testing, can be easily found by Static Testing.
+2. **Dynamic testing**  
+ Dynamic Testing is a type of Software Testing which is performed to analyze the dynamic behavior of the code. It includes the testing of the software for the input values and output values that are analyzed.
+
+----
+#### Refrences
+1. https://www.geeksforgeeks.org/difference-between-positive-testing-and-negative-testing/
+2. https://www.geeksforgeeks.org/difference-between-static-and-dynamic-testing/
