@@ -22,7 +22,9 @@ So according to the above lines the possible actions in this step are as follows
 - #### Tools (Static Code Analysis):
   + **SonarQube** It is an open-source web-based tool, extending its coverage to more than 20 languages, and also allows a number of plugins. [HomePage](https://www.sonarqube.org/)
   + **Veracode** Veracode is a static analysis tool that is built on the SaaS model. This tool is mainly used to analyze the code from a security point of view. [HomePage](https://www.veracode.com/security/static-analysis-tool)
-
+  + **security code scan**  Vulnerability Patterns Detector for C# and VB.NET. [GitRepo](https://github.com/security-code-scan/security-code-scan)
+  + **brakeman** A static analysis security vulnerability scanner for Ruby on Rails applications. [GitRepo](https://github.com/presidentbeef/brakeman)
+  + **Inquisition** A set of tools for convenient technical analysis of web applications built with Ruby and Ruby on Rails. Now you don't need to set up and configure every single gem. Use Inquisition gem instead. [GitRepo](https://github.com/rubygarage/inquisition)
 
 - #### Tools (IaC scanning): 
   + **Checkov** Prevent cloud misconfigurations during build-time for Terraform, Cloudformation, Kubernetes, Serverless framework and other infrastructure-as-code-languages with Checkov by Bridgecrew. [GitRepo](https://github.com/bridgecrewio/checkov)
@@ -38,3 +40,4 @@ So according to the above lines the possible actions in this step are as follows
   + **OWASP Dependency-check** Dependency-Check is a Software Composition Analysis (SCA) tool that attempts to detect publicly disclosed vulnerabilities contained within a project’s dependencies. It supports Java, .NET, JavaScript, and Ruby. [Home Page](https://owasp.org/www-project-dependency-check/)
   + **RetireJS** RetireJS is an open-source, JavaScript-specific dependency checker. [GitRepo](https://github.com/RetireJS/retire.js)
   + **Hakiri** Hakiri is a commercial tool that offers dependency checking for Ruby and Rails-based GitHub projects using static code analysis. [HomePage](https://hakiri.io/)
+  + **bundler-audit**  Patch-level verification for Bundler (Auditing Ruby 3rd party libs versions). [GitRepo](https://github.com/rubysec/bundler-audit)
