@@ -17,6 +17,8 @@ So according to the above lines the possible actions in this step are as follows
 + open-source libraries (3rd party / dependency) scanning
 + IaC Security scanning
 
+---
+### TOOLS
 - #### Tools (Static Code Analysis):
   + **SonarQube** It is an open-source web-based tool, extending its coverage to more than 20 languages, and also allows a number of plugins. [HomePage](https://www.sonarqube.org/)
   + **Veracode** Veracode is a static analysis tool that is built on the SaaS model. This tool is mainly used to analyze the code from a security point of view. [HomePage](https://www.veracode.com/security/static-analysis-tool)
