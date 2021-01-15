@@ -24,6 +24,7 @@ So according to the above lines the possible actions in this step are as follows
   + **Veracode** Veracode is a static analysis tool that is built on the SaaS model. This tool is mainly used to analyze the code from a security point of view. [HomePage](https://www.veracode.com/security/static-analysis-tool)
   + **security code scan**  Vulnerability Patterns Detector for C# and VB.NET. [GitRepo](https://github.com/security-code-scan/security-code-scan)
   + **brakeman** A static analysis security vulnerability scanner for Ruby on Rails applications. [GitRepo](https://github.com/presidentbeef/brakeman)
+  + **Enlightn** Enlightn is a static analysis vulnerability scanner for Laravel PHP applications. [GitRepo](https://github.com/enlightn/enlightn)
   + **Inquisition** A set of tools for convenient technical analysis of web applications built with Ruby and Ruby on Rails. Now you don't need to set up and configure every single gem. Use Inquisition gem instead. [GitRepo](https://github.com/rubygarage/inquisition)
 
 - #### Tools (IaC scanning): 
