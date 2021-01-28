@@ -1,14 +1,23 @@
 ## Take care secrets and credentials in git repositories
 
 <img align="right" width="180" height="200" src="/document/assets/images/Cred scanning.png">
-After commiting a pull request to a Git repo, <em>How to can make sure about didn't push some credentials to the repo?</em>
-We should find a way to scan your GitHub repository and detect any sensitive information such as password, secret key, confidential, etc.
-Today if you go to bug bounties write-ups you can find a lot of reports related to this concern. Some credentials were hard-coded or pushed by a mistake. In a simple and ideal logical perspective, this process is something like the picture.<br/>
+After commiting a pull request to a repository, <em>How to ensure that you didn't push sensitive information?</em>
 
-The ideal approach is detecting and preventing push sensitive data before storing into the git repo (Because basically, you can find all pushed data in the git history) BTW, another method is scanning the git repo find and change them before public leakage. 
+This is one of the [OWASP Top Ten issues](https://owasp.org/www-project-top-ten/2017/A3_2017-Sensitive_Data_Exposure) and
+several bug bounties write-ups are related to this kind of issue, eg hard-coded credentials pushed by mistake.
+
+You should scan your repository and detect any sensitive information such as password, secret key, confidential, etc.
+In a simple and ideal logical perspective, this process is something like the picture.<br/>
+
+The ideal approach is detecting and preventing the exposure of sensitive data before that they make it into the repo
+(because basically, you can find all pushed data in the git history).
+A complimentary approach is scanning the repo for sensitive information, and then remove them;
+note that when a credential is stored in a repository, it is already compromised and should be invalidated.
 
 ---
-Here we want to explain some tools that can help us to do an automate scan to find out the sensitive data and make it repeatable and efficient based on our development pipeline customizations. 
+
+Here are some helpful tools to automatically scan repositories for sensitive information.
+Scans can be implemented directly in our pipeline, and be repeatable and efficient. 
 
 ## Tools:
 + **gittyleaks** Find sensitive information for a git repo. [GitRepo](https://github.com/kootenpv/gittyleaks)
