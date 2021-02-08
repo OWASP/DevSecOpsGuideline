@@ -1,18 +1,21 @@
-## Take care secrets and credentials in git repositories
+## Take care secrets and credentials in repositories
 
 <img align="right" width="180" height="200" src="/document/assets/images/Cred scanning.png">
-After commiting a pull request to a repository, <em>How to ensure that you didn't push sensitive information?</em>
+<em>How can you ensure that sensitive information are not pushed to a repository?</em>
 
 This is one of the [OWASP Top Ten issues](https://owasp.org/www-project-top-ten/2017/A3_2017-Sensitive_Data_Exposure) and
 several bug bounties write-ups are related to this kind of issue, eg hard-coded credentials pushed by mistake.
 
-You should scan your repository and detect any sensitive information such as password, secret key, confidential, etc.
-In a simple and ideal logical perspective, this process is something like the picture.<br/>
+You should scan your commits and your repository, and detect any sensitive information such as password, secret key, confidential, etc.
+following the process shown in the picture.
+<br/>
 
-The ideal approach is detecting and preventing the exposure of sensitive data before that they make it into the repo
-(because basically, you can find all pushed data in the git history).
+The ideal approach is detecting and preventing the exposure of sensitive data before that they hit the repository,
+because they are then visible in the history. In case of code hosting platforms, secrets can still linger 
+on the web and be searchable after you remove them from the repository.
+
 A complimentary approach is scanning the repo for sensitive information, and then remove them;
-note that when a credential is stored in a repository, it is already compromised and should be invalidated.
+note that when a credential is leaked, it is already compromised and should be invalidated.
 
 ---
 
