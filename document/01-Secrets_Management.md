@@ -18,13 +18,12 @@ A complimentary approach is scanning the repo for sensitive information, and the
 note that when a credential is leaked, it is already compromised and should be invalidated.
 
 ---
-
 Here are some helpful tools to automatically scan repositories for sensitive information.
 Scans can be implemented directly in our pipeline, and be repeatable and efficient. 
 
 ## Tools:
-+ **gittyleaks** Find sensitive information for a git repo. [GitRepo](https://github.com/kootenpv/gittyleaks)
-+ **git-secrets** Prevents you from committing secrets and credentials into git repositories. [GitRepo](https://github.com/awslabs/git-secrets)
-+ **Repo-supervisor** Scan your code for security misconfiguration, search for passwords and secrets. [GitRepo](https://github.com/auth0/repo-supervisor)
-+ **truffleHog** Searches through git repositories for high entropy strings and secrets, digging deep into commit history. [GitRepo](https://github.com/dxa4481/truffleHog)
-+ **Git Hound** Git plugin that prevents sensitive data from being committed. [GitRepo](https://github.com/ezekg/git-hound)
++ [gittyleaks](https://github.com/kootenpv/gittyleaks) - Find sensitive information for a git repo
++ [git-secrets](https://github.com/awslabs/git-secrets) - Prevents you from committing secrets and credentials into git repositories
++ [Repo-supervisor](https://github.com/auth0/repo-supervisor) - Scan your code for security misconfiguration, search for passwords and secrets
++ [truffleHog](https://github.com/dxa4481/truffleHog) - Searches through git repositories for high entropy strings and secrets, digging deep into commit history
++ [Git Hound](https://github.com/ezekg/git-hound) - Git plugin that prevents sensitive data from being committed
