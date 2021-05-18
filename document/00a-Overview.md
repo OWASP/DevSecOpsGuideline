@@ -1,4 +1,4 @@
-## DevSecOps
+## DevSecOps Intro
 Today, DevOps is empowering any organizations to deploy changes to production environments at blazing rates.
 Since time to deliver is so important feature during this process, the main question for a security person is
 "How I can secure this process?" or "How much our deliverable products are secure?".

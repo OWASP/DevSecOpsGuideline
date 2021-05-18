@@ -32,7 +32,6 @@ Examples of such vulnerabilities could be hardcoding API keys in cleartext, not 
 + [Seeker Interactive Application Security Testing](https://www.synopsys.com/software-integrity/security-testing/interactive-application-security-testing.html)
 
 ---
-
 ### References
 
 + [Veracode - IAST](https://www.veracode.com/security/interactive-application-security-testing-iast)

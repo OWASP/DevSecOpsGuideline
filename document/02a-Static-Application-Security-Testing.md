@@ -17,26 +17,6 @@ So according to the above lines the possible actions in this step are as follows
 + open-source libraries (3rd party / dependency) scanning
 + IaC Security scanning
 
-### Static scanning is an important part of the proces!
-
-<img align="right" width="360" height="200" src="/document/assets/images/Static scanning.png">
-
-Static Code Analysis or Source Code Analysis is usually part of a Code Review (**White-box testing**) and it is a method of computer program debugging that is done by examining the code without executing the program. Static scanning is good way finding coding issues such as:
-
-+ Syntax violations
-+ Security vulnerabilities
-+ Programming errors
-+ Coding standard violations
-+ Undefined values
-
-For more information about the Static Code Analysis please visit the [OWASP Static Code Analysis](https://owasp.org/www-community/controls/Static_Code_Analysis).
-
-To achieve a better result we can combine static security scanning and 3rd party code (open-source libraries) scanning. To doing this part better and more complete (prevent misconfigurations), here we can bring up **IaC** (Infrastructure as code) security scan too. So according to the above lines the possible actions in this step are as follows:
-
-+ Open-source libraries (third-party)
-+ Static Code Analysis
-+ IaC scanning
-
 ---
 ### Tools
 - #### Static Code Analysis:
