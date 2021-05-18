@@ -17,11 +17,11 @@ Examples of such vulnerabilities could be hardcoding API keys in cleartext, not 
 
 ### IAST vs SAST
 
-**Static Application Security Testing** method examine source code in a non-runtime environment early in the SDLC. They look for suspicious code patterns that indicate security risks. Even though they are easy to deploy, SASTs throw too many false positives because SASTs do not take into account the presence of other security countermeasures, and they lack visibility during runtime. SAST tools normally run inside the IDE as part of the compilation phase, and introduce delays as the scan process takes time to finish. IASTs are more flexible than SASTs, because they are applicable in production runtime environments (SASTs require direct access to the source code.)
+**Static Application Security Testing** method examine source code in a non-runtime environment early in the SDLC. They look for suspicious code patterns that indicate security risks. Even though they are easy to deploy, SASTs throw too many false positives because SASTs do not take into account the presence of other security countermeasures, and they lack visibility during runtime. SAST tools normally run inside the IDE as part of the compilation phase, and introduce delays as the scan process takes time to finish. IASTs are more flexible than SASTs, because they are applicable in production runtime environments (SASTs require direct access to the source code).
 
 ### IAST vs DAST
 
-**Dynamic Application Security Testing** method is works like a black-box scanner that executes requests against the application to find security issues. DASTs look at the applications from the exterior and determine the presence of risks by looking at the response (including body and headers) of the server to a battery of tests, but DASTs have no visibility of the internal workings of the app. Furthermore, DAST tests are hard to automate, because DASTs must be operated by experienced appsec teams, such as penetration testers, to be truly useful. Forrester estimates that the duration of a DAST scan can take around 5 to 7 days, while testing with IAST is a real-time (zero minutes) operation
+**Dynamic Application Security Testing** method is works like a black-box scanner that executes requests against the application to find security issues. DASTs look at the applications from the exterior and determine the presence of risks by looking at the response (including body and headers) of the server to a battery of tests, but DASTs have no visibility of the internal workings of the app. Furthermore, DAST tests are hard to automate, because DASTs must be operated by experienced appsec teams, such as penetration testers, to be truly useful. Forrester estimates that the duration of a DAST scan can take around 5 to 7 days, while testing with IAST is a real-time (zero minutes) operation.
 
 ---
 
@@ -29,7 +29,7 @@ Examples of such vulnerabilities could be hardcoding API keys in cleartext, not 
 
 + [Contrast Community Edition (CE)](https://www.contrastsecurity.com/contrast-community-edition)
 + [Checkmarx Interactive Application Security Testing(CxIAST)](https://www.checkmarx.com/products/interactive-application-security-testing/)
-+ [Seeker Interactive Application Security Tesitng](https://www.synopsys.com/software-integrity/security-testing/interactive-application-security-testing.html)
++ [Seeker Interactive Application Security Testing](https://www.synopsys.com/software-integrity/security-testing/interactive-application-security-testing.html)
 
 ---
 
