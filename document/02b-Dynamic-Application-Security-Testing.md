@@ -14,6 +14,7 @@ DAST tools allow for sophisticated scans on the client side and server side with
 ### Tools
 - #### Open-source:
   + [ZED Attack Proxy](https://www.zaproxy.org) - It is an open source tool which is offered by OWASP for performing security testing
+  + [Nikto](http://www.cirt.net/nikto2) is a free software command-line vulnerability scanner that scans webservers for dangerous files/CGIs, outdated server software and other problems.
 
 - #### Commercial:
   + [Acunetix](https://www.acunetix.com) - An automatic web security testing scanner that accurately scans and audits all web applications, including HTML5, JavaScript and Single Page applications (SPAs)
