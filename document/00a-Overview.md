@@ -1,11 +1,10 @@
-## An introduction about DevSecOps
-
+## DevSecOps
 Today, DevOps is empowering any organizations to deploy changes to production environments at blazing rates.
 Since time to deliver is so important feature during this process, the main question for a security person is
 "How I can secure this process?" or "How much our deliverable products are secure?".
 In this regard, we can embed some security-related steps entire our DevOps process to perform some automated tests.
 So considering the DevSecOps or secure DevOps culture helps us to promote the shift-left security strategy in our company,
-at least in the tech department. 
+at least in the tech department.  
 
 ### What's the Shift-left security strategy?
 
