@@ -24,5 +24,6 @@ DAST tools allow for sophisticated scans on the client side and server side with
 
 ---
 ### References
+
 + [OWASP - Vulnerability Scanning Tools](https://owasp.org/www-community/Vulnerability_Scanning_Tools)
 + [RAPID7 - Dynamic Application Security Testing](https://www.rapid7.com/fundamentals/dast/)

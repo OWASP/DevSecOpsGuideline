@@ -1,4 +1,4 @@
-### Software Component Analysis (SCA)
+### Software Component/Composition Analysis (SCA)
 
 Component Analysis is the process of automating application security for managing third-party and open source components of codebase. SCA will find any potential vulnerable components in our codebase to prevent high security risks like **Supply-Chain Attack**, not only that but also provide licensing about each components. By doing this, it helps organization to reduce security risks in their codebase libraries and needed to be early in modern software development life cycle.
 
@@ -16,3 +16,8 @@ We should put the Component Analysis earlier, before security testing like SAST,
 
 - #### Commercial:
   + [Hakiri](https://hakiri.io/) - A commercial tool that offers dependency checking for Ruby and Rails-based GitHub projects using static code analysis
+
+
+### References
+
++ [SCA - OWASP](https://owasp.org/www-community/Component_Analysis)
