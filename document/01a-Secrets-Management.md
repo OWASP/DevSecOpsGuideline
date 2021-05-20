@@ -20,18 +20,18 @@ note that when a credential is leaked, it is already compromised and should be i
 ### Detecting secrets in several locations
 - **Detecting existing secrets** by searching in a repository for existing secrets.
 - **Using Pre-commit hooks** in order to prevent secrets for entering our code base.
-- **Detecting secrets in a pipeline** 
+- **Detecting secrets in a pipeline** .
 
 ### Why Detecting Secrets?
-+ The secrets should not be hardcoded
-+ The secrets should not be unencrypted
-+ The secrets should not be stored in source code
-+ The code history deos not contain inadvertent secrets
++ The secrets should not be hardcoded.
++ The secrets should not be unencrypted.
++ The secrets should not be stored in source code.
++ The code history does not contain inadvertent secrets.
 
 ### Where and when to Detect Secrets?
 <img align="center" src="/document/assets/images/Dev-process.png">  
 
-Well, the best location is the **pre-commit** location, This ensure that before a secret actually enters your code base, it is intercepted, and the developer or to commiter gets a message. Another location is the build server or the **build** process. The build server retrieves source sode, which is already committed and then it can analyze the source sode where it contains new secrets pr when it contains know secrets that the secrets are actually validated or audited.
+Well, the best location is the **pre-commit** location, This ensure that before a secret actually enters your code base, it is intercepted, and the developer or to committer gets a message. Another location is the build server or the **build** process. The build server retrieves source sode, which is already committed and then it can analyze the source code where it contains new secrets or when it contains know secrets that the secrets are actually validated or audited.
 
 ---
 Here are some helpful tools to automatically scan repositories for sensitive information.

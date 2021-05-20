@@ -22,16 +22,16 @@ Some PII are considered sensitive, and require even more protection, such as:
 
 Most privacy regulations promote Privacy by Design, the aproach where the development process addresses privacy concerns thru the whole cycle. Even before coding starts.
 
-You have to create a PII data flow to make sure you apply the required protection to the data thru its lifecicle. You also have to follow all the requirements related to the quality and volume of processed data.
+You have to create a PII data flow to make sure you apply the required protection to the data thru its lifecycle. You also have to follow all the requirements related to the quality and volume of processed data.
 
 All PII data processing requirements have to be specified. you have to create an inventory of all PII and evaluate the processing activity to make sure it follows all requirementes, such as:
 
 - Lawfulness, fairness and transparency
 - Purpose limitation
-- Data minimisation
+- Data minimization
 - Accuracy
 - Storage limitation
 - Integrity and confidentiality (security)
 - Accountability
 
-After you make sure that the PII and the PII processing activity are mapped and comply to the privacy regulation you have to follow, it is important to apply the security measures to protect the data, acordingly with its criticity.
+After you make sure that the PII and the PII processing activity are mapped and comply to the privacy regulation you have to follow, it is important to apply the security measures to protect the data, accordingly with its criticity.
