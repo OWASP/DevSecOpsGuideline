@@ -21,6 +21,7 @@ DAST tools allow for sophisticated scans on the client side and server side with
   + [InsightAppSec (AppSpider)](https://www.rapid7.com/products/insightappsec) - Application security testing for the modern web
   + [Veracode Dynamic Analysis](https://www.veracode.com/products/dynamic-analysis-dast) - Veracode Dynamic Analysis helps companies scan their web applications for exploitable vulnerabilities at scale
   + [Burp Suite](http://www.portswigger.net/) is an integrated platform for performing security testing of web applications. Its various tools work seamlessly together to support the entire testing process, from initial mapping and analysis of an application’s attack surface, through to finding and exploiting security vulnerabilities.
+  + [HCL AppScan on Cloud](https://cloud.appscan.com) - DAST tool built as a service. It can scan both public and privatly hosted application. Can explore and test modern web applications, leverage manually recorded steps and handle complex login scenarios. 
 
 ---
 ### References

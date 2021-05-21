@@ -13,8 +13,8 @@ For more information about the Static Code Analysis please visit [the OWASP page
 To achieve a better result we can combine static security scanning and 3rd party code (open-source libraries (dependency)) scanning.
 To doing this part better and more complete (prevent misconfigurations), here we can bring up IaC (Infrastructure as code) security scan too. For example check Terraform, helm, Ansible code, etc.  
 So according to the above lines the possible actions in this step are as follows:
-+ Static Code Analysis
-+ open-source libraries (3rd party / dependency) scanning
++ Static Code Analysis (known as SAST)
++ Open-source libraries (3rd party / dependency) scanning (known as SCA)
 + IaC Security scanning
 
 ---
@@ -26,6 +26,8 @@ So according to the above lines the possible actions in this step are as follows
   + [Brakeman](https://github.com/presidentbeef/brakeman) - A static analysis security vulnerability scanner for Ruby on Rails applications
   + [Enlightn](https://github.com/enlightn/enlightn) - A static analysis vulnerability scanner for Laravel PHP applications
   + [Inquisition](https://github.com/rubygarage/inquisition) - A set of tools for convenient technical analysis of web applications built with Ruby and Ruby on Rails. Now you don't need to set up and configure every single gem. Use Inquisition gem instead
+  + [CodeSweep](https://hclsw.co/codesweepgithub) - Static Analysis tool for GitHub that's free to use and can scan code on pull request. Support over 20 languages and IaC (docker, k8s). VS Code version can be found [here]( https://hclsw.co/codesweep)
+  + [HCL AppScan on Cloud](https://cloud.appscan.com ) - SAST tool built as a service. The tool can perform traditional SAST, SCA and IaC scanning.
 
 - #### IaC scanning: 
   + [Checkov](https://github.com/bridgecrewio/checkov) - Prevent cloud misconfigurations during build-time for Terraform, Cloudformation, Kubernetes, Serverless framework and other infrastructure-as-code-languages with Checkov by Bridgecrew

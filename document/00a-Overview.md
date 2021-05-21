@@ -81,14 +81,23 @@ it checks the software behavior under unexpected conditions and inputs.
 1. **Static testing**
 
    Static Testing checks software defects without executing the application code.
-   It is performed in the early stage of development to avoid errors,
-   as it is easier to find sources of failures and it can be fixed easily.
-   The errors that can’t not be found using Dynamic Testing, can be easily found by Static Testing.
+   It is performed in the early stage of development to avoid errors, as it is easier to find sources of failures and it can be fixed easily.
+   Some issues that can’t be found using Dynamic Testing, can be easily found by Static Testing. Such issues consists of hard coded credentials, deprecated encryption algorithms, 2nd order injections, weak random, etc. 
+   Most static analysis tools have the testing scope limited to one component and can not perform tests across different components. (EG. for a microservice architecture, static analysis tools will test each microservice independently)
+   ![Static testing](/document/assets/images/sast_scanning.png)
+
 
 2. **Dynamic testing**
 
-   Dynamic Testing analyzes the behavior of the code at runtime:
-   it includes the testing the input values and output values that are analyzed.
+   Dynamic Testing analyzes the behavior of the application code at runtime. Scanners send specially crafted requests to the target application. Request parameters are constantly modified during testing to try and expose a range of vulnerabilities. Based on the response of the application the tool can then identify potential vulnerabilities and report back. Some issues that can't be found by static analysis are easily detected by dynamic analysis. Such issues include client side vulnerabilities like authentication & session issues, sensitive data sent in plain text, etc. 
+   Dynamic analysis tools have the posibility of testing the entire application flow(multiple components at once). (Eg. for a microservice architecture, dynamic analysis tools can point to one microservice, but as they interact with eachother results will represent the behaviour of the entire application)
+   ![Dynamic testing](/document/assets/images/dast_scanning.png)
+   
+
+3. **Interactive analysis**
+   
+   Also known as Interactive Application Security Testig (IAST) monitors the application while other systems interact with it and observe vulnerabilities. This is achieved via sensors or agents deploy with the application. The sensors can see the entire flow from HTTP request down to the executed code, tracing the data through the application. Similar to static analysis, it can test one component at a time, but not multiple components. However, if agents/sensors are deployed on all components, when they interact with eachother this could reveal vulnerabilities in each component used in the application. (Eg. for a microservice architecture, only the microservices that have agents/sensors attached will report vulnerabilities)
+   ![Interactive analysis](/document/assets/images/iast_analysis.png)
 
 ---
 
