@@ -30,6 +30,7 @@ Examples of such vulnerabilities could be hardcoding API keys in cleartext, not 
 + [Contrast Community Edition (CE)](https://www.contrastsecurity.com/contrast-community-edition)
 + [Checkmarx Interactive Application Security Testing(CxIAST)](https://www.checkmarx.com/products/interactive-application-security-testing/)
 + [Seeker Interactive Application Security Testing](https://www.synopsys.com/software-integrity/security-testing/interactive-application-security-testing.html)
++ [HCL AppScan on Cloud](https://cloud.appscan.com)
 
 ---
 ### References
