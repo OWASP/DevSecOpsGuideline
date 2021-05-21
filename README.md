@@ -17,6 +17,7 @@ You can also follow the [OWASP Software Assurance Maturity Model (SAMM)](https:/
 At first, we consider to implement the following steps in a basic pipeline:
 * Take care secrets and credentials in git repositories
 * SAST (Static Application Security Test)
+* IAST (Interactive Application Security Testing)
 * DAST (Dynamic Application Security Test)
 * Infrastructure scanning
 * Compliance check
