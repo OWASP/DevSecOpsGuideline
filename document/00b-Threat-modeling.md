@@ -41,7 +41,7 @@ However, the best answer to this question is, **It depends on the organization**
 ### When to perform Threat modeling?
 Since, the earlier you find vulnerabilities in software, the easier and cheaper it is to fix them, Threat Modeling should be as early as possible in the software design process. If you are working in an agile environment, ideally the threat modeling should be done during each sprint. 
 ## Select the Right approach & Methodology
-Here we have to term 1st is Approach that describes how one could start with the process with threat modeling and 2ns is Methodology which describes the process itself. So each of the methodologies is based on one of the 3 available approaches. 
+Here we have to term 1st is Approach that describes how one could start with the process with threat modeling and 2nd is Methodology which describes the process itself. So each of the methodologies is based on one of the 3 available approaches. 
 ### Approaches
 + **Asset-centric Approach**:  
 According to the name, it turns around assets. So the producing steps are as follows:  
