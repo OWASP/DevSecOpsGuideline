@@ -31,7 +31,7 @@ note that when a credential is leaked, it is already compromised and should be i
 ### Where and when to Detect Secrets?
 <img align="center" src="/document/assets/images/Dev-process.png">  
 
-Well, the best location is the **pre-commit** location, This ensure that before a secret actually enters your code base, it is intercepted, and the developer or to committer gets a message. Another location is the build server or the **build** process. The build server retrieves source sode, which is already committed and then it can analyze the source code where it contains new secrets or when it contains know secrets that the secrets are actually validated or audited.
+Well, the best location is the **pre-commit** location, This ensure that before a secret actually enters your code base, it is intercepted, and the developer or to committer gets a message. Another location is the build server or the **build** process. The build server retrieves source code, which is already committed and then it can analyze the source code where it contains new secrets or when it contains known secrets that the secrets are actually validated or audited.
 
 ---
 Here are some helpful tools to automatically scan repositories for sensitive information.
