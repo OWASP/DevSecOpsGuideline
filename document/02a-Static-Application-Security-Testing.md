@@ -29,6 +29,8 @@ So according to the above lines the possible actions in this step are as follows
   + [CodeSweep](https://hclsw.co/codesweepgithub) - Static Analysis tool for GitHub that's free to use and can scan code on pull request. Support over 20 languages and IaC (docker, k8s). VS Code version can be found [here]( https://hclsw.co/codesweep)
   + [HCL AppScan on Cloud](https://cloud.appscan.com ) - SAST tool built as a service. The tool can perform traditional SAST, SCA and IaC scanning.
   + [Semgrep](https://semgrep.dev) - Lightweight static analysis for many languages. Find bug variants with patterns that look like source code.
+  + [Checkmarx SAST](https://checkmarx.com) - A static analysis security vulnerability scanner
+  + [Fortify](https://www.microfocus.com/en-us/cyberres/application-security/static-code-analyzer)- A static analysis security vulnerability scanner
 
 - #### IaC scanning: 
   + [Checkov](https://github.com/bridgecrewio/checkov) - Prevent cloud misconfigurations during build-time for Terraform, Cloudformation, Kubernetes, Serverless framework and other infrastructure-as-code-languages with Checkov by Bridgecrew
