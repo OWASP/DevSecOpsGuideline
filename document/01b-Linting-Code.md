@@ -33,7 +33,7 @@ Advanced static analysis tools typically deliver:
 + Since some linters are very verbose and information overload can lead to focusing on "unimportant" issues.
 
 ### Where and When to Use Linter
-![Pre Commit](/document/assets/images/Pre-commit.png) 
+![Pre Commit](/document/assets/images/pre-commit.png) 
 
 You can perform it in the **pre-commit** phase, so locally before actually committing code to your local repository to your local clone. Another phase where you often see linting is during the **build** phase, So here the build server pulls the code from the Git repository and performs linting on it and reports back that results from linting phase.
 

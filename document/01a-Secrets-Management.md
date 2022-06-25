@@ -29,7 +29,7 @@ note that when a credential is leaked, it is already compromised and should be i
 + The code history does not contain inadvertent secrets.
 
 ### Where and when to Detect Secrets?
-![Pre Commit](/document/assets/images/Pre-commit.png) 
+![Pre Commit](/document/assets/images/pre-commit.png)
 
 Well, the best location is the **pre-commit** location, This ensure that before a secret actually enters your code base, it is intercepted, and the developer or to committer gets a message. Another location is the build server or the **build** process. The build server retrieves source code, which is already committed and then it can analyze the source code where it contains new secrets or when it contains known secrets that the secrets are actually validated or audited.
 

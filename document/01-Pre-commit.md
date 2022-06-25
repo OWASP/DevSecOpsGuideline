@@ -11,7 +11,7 @@ In the following, we take a look into different types of pre-commit actions that
 
 The following image can give you a better view of what the pre-commit means and why we must consider it. 
 
-![Pre Commit](/document/assets/images/Pre-commit.png)
+![Pre Commit](/document/assets/images/pre-commit.png)
 
 ## Tools:
 
