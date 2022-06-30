@@ -1,11 +1,22 @@
 ## Introduction to the OWASP DevSecOps Guideline  
-The OWASP DevSecOps Guideline explains how we can implement a secure pipeline and use best practices and introduce tools that we can use in this matter. Also, the project is trying to help us promote the shift-left security culture in our development process.
-This project helps any companies of each size that have a development pipeline or, in other words, have a DevOps pipeline. We try to draw a perspective of a secure DevOps pipeline during this project and then improve it based on our customized requirements.  
+The OWASP DevSecOps Guideline explains how we can transition from a traditional approach to achieving security that starts with requirements and ends with security testing to an approach that brings together Development, Security, and Operations throughout the software lifecycle -- a "DevSecOps" approach.
 
-The Ideal goal is **"detect security issues (by design or application vulnerability) as fast as possible."**
+This project's goal is to help companies of any size to add security to their DevOps pipeline and culture. There is no one **right** way to do DevSecOps, so it's important to stay focused.  
 
-Maybe the following picture can describe the goal of securing pipelines better. As you can see, we can add more steps in Dev pipelines and deliver products more secure and reliable to the products' customers.
-We just put some open-source and commercial tools as an example in this image. As always, you are free to select tools and the exact location where you want to implement the tools. 
-Besides implementing more security steps, Having a central vulnerabilities management solution can help to have a good view of the application security outlook in one picture.   
+DevSecOps strives to **"produce demonstrably secure code"** by:
+* leveraging automation to create short feedback loops to developers
+* breaking down the silos between development, security, and operations
+* breaking down security work into small pieces to create flow
+* making decisions based on threat intelligence from operations
+* establishing a culture of security experimentation and learning
+
+There are tools to support security processes across the software development lifecycle. Every company should have processes in place to ensure:
+* **Custom Code Security** - your custom code has the right defenses and is free from vulnerabilities, including applications, APIs, serverless, mobile, infrastructure as code, etc...
+* **Supply Chain Security** - your platform, framework, libraries, containers, and other components 
+* **Runtime Protection** - you detect attacks on your software and prevent them from being exploited 
+
+If you do these three processes well, you will be in relatively good shape in terms of application security. In this document, we will explore a variety of automated solutions that can help you implement these three processes.
+
+The goal is not to use all of the tools in your pipeline.  The goal is to ensure secure code emerges from your pipeline. You need to pick and choose the tools that are effective with your organization's people, process, technology, and culture. You will very likely want to use each tool for what it is best at, rather than repeating all tests with all tools.  Of course, every software development organization is different and you are free to select tools and the exact location where you want to implement the tools. 
 
 ![Secure Pipeline](/document/assets/images/Pipeline-view.png)
