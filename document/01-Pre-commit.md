@@ -1,6 +1,6 @@
 ## Pre-commit
 
-The Pre-commit fase is important because it can prevent security issues before they are submitted to a central (Git) repository.
+The Pre-commit phase is important because it can prevent security issues before they are submitted to a central (Git) repository.
 
 Making sure that there are no secrets in the code, and that the code follows certain guidelines (According to the Linter rules) will result in a higher quality code.
 
