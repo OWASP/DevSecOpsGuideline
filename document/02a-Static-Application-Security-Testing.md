@@ -23,6 +23,7 @@ So according to the above lines the possible actions in this step are as follows
   + [CodeSec by Contrast Security](https://www.contrastsecurity.com/developer) - A high-speed high-quality free SAST tool designed for use by developers and in CI/CD pipelines.
   + [SonarQube](https://www.sonarqube.org) - An open-source web-based tool, extending its coverage to more than 20 languages, and also allows a number of plugins
   + [Brakeman](https://github.com/presidentbeef/brakeman) - A static analysis security vulnerability scanner for Ruby on Rails applications
+  + [CodeQL](https://github.com/github/codeql) - Discover vulnerabilities across a codebase with CodeQL, our industry-leading semantic code analysis engine.
 
 - #### Commercial Static Application Security Testing Tools:
   + [Veracode](https://www.veracode.com/security/static-analysis-tool) - A static analysis tool that is built on the SaaS model. This tool is mainly used to analyze the code from a security point of view
