@@ -44,3 +44,4 @@ Scans can be implemented directly in our pipeline, and be repeatable and efficie
 + [Repo-supervisor](https://github.com/auth0/repo-supervisor) - Scan your code for security misconfiguration, search for passwords and secrets
 + [truffleHog](https://github.com/dxa4481/truffleHog) - Searches through git repositories for high entropy strings and secrets, digging deep into commit history
 + [Git Hound](https://github.com/ezekg/git-hound) - Git plugin that prevents sensitive data from being committed
++ [Github Secret Scanning](https://docs.github.com/en/code-security/secret-scanning) - Github built in feature for secret detection
