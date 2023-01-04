@@ -34,7 +34,8 @@ So according to the above lines the possible actions in this step are as follows
   + [HCL AppScan on Cloud](https://cloud.appscan.com ) - SAST tool built as a service. The tool can perform traditional SAST, SCA and IaC scanning.
   + [Semgrep](https://semgrep.dev) - Lightweight static analysis for many languages. Find bug variants with patterns that look like source code.
   + [Checkmarx SAST](https://checkmarx.com) - A static analysis security vulnerability scanner
-  + [Fortify](https://www.microfocus.com/en-us/cyberres/application-security/static-code-analyzer)- A static analysis security vulnerability scanner
+  + [Fortify](https://www.microfocus.com/en-us/cyberres/application-security/static-code-analyzer) - A static analysis security vulnerability scanner
+  + [PT Application Inspector](https://www.ptsecurity.com/ww-en/products/ai/) - Is the only source code analyzer providing high-quality analysis and convenient tools to automatically confirm vulnerabilities — significantly speeding up the work with reports and simplifying teamwork between security specialists and developers
 
 - #### Infrastructure as Code Scanning Tools: 
   + [Checkov](https://github.com/bridgecrewio/checkov) - Prevent cloud misconfigurations during build-time for Terraform, Cloudformation, Kubernetes, Serverless framework and other infrastructure-as-code-languages with Checkov by Bridgecrew
