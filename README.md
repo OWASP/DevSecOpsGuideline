@@ -18,12 +18,15 @@ You can also follow the [OWASP Software Assurance Maturity Model (SAMM)](https:/
 ![DevSecOps pipeline](/assets/images/DevSecOps-pipeline.png)
 At first, we consider implementing the following steps in a basic pipeline:
 * Scan git repositories for finding potential credentials leakage. 
-* SAST (Static Application Security Test)
 * SCA (Software Composition Analysis)
-* IAST (Interactive Application Security Testing)
-* DAST (Dynamic Application Security Test)
+* SAST (Static Application Security Test)
 * IaC Scanning (Scanning Terraform, HelmChart code to find misconfiguration)
+* IAST (Interactive Application Security Testing)
+* API Security
+* DAST (Dynamic Application Security Test)
+* CNAPP (Cloud Native Application Protection)
 * Infrastructure scanning
+* Continuous Scanning from other tools
 * Compliance check
 
 We can customize the steps of our pipeline according to our Software Development Life Cycle (SDLC) or software architecture and add automation progressively if we are starting.
