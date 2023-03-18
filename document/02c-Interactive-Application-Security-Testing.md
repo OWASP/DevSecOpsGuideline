@@ -1,4 +1,4 @@
-## Interactive Application Security Testing
+# Interactive Application Security Testing
 
 **IAST (interactive application security testing)** is an application security testing method that tests an application, API, or function while it is being exercised by automated tests, human testers, or any other "interaction" with the code's functionality. This makes it highly compatible with just about any software development lifecycle, especially DevOps.
 
@@ -30,11 +30,11 @@ One challenge with IAST is that only code that is exercised is tested. However, 
 
 ---
 
-### IAST vs SAST
+## IAST vs SAST
 
-**Static Application Security Testing** method examines source code in a non-runtime environment early in the SDLC. It looks for suspicious code patterns that indicate security risks. Even though they are easy to deploy, SASTs report large numbers of false positives because SASTs do not take into account the presence of other security countermeasures, and they lack visibility during runtime. SAST tools normally run during the build process, and can introduce delays as the scan process takes time to finish. IASTs are more flexible than SASTs, because they are applicable in production runtime environments (SASTs require direct access to the source code).
-
-### IAST vs DAST
+**Static Application Security Testing** method examines source code in a non-runtime environment early in the SDLC. It looks for suspicious code patterns that indicate security risks. Even though they are easy to deploy, SASTs report large numbers of false positives because SASTs do not take into account the presence of other security countermeasures, and they lack visibility during runtime. SAST tools normally run during the build process, and can introduce delays as the scan process takes time to finish. IASTs are more flexible than SASTs, because they are applicable in production runtime environments (SASTs require direct access to the source code).  
+  
+## IAST vs DAST
 
 **Dynamic Application Security Testing** method works like a black-box scanner that sends malicious HTTP requests to an application and evaluate the HTTP responses to determine whether a security vulnerability was found. DASTs look at the applications from the exterior and determine the presence of risks by looking at the response (including body and headers) of the server to a battery of tests, but DASTs have no visibility of the internal workings of the app. Furthermore, DAST tests are hard to automate, because DASTs must be operated by experienced appsec teams, such as penetration testers, to be truly useful. Forrester estimates that the duration of a DAST scan can take around 5 to 7 days, while testing with IAST is a real-time (zero minutes) operation.
 
