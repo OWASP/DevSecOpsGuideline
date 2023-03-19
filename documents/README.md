@@ -1,0 +1,62 @@
+# OWASP DevSecOps Guideline
+
+This is a new structure of this documents and it's in-progress to improve it as much as we can. 
+If you need the old verion please check [document-old-structure](../document-old-structure/) directory.
+
+If you need a diagram version of this new structure please check [Project restructure](./assets/docs/Project-restructure-darft.pdf).
+
+
+
+## Table of Contents:
+
+- [00-Intro](./00-Intro)
+  - [00-01-Intro](./00-Intro/00-01-Intro.md)
+  - [00-02-Overview](./00-Intro/00-02-Overview.md)
+- [01-Init](./01-Init)
+  - [01-01-Shape-the-team](./01-Init/01-01-Shape-the-team)
+    - [01-01-01-Security-champions](./01-Init/01-01-Shape-the-team/01-01-01-Security-champions.md)
+  - [01-02-Training](./01-Init/01-02-Training)
+    - [01-02-01-Secure-coding](./01-Init/01-02-Training/01-02-01-Secure-coding.md)
+    - [01-02-02-Security-CICD](./01-Init/01-02-Training/01-02-01-Security-CICD.md)
+- [02-Pre-commit](./02-Pre-commit)
+  - [02-01-Pre-commit](./02-Pre-commit/02-01-Pre-commit.md)
+  - [02-02-Threat-modeling](./02-Pre-commit/02-02-Threat-modeling.md)
+  - [02-03-Repository-hardening](./02-Pre-commit/02-03-Repository-hardening.md)
+  - [02-04-Secrets-Management](./02-Pre-commit/02-04-Secrets-Management.md)
+  - [02-05-Linting-code](./02-Pre-commit/02-05-Linting-code.md)
+- [03-Commit-CI](./03-Commit-CI)
+  - [03-02-Interactive-Application-Security-Testing](./03-Commit-CI/03-02-Interactive-Application-Security-Testing.md)
+  - [03-01-Static-analysis](./03-Commit-CI/03-01-Static-analysis)
+    - [03-01-01-Static-Application-Security-Testing](./03-Commit-CI/03-01-Static-analysis/03-01-01-Static-Application-Security-Testing.md)
+    - [03-01-02-Software-Composition-Analysis](./03-Commit-CI/03-01-Static-analysis/03-01-02-Software-Composition-Analysis.md)
+    - [03-01-03-Container-Security](./03-Commit-CI/03-01-Static-analysis/03-01-03-Container-Security)
+      - [03-01-03-01-Container-scanning](./03-Commit-CI/03-01-Static-analysis/03-01-03-Container-Security/03-01-03-01-Container-scanning.md)
+      - [03-01-03-02-Container-hardening](./03-Commit-CI/03-01-Static-analysis/03-01-03-Container-Security/03-01-03-02-Container-hardening.md)
+    - [03-01-04-Infastructure-as-code](./03-Commit-CI/03-01-Static-analysis/03-01-04-Infastructure-as-code.md)
+- [04-Continuous-delivery-CD](./04-Continuous-delivery-CD)
+  - [04-01-Dynamic-Application-Security-Testing](./04-Continuous-delivery-CD/04-01-Dynamic-Application-Security-Testing.md)
+  - [04-02-Mobile-Application-Security-Test](./04-Continuous-delivery-CD/04-02-Mobile-Application-Security-Test.md)
+  - [04-03-API-Security](./04-Continuous-delivery-CD/04-03-API-Security.md)
+  - [04-04-Miss-Configuration-Check](./04-Continuous-delivery-CD/04-04-Miss-Configuration-Check.md)
+- [05-Deploy-CD-Golive](./05-Deploy-CD-Golive)
+  - [05-01-Key-and-certificate-management](./05-Deploy-CD-Golive/05-01-Key-and-certificate-management.md)
+  - [05-02-Cloud-Native-Application-Protection-Platform](./05-Deploy-CD-Golive/05-02-Cloud-Native-Application-Protection-Platform.md)
+- [06-Operation](./06-Operation)
+  - [06-01-Runtime|Continuous-test](./06-Operation/06-01-Runtime|Continuous-test)
+    - [06-01-01-Infra-scanning](./06-Operation/06-01-Runtime|Continuous-test/06-01-01-Infra-scanning)
+      - [06-01-01-01-Could-resources](./06-Operation/06-01-Runtime|Continuous-test/06-01-01-Infra-scanning/06-01-01-01-Could-resources.md)
+      - [06-01-01-02-K8S-resources](./06-Operation/06-01-Runtime|Continuous-test/06-01-01-Infra-scanning/06-01-01-02-K8S-resources.md)
+    - [06-01-02-Image-scanning](./06-Operation/06-01-Runtime|Continuous-test/06-01-02-Image-scanning.md)  
+  - [06-02-Breach-and-attack-simulation](./06-Operation/06-02-Breach-and-attack-simulation.md)
+  - [06-03-Logging-and-Monitoring](./06-Operation/06-03-Logging-and-Monitoring.md)
+  - [06-04-Pentest](./06-Operation/06-04-Pentest.md)
+  - [06-05-VDP|Bug-bounty](./06-Operation/06-05-VDP|Bug-bounty.md)
+- [07-Governance](./07-Governance)
+  - [07-01-Compliance-Auditing](./07-Governance/07-01-Compliance-Auditing)
+    - [07-01-01-Compliance-Auditing](./07-Governance/07-01-Compliance-Auditing/07-01-01-Compliance-Auditing.md)
+    - [07-01-02-Policy-as-code](./07-Governance/07-01-Compliance-Auditing/07-01-02-Policy-as-code.md)
+    - [07-01-03-Security-benchmarking](./07-Governance/07-01-Compliance-Auditing/07-01-03-Security-benchmarking.md)
+  - [07-02-Data-protection](./07-Governance/07-02-Data-protection.md)
+  - [07-03-Reporting](./07-Governance/07-03-Reporting)
+    - [07-03-01-Tracking-maturities](./07-Governance/07-03-Reporting/07-03-01-Tracking-maturities.md)
+    - [07-03-02-Central-vulnerability-management-dashboard](./07-Governance/07-03-Reporting/07-03-02-Central-vulnerability-management-dashboard.md)
