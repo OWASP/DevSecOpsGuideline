@@ -10,6 +10,7 @@ We should put the Component Analysis earlier, before security testing like SAST,
 ### Tools
 - #### Open-source:
   + [OWASP Dependency-check](https://owasp.org/www-project-dependency-check) - Software Composition Analysis (SCA) tool that attempts to detect publicly disclosed vulnerabilities contained within a project’s dependencies and it supports Java, .NET, JavaScript, Ruby
+  + [OWASP Dependency-Track](https://owasp.org/www-project-dependency-track/) - Dependency-Track is an intelligent Component Analysis platform that allows organizations to identify and reduce risk in the software supply chain. It takes a unique and highly beneficial approach by leveraging the capabilities of Software Bill of Materials (SBOM).
   + [RetireJS](https://github.com/RetireJS/retire.js) - JavaScript-specific dependency checker
   + [Safety](https://github.com/pyupio/safety) - Python dependency checker for known security vulnerabilities
   + [bundler-audit](https://github.com/rubysec/bundler-audit) - Patch-level verification for Bundler (Auditing Ruby 3rd party libs versions)
@@ -25,3 +26,4 @@ We should put the Component Analysis earlier, before security testing like SAST,
 ### References
 
 + [SCA - OWASP](https://owasp.org/www-community/Component_Analysis)
++ [SBOM - CISA](https://www.cisa.gov/sbom#:~:text=A%20%E2%80%9Csoftware%20bill%20of%20materials,that%20make%20up%20software%20components.)
