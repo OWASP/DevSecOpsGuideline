@@ -17,6 +17,8 @@ TBD
 - #### Open-source:
   + [OWASP Dependency-Track](https://owasp.org/www-project-dependency-track/) - Dependency-Track is an intelligent Component Analysis platform that allows organizations to identify and reduce risk in the software supply chain. It takes a unique and highly beneficial approach by leveraging the capabilities of Software Bill of Materials (SBOM).
   + [OWASP Dependency-check](https://owasp.org/www-project-dependency-check) - Software Composition Analysis (SCA) tool that attempts to detect publicly disclosed vulnerabilities contained within a project’s dependencies and it supports Java, .NET, JavaScript, Ruby
+  + [OWASP CycloneDX](https://cyclonedx.org/) - SBOM standard format with many [compatible generators](https://cyclonedx.org/tool-center/) and support for SPDX license IDs and expressions.
+  + [OWASP dep-scan](https://owasp.org/www-project-dep-scan/) - Audit tool based on known vulnerabilities for repositories in multiple languages and containers. Generates SBOM and CSAF documents.
   + [RetireJS](https://github.com/RetireJS/retire.js) - JavaScript-specific dependency checker
   + [Safety](https://github.com/pyupio/safety) - Python dependency checker for known security vulnerabilities
   + [bundler-audit](https://github.com/rubysec/bundler-audit) - Patch-level verification for Bundler (Auditing Ruby 3rd party libs versions)
