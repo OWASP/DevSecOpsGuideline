@@ -14,6 +14,7 @@ DAST tools allow for extensive scans from the client side and server side withou
 ### Tools
 - #### Open-source:
   + [ZED Attack Proxy](https://www.zaproxy.org) - It is an open source tool which is offered by OWASP for performing security testing
+  + [OWASP Nettacker](https://owasp.org/www-project-nettacker/) - Automated information gathering and vulnerability scanner with API and Web UI.
 
 - #### Commercial:
   + [Acunetix](https://www.acunetix.com) - An automatic web security testing scanner that accurately scans and audits all web applications, including HTML5, JavaScript and Single Page applications (SPAs)
@@ -23,6 +24,7 @@ DAST tools allow for extensive scans from the client side and server side withou
   + [Burp Suite](http://www.portswigger.net/) is an integrated platform for performing security testing of web applications. Its various tools work seamlessly together to support the entire testing process, from initial mapping and analysis of an application’s attack surface, through to finding and exploiting security vulnerabilities.
   + [HCL AppScan on Cloud](https://cloud.appscan.com) - DAST tool built as a service. It can scan both public and privatly hosted application. Can explore and test modern web applications, leverage manually recorded steps and handle complex login scenarios. 
   + [Nuclei](https://github.com/projectdiscovery/nuclei) - Fast and customisable vulnerability scanner based on simple YAML based DSL.
+  + [Dastardly](https://portswigger.net/burp/documentation/dastardly) - Lightweight web application security scanner designed to run in CI/CD pipelines.
 
 ---
 ### References
