@@ -1,9 +1,3 @@
----
-Filename: "00-02-Overview.md"
-Title: "Overview"
-Sector: "documents"
-Section: "00-Intro"
----
 ## DevSecOps Intro
 
 Today, DevOps is empowering any organizations to deploy changes to production environments at blazing rates.
