@@ -12,7 +12,7 @@ Under the Process section, we have conducted a detailed examination of the produ
 - Test
 - Release
 - Deploy
-- Operate  
+- Operate
 
 The following image can illustrate it better.  
 
