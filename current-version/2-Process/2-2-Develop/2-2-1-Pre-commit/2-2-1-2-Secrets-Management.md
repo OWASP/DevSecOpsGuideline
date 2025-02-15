@@ -34,7 +34,7 @@ note that when a credential is leaked, it is already compromised and should be i
 ![Pre Commit](/current-version/assets/images/pre-commit.png)
 
 
-Well, the best location is the **pre-commit** location, This ensure that before a secret actually enters your code base, it is intercepted, and the developer or to committer gets a message. Another location is the build server or the **build** process. The build server retrieves source code, which is already committed and then it can analyze the source code where it contains new secrets or when it contains known secrets that the secrets are actually validated or audited.
+Well, the best location is the **pre-commit** location, This ensure that before a secret actually enters your code base, it is intercepted, and the developer or to committer gets a message. Using **IDE plugins** comes in handy while trying to fix such issues where the IDE warnings can be found as soon as the developer writes an insecure code with security misconfigurations.  Another location is the build server or the **build** process. The build server retrieves source code, which is already committed and then it can analyze the source code where it contains new secrets or when it contains known secrets that the secrets are actually validated or audited.
 
 ---
 Here are some helpful tools to automatically scan repositories for sensitive information.
