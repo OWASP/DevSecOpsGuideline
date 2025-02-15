@@ -96,7 +96,7 @@ it checks the software behavior under unexpected conditions and inputs.
 
 3. **Interactive analysis**
    
-   Also known as Interactive Application Security Testig (IAST) monitors the application while other systems interact with it and observe vulnerabilities. This is achieved via sensors or agents deploy with the application. The sensors can see the entire flow from HTTP request down to the executed code, tracing the data through the application. Similar to static analysis, it can test one component at a time, but not multiple components. However, if agents/sensors are deployed on all components, when they interact with eachother this could reveal vulnerabilities in each component used in the application. (Eg. for a microservice architecture, only the microservices that have agents/sensors attached will report vulnerabilities)
+   Also known as Interactive Application Security Testing (IAST) monitors the application while other systems interact with it and observe vulnerabilities. This is achieved via sensors or agents deploy with the application. The sensors can see the entire flow from HTTP request down to the executed code, tracing the data through the application. Similar to static analysis, it can test one component at a time, but not multiple components. However, if agents/sensors are deployed on all components, when they interact with eachother this could reveal vulnerabilities in each component used in the application. (Eg. for a microservice architecture, only the microservices that have agents/sensors attached will report vulnerabilities)
    ![Interactive analysis](/document/assets/images/iast_analysis.png)
 
 ---

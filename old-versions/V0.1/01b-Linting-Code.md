@@ -28,7 +28,7 @@ Advanced static analysis tools typically deliver:
 - Out-of-the-box certification for use in the development of safety-critical applications.
 
 ### Issues with Linters
-+ Not every language has "quality" standard linter tools available, each framwork usually has one or several linters.
++ Not every language has "quality" standard linter tools available, each framework usually has one or several linters.
 + Different versions or configurations can lead to different results.
 + Since some linters are very verbose and information overload can lead to focusing on "unimportant" issues.
 
