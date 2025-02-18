@@ -5,11 +5,14 @@ This is the updated version of the DevSecOps Guideline. In this version, we have
 - Process
 - Governance
 
-Under the Process section, we have conducted a detailed examination of the product development process and have divided it into the following four steps:
+Under the Process section, we have conducted a detailed examination of the product development process and have divided it into the following seven steps:
 - Design
 - Develop
+- Build
+- Test
+- Release
 - Deploy
-- Operate  
+- Operate
 
 The following image can illustrate it better.  
 
