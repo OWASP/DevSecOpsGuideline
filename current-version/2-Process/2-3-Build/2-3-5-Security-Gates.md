@@ -1,1 +1,3 @@
-TBD - Security gates in CI build pipeline
+# Security Gates
+
+<!-- TBD -->
