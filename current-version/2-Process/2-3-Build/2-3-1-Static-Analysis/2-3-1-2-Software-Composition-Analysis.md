@@ -44,8 +44,8 @@ TBD
 
 - #### Commercial:
   + [Hakiri](https://hakiri.io/) - A commercial tool that offers dependency checking for Ruby and Rails-based GitHub projects using static code analysis
-  + [HCL AppScan on Cloud](https://cloud.appscan.com) - SAST tool built as a service that can perform both SAST, SCA & IaC at the same time. 
-  + [Snyk](https://snyk.io/) - SCA tool offer as a SaaS solution. 
+  + [HCL AppScan on Cloud](https://cloud.appscan.com) - SAST tool built as a service that can perform both SAST, SCA & IaC at the same time.
+  + [Snyk](https://snyk.io/) - SCA tool offer as a SaaS solution.
   + [WhiteSource](https://www.whitesourcesoftware.com/) - WhiteSource identifies every open source component in your software, including dependencies. It then secures you from vulnerabilities and enforces license policies throughout the software development lifecycle.
   + [Synopsys BlackDuck](https://www.blackducksoftware.com/) - Black Duck automated policy management allows you to define policies for open source use, security risk, and license compliance up front, and automate enforcement across the software development life cycle (SDLC).
 

@@ -14,7 +14,7 @@ Under the Process section, we have conducted a detailed examination of the produ
 - Deploy
 - Operate
 
-The following image can illustrate it better.  
+The following image can illustrate it better.
 
 ![DevSecOps Pillars](/current-version/assets/images/devsecops-pillars.png)
 

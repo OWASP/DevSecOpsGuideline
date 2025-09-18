@@ -11,7 +11,7 @@ Static scanning is good way finding coding issues such as:
 
 For more information about the Static Code Analysis please visit [the OWASP page](https://owasp.org/www-community/controls/Static_Code_Analysis)
 To achieve a better result we can combine static security scanning and 3rd party code (open-source libraries (dependency) scanning.
-To doing this part better and more complete (prevent misconfigurations), we can bring up IaC (Infrastructure as code) security scan too. For example check Terraform, helm, Ansible code, etc.  
+To doing this part better and more complete (prevent misconfigurations), we can bring up IaC (Infrastructure as code) security scan too. For example check Terraform, helm, Ansible code, etc.
 So according to the above lines the possible actions in this step are as follows:
 + Static Code Analysis (known as SAST)
 + Open-source libraries (3rd party / dependency) scanning (known as SCA)

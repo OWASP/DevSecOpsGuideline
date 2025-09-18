@@ -2,7 +2,7 @@
 Threat modeling is a crucial component of the DevSecOps approach, focused on identifying and managing risks in a structured way. Here’s a more detailed look at this topic:
 
 ### What is Threat Modeling?
-Threat modeling involves enumerating all potential attack vectors on an application, producing a list of threat scenarios along with mitigations. This holistic and collaborative process ensures comprehensive coverage of potential threats.  
+Threat modeling involves enumerating all potential attack vectors on an application, producing a list of threat scenarios along with mitigations. This holistic and collaborative process ensures comprehensive coverage of potential threats.
 
 Another important note is that Threat Modeling is a **Collaborative** and **Repeatable** process and it is a process **NOT** a project!
 
@@ -63,7 +63,7 @@ Common Threat Modeling methodologies are:
 | **Attacker-Centric**    | 1. Define potential threat actors (e.g., insiders, external hackers). <br> 2. Determine their motives, means, and opportunities. <br> 3. List and prioritize potential threats. |
 | **Application-Centric** | 1. Create detailed diagrams of the application. <br> 2. Identify threats for each element. <br> 3. Use threat classification models (e.g., STRIDE, OWASP Top 10). <br> 4. Rank threats using risk classification models (e.g., DREAD - Damage, Reproducibility, Exploitability, Affected Users, Discoverability). |
 
-### Detailed Steps for Each Approach                                                                                                                                
+### Detailed Steps for Each Approach
 #### Asset-Centric
 1. Asset Identification:
     - List all assets, including data, software, and hardware.
@@ -113,7 +113,7 @@ DREAD is a risk assessment model used in cybersecurity to evaluate and prioritiz
   - **Reproducibility:** Evaluating how easily the exploit can be replicated.
   - **Exploitability:** Determining the ease with which the vulnerability can be exploited.
   - **Affected users:** Identifying the number of users or systems affected by the vulnerability.
-  - **Discoverability:** Assessing how easily the vulnerability can be discovered.  
+  - **Discoverability:** Assessing how easily the vulnerability can be discovered.
 
 Each of these factors is typically scored on a scale, often from 0 to 10, with higher scores indicating a greater level of risk.
 
@@ -143,4 +143,4 @@ Each of these factors is typically scored on a scale, often from 0 to 10, with h
 ### Links:
 - [OWASP - Threat Modeling](https://owasp.org/www-community/Threat_Modeling)
 - [Awesome Threat Modeling](https://github.com/hysnsec/awesome-threat-modelling)
-- [Threat Modeling Cheat Sheet](https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Threat_Modeling_Cheat_Sheet.md) 
+- [Threat Modeling Cheat Sheet](https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Threat_Modeling_Cheat_Sheet.md)

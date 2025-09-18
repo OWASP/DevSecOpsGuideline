@@ -7,9 +7,9 @@ Some must comply with industry-recognized frameworks such as SOC 2, CIS, PCI DSS
 Having multiple security checklist in your organization will come to be time consuming and makes lots of differents meaning and behaviour in each team. despite of having a checklist or excel, you can manage all policies as code and make all of them proactive and apply them in each enviroment you need them. by this approach policeis are not only a checklist that one team can ignore some part of it or miss any part of it.
 
 ## Benefits of Policy as Code
-**Policy Management**: Centralizing your policies into a single location, as opposed to dispersing them across multiple locations maintained by different IT teams, enables a more agile and adaptable approach to policy management.  
+**Policy Management**: Centralizing your policies into a single location, as opposed to dispersing them across multiple locations maintained by different IT teams, enables a more agile and adaptable approach to policy management.
 
-**Version Control**: Centralizing policies in a version control system like GitHub or GitLab offers organizations enhanced control and visibility. Stakeholders benefit from easy access to operational changes, while automated version control facilitates seamless updates and rollback options, ensuring smooth transitions and mitigating potential issues with new versions.  
+**Version Control**: Centralizing policies in a version control system like GitHub or GitLab offers organizations enhanced control and visibility. Stakeholders benefit from easy access to operational changes, while automated version control facilitates seamless updates and rollback options, ensuring smooth transitions and mitigating potential issues with new versions.
 
 **Faster and Efficient**: Efficiency is heightened as manual policy enforcement is eliminated, enabling dynamic updates and sharing of policies, thereby streamlining the process. Additionally, the combination of centralization and versioning fosters repeatability and idempotence in code execution. Repeatability ensures consistent code execution, while idempotence guarantees that repeated executions yield the same output. This reliability is crucial for instilling confidence among operators, empowering them to execute deployments without hesitation or fear.
 

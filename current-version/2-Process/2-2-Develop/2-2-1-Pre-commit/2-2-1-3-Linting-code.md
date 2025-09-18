@@ -1,6 +1,6 @@
 ## Linting Code
 
-### What Is Linting?  
+### What Is Linting?
 Linting is the automated checking of your source code for programmatic and stylistic errors. This is done by using a lint tool (otherwise known as linter). A lint tool is a basic static code analyzer.
 
 ### What can Linting do?
@@ -33,7 +33,7 @@ Advanced static analysis tools typically deliver:
 + Since some linters are very verbose and information overload can lead to focusing on "unimportant" issues.
 
 ### Where and When to Use Linter
-![Pre Commit](/current-version/assets/images/pre-commit.png) 
+![Pre Commit](/current-version/assets/images/pre-commit.png)
 
 You can perform it in the **pre-commit** phase, so locally before actually committing code to your local repository to your local clone. Another phase where you often see linting is during the **build** phase, So here the build server pulls the code from the Git repository and performs linting on it and reports back that results from linting phase.
 

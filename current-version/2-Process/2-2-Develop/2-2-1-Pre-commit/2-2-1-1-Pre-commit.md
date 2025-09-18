@@ -14,7 +14,7 @@ It is to be noted that pre-commit hooks are at the developer's local repository 
 
 Another alternative approach to scan the source code for security issues (such as hardcoded-secrets, insecure code and vulnerable dependencies/opensource libraries) is the use of **SAST/SCA IDE plugins**. This works together with the IDEs used by developers while they write the code. Whereas, git-commit and git-push actions are used after the code is written by the developer. It is necessary to discern these distinct use-cases in order to implement the proper security controls at various levels based on the requirement.
 
-The following image can give you a better view of what the pre-commit means and why we must consider it. 
+The following image can give you a better view of what the pre-commit means and why we must consider it.
 
 ![Pre Commit](/current-version/assets/images/pre-commit.png)
 

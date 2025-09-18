@@ -2,7 +2,7 @@
 IaC scanning means checking the code used to set up and manage infrastructure. This code, written in tools like Terraform or Ansible, defines how servers, networks, and other parts of the infrastructure are created. The aim of IaC scanning is to find security problems and mistakes early on, before deploying the infrastructure. By doing this, teams can make sure that the infrastructure follows security rules and company policies right from the start. These checks happen as part of the development process before the code is used in live systems.
 
 Let's consider a scenario where a development team is using Terraform to automate the provisioning of cloud resources in AWS. Here's a simplified example:
-```terraform 
+```terraform
 # Terraform script to create an S3 bucket
 
 provider "aws" {
@@ -24,7 +24,7 @@ In the next part, you will find a list of tools that can help you address differ
 
 ---
 ### Tools
-- #### Infrastructure as Code Scanning Tools: 
+- #### Infrastructure as Code Scanning Tools:
   + [Checkov](https://github.com/bridgecrewio/checkov) - Prevent cloud misconfigurations during build-time for Terraform, Cloudformation, Kubernetes, Serverless framework and other infrastructure-as-code-languages with Checkov by Bridgecrew
   + [ansible-lint](https://github.com/ansible-community/ansible-lint) - Best practices checker for Ansible
   + [puppet-lint](https://github.com/rodjek/puppet-lint) - Check that your Puppet manifests conform to the style guide

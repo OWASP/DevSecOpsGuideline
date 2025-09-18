@@ -11,7 +11,7 @@ following the process shown in the picture.
 <br/>
 
 The ideal approach is detecting and preventing the exposure of sensitive data before that they hit the repository,
-because they are then visible in the history. In case of code hosting platforms, secrets can still linger 
+because they are then visible in the history. In case of code hosting platforms, secrets can still linger
 on the web and be searchable after you remove them from the repository.
 
 A complimentary approach is scanning the repo for sensitive information, and then remove them;
@@ -38,7 +38,7 @@ Well, the best location is the **pre-commit** location, This ensure that before 
 
 ---
 Here are some helpful tools to automatically scan repositories for sensitive information.
-Scans can be implemented directly in our pipeline, and be repeatable and efficient. 
+Scans can be implemented directly in our pipeline, and be repeatable and efficient.
 
 ## Tools:
 - **Open-source**:
@@ -48,7 +48,7 @@ Scans can be implemented directly in our pipeline, and be repeatable and efficie
   + [truffleHog](https://github.com/dxa4481/truffleHog) - Searches through git repositories for high entropy strings and secrets, digging deep into commit history
   + [Git Hound](https://github.com/ezekg/git-hound) - Git plugin that prevents sensitive data from being committed
   + [Github Secret Scanning](https://docs.github.com/en/code-security/secret-scanning) - Github built in feature for secret detection
-  
+
 - **Proprietary software**:
   + [GitGuardian](https://gitguardian.com) - Keep secrets out of your source code
   + [Spectralops](https://spectralops.io) - Developer-first Cloud Security

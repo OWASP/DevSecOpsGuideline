@@ -14,7 +14,7 @@ As containers become an almost ubiquitous method of packaging and deploying appl
 - Easy to go "too far" with configuration, there are tools where you can configure so much different settings, that it's easy to jump overboard.
 - The scan results will lead to actionable events?
 
-### Where and When to use Container Scanner? 
+### Where and When to use Container Scanner?
 ![](/current-version/assets/images/Dev-process.png)
 
 You can use it at the build phase when you're actually building for instance a Dockerfile and looking at the resulting image that you're creating. Another location to perform container scanning would be when you push a container to the registry or when you pull a container from a registry. However, a good approach is scanning before pushing into a trusted container registry then you can say we have a container registry with a scanned version of all images and for deploying in production you can pull from this trusted container registry. (Plase take look into the following image)
