@@ -21,6 +21,37 @@ repos:
         name: "meta | pre-commit hooks"
         stages:
           - manual
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        name: "git | block large files"
+        args: [--maxkb=2048]
+      - id: check-json
+        name: "general | check JSON files"
+      - id: check-toml
+        name: "general | check TOML files"
+      - id: check-xml
+        name: "general | check XML files"
+      - id: check-yaml
+        name: "general | check YAML files"
+      - id: end-of-file-fixer
+        name: "general | fix end of file"
+      - id: forbid-new-submodules
+        name: "git | forbid new submodules"
+      - id: forbid-submodules
+        name: "git | forbid submodules usage"
+      - id: mixed-line-ending
+        name: "general | fix line ending"
+        args:
+          - --fix=auto
+      - id: pretty-format-json
+        name: "general | prettify JSON files"
+        args:
+          - --autofix
+          - --no-ensure-ascii
+      - id: trailing-whitespace
+        name: "general | remove trailing whitespace"
   - repo: local
     hooks:
       - id: pin-github-action

@@ -46,4 +46,3 @@ Securing a code repository involves implementing a variety of practices and tech
 - [OWASP Secure Coding Practices](https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/)
 - [HashiCorp Vault Documentation](https://www.vaultproject.io/docs)
 - [SonarQube Documentation](https://docs.sonarqube.org/latest/)
-
