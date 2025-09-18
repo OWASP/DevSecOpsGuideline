@@ -21,3 +21,14 @@ repos:
         name: "meta | pre-commit hooks"
         stages:
           - manual
+  - repo: local
+    hooks:
+      - id: pin-github-action
+        name: "gh-action | lint: pinned sha"
+        files: ^\.github/workflows/[^/]+\.ya?ml$
+        entry: "pin-github-action ."
+        language: node
+        additional_dependencies:
+          - pin-github-action@3.4.0
+        stages:
+          - manual
