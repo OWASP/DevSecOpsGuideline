@@ -1,11 +1,13 @@
 # OWASP DevSecOps Guideline
 
 This is the updated version of the DevSecOps Guideline. In this version, we have revised our documentation approach to provide a more structured format. The primary focus of this restructuring was on the core pillars of DevSecOps, which include:
+
 - People
 - Process
 - Governance
 
 Under the Process section, we have conducted a detailed examination of the product development process and have divided it into the following seven steps:
+
 - Design
 - Develop
 - Build
@@ -20,7 +22,7 @@ The following image can illustrate it better.
 
 If you need the old verions please check [old-versions](../old-versions/) directory.
 
-## Table of Contents:
+## Table of Contents
 
 - [0-Intro](0-Intro)
   - [0-1-Intro](0-Intro/0-1-Intro.md)

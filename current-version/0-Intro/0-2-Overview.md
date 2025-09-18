@@ -87,13 +87,11 @@ it checks the software behavior under unexpected conditions and inputs.
    Most static analysis tools have the testing scope limited to one component and can not perform tests across different components. (EG. for a microservice architecture, static analysis tools will test each microservice independently)
    ![Static testing](/current-version/assets/images/sast_scanning.png)
 
-
 2. **Dynamic testing**
 
    Dynamic Testing analyzes the behavior of the application code at runtime. Scanners send specially crafted requests to the target application. Request parameters are constantly modified during testing to try and expose a range of vulnerabilities. Based on the response of the application the tool can then identify potential vulnerabilities and report back. Some issues that can't be found by static analysis are easily detected by dynamic analysis. Such issues include client side vulnerabilities like authentication & session issues, sensitive data sent in plain text, etc.
    Dynamic analysis tools have the possibility of testing the entire application flow(multiple components at once). (Eg. for a microservice architecture, dynamic analysis tools can point to one microservice, but as they interact with each other results will represent the behaviour of the entire application)
    ![Dynamic testing](/current-version/assets/images/dast_scanning.png)
-
 
 3. **Interactive analysis**
 
@@ -104,5 +102,5 @@ it checks the software behavior under unexpected conditions and inputs.
 
 #### References
 
-1. https://www.geeksforgeeks.org/difference-between-positive-testing-and-negative-testing
-2. https://www.geeksforgeeks.org/difference-between-static-and-dynamic-testing
+1. <https://www.geeksforgeeks.org/difference-between-positive-testing-and-negative-testing>
+2. <https://www.geeksforgeeks.org/difference-between-static-and-dynamic-testing>

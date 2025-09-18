@@ -1,14 +1,16 @@
 ## Repository Hardening
+
 Securing a code repository involves implementing a variety of practices and techniques to protect it from unauthorized access, data breaches, and other security threats. By doing so, you can ensure the integrity, confidentiality, and availability of the code and its associated resources.
 
-
 ### Objectives
+
 - **Prevent Unauthorized Access:** Ensure that only authorized personnel can access and modify the repository.
 - **Protect Sensitive Information:** Safeguard secrets, passwords, and other sensitive data.
 - **Maintain Code Integrity:** Ensure that the code is not tampered with or corrupted.
 - **Compliance:** Adhere to regulatory and industry standards for code security.
 
 ### Key Concepts
+
 - **Access Control:** Managing who can access the repository and what actions they can perform.
 - **Secrets Management:** Handling sensitive data such as API keys and passwords securely.
 - **Audit and Monitoring:** Keeping track of repository activities to detect and respond to security incidents.
@@ -16,6 +18,7 @@ Securing a code repository involves implementing a variety of practices and tech
 - **Backup and Recovery:** Ensuring data is backed up and can be restored in case of a failure or breach.
 
 ### Best Practices for Repository Hardening
+
 1. **Access Control**
     - **Principle of Least Privilege:** Grant the minimum necessary permissions to users.
     - **Role-Based Access Control (RBAC):** Define roles with specific permissions and assign users to these roles.
@@ -36,8 +39,6 @@ Securing a code repository involves implementing a variety of practices and tech
 5. **Backup and Recovery**
     - **Regular Backups:** Ensure that repository data is backed up regularly and stored securely.
     - **Disaster Recovery Plan:** Develop and test a disaster recovery plan to restore repository data in case of a breach or failure.
-
-
 
 ## References
 

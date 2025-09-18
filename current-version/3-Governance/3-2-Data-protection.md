@@ -5,7 +5,7 @@ Privacy has become an important aspect of application security. GDPR, LGPD, CCPA
 To start, it is important to have a good understanding of what is considered PII:
 
 - First and last name;
-- Identifiable email (name.lastname@domain.com);
+- Identifiable email (<name.lastname@domain.com>);
 - Identity card numbers;
 - Location data (mobile);
 - IP Address.

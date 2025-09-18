@@ -1,4 +1,5 @@
-### Static scanning is an important part of the process!
+### Static scanning is an important part of the process
+
 <img align="right" width="360" height="200" src="/current-version/assets/images/Static scanning.png">
 Static Code Analysis or Source Code Analysis is usually part of a Code Review (white-box testing) and it is a method of computer program debugging that is done by examining the code without executing the program.</br>
 Static scanning is good way finding coding issues such as:
@@ -13,19 +14,24 @@ For more information about the Static Code Analysis please visit [the OWASP page
 To achieve a better result we can combine static security scanning and 3rd party code (open-source libraries (dependency) scanning.
 To doing this part better and more complete (prevent misconfigurations), we can bring up IaC (Infrastructure as code) security scan too. For example check Terraform, helm, Ansible code, etc.
 So according to the above lines the possible actions in this step are as follows:
+
 + Static Code Analysis (known as SAST)
 + Open-source libraries (3rd party / dependency) scanning (known as SCA)
 + IaC Security scanning
 
 ---
+
 ### Tools
-- #### Free Static Application Security Testing Tools:
+
+- #### Free Static Application Security Testing Tools
+
   + [CodeSec by Contrast Security](https://www.contrastsecurity.com/developer) - A high-speed high-quality free SAST tool designed for use by developers and in CI/CD pipelines.
   + [SonarQube](https://www.sonarqube.org) - An open-source web-based tool, extending its coverage to more than 20 languages, and also allows a number of plugins
   + [Brakeman](https://github.com/presidentbeef/brakeman) - A static analysis security vulnerability scanner for Ruby on Rails applications
   + [CodeQL](https://github.com/github/codeql) - Discover vulnerabilities across a codebase with CodeQL, our industry-leading semantic code analysis engine.
 
-- #### Commercial Static Application Security Testing Tools:
++ #### Commercial Static Application Security Testing Tools
+
   + [Veracode](https://www.veracode.com/security/static-analysis-tool) - A static analysis tool that is built on the SaaS model. This tool is mainly used to analyze the code from a security point of view
   + [security code scan](https://github.com/security-code-scan/security-code-scan) - Vulnerability Patterns Detector for C# and VB.NET
   + [Enlightn](https://github.com/enlightn/enlightn) - A static analysis vulnerability scanner for Laravel PHP applications

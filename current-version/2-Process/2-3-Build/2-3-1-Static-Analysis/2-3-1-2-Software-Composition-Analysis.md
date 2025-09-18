@@ -7,9 +7,11 @@ Software Component Analysis is the process of automating application security fo
 We should put the Component Analysis earlier, before security testing like SAST, DAST, and IAST to prevent any vulnerable libraries pushed to live environment (Production) and implemented Continuous Monitoring of its libraries to reduce Supply Chain Attack risk rapidly.
 
 ## License Compliance check
+
 TBD
 
 ## Supply-Chain Attacks
+
 Supply chain attacks involve exploiting vulnerabilities in the interconnected network of suppliers, vendors, and software components to infiltrate and compromise target systems, often leading to widespread security breaches and data theft. While SCA tools may not directly detect all types of supply chain attacks, they can help mitigate certain risks associated with them. Here's how different types of supply chain attacks can be addressed using SCA:
 
 1. **Dependency Confusion**: Attackers upload malicious packages or libraries to public or private repositories with names similar to legitimate ones. Developers unknowingly install these malicious dependencies, assuming they are safe, leading to security compromises. Example: [PyTorch discloses malicious dependency chain compromise over holidays](https://www.bleepingcomputer.com/news/security/pytorch-discloses-malicious-dependency-chain-compromise-over-holidays/#google_vignette).
@@ -29,28 +31,32 @@ SCA tools can assess the security posture of third-party vendors or suppliers by
 SCA tools can help identify if a third-party vendor has been compromised and alert organizations to the potential risks. [Exploitation of Accellion File Transfer Appliance](https://www.cisa.gov/news-events/cybersecurity-advisories/aa21-055a)
 
 ## SBOM
+
 TBD
 
 ---
+
 ### Tools
-- #### Open-source:
-  + [OWASP Dependency-Track](https://owasp.org/www-project-dependency-track/) - Dependency-Track is an intelligent Component Analysis platform that allows organizations to identify and reduce risk in the software supply chain. It takes a unique and highly beneficial approach by leveraging the capabilities of Software Bill of Materials (SBOM).
-  + [OWASP Dependency-check](https://owasp.org/www-project-dependency-check) - Software Composition Analysis (SCA) tool that attempts to detect publicly disclosed vulnerabilities contained within a project’s dependencies and it supports Java, .NET, JavaScript, Ruby
-  + [OWASP CycloneDX](https://cyclonedx.org/) - SBOM standard format with many [compatible generators](https://cyclonedx.org/tool-center/) and support for SPDX license IDs and expressions.
-  + [OWASP dep-scan](https://owasp.org/www-project-dep-scan/) - Audit tool based on known vulnerabilities for repositories in multiple languages and containers. Generates SBOM and CSAF documents.
-  + [RetireJS](https://github.com/RetireJS/retire.js) - JavaScript-specific dependency checker
-  + [Safety](https://github.com/pyupio/safety) - Python dependency checker for known security vulnerabilities
-  + [bundler-audit](https://github.com/rubysec/bundler-audit) - Patch-level verification for Bundler (Auditing Ruby 3rd party libs versions)
 
-- #### Commercial:
-  + [Hakiri](https://hakiri.io/) - A commercial tool that offers dependency checking for Ruby and Rails-based GitHub projects using static code analysis
-  + [HCL AppScan on Cloud](https://cloud.appscan.com) - SAST tool built as a service that can perform both SAST, SCA & IaC at the same time.
-  + [Snyk](https://snyk.io/) - SCA tool offer as a SaaS solution.
-  + [WhiteSource](https://www.whitesourcesoftware.com/) - WhiteSource identifies every open source component in your software, including dependencies. It then secures you from vulnerabilities and enforces license policies throughout the software development lifecycle.
-  + [Synopsys BlackDuck](https://www.blackducksoftware.com/) - Black Duck automated policy management allows you to define policies for open source use, security risk, and license compliance up front, and automate enforcement across the software development life cycle (SDLC).
+- #### Open-source
 
+  - [OWASP Dependency-Track](https://owasp.org/www-project-dependency-track/) - Dependency-Track is an intelligent Component Analysis platform that allows organizations to identify and reduce risk in the software supply chain. It takes a unique and highly beneficial approach by leveraging the capabilities of Software Bill of Materials (SBOM).
+  - [OWASP Dependency-check](https://owasp.org/www-project-dependency-check) - Software Composition Analysis (SCA) tool that attempts to detect publicly disclosed vulnerabilities contained within a project’s dependencies and it supports Java, .NET, JavaScript, Ruby
+  - [OWASP CycloneDX](https://cyclonedx.org/) - SBOM standard format with many [compatible generators](https://cyclonedx.org/tool-center/) and support for SPDX license IDs and expressions.
+  - [OWASP dep-scan](https://owasp.org/www-project-dep-scan/) - Audit tool based on known vulnerabilities for repositories in multiple languages and containers. Generates SBOM and CSAF documents.
+  - [RetireJS](https://github.com/RetireJS/retire.js) - JavaScript-specific dependency checker
+  - [Safety](https://github.com/pyupio/safety) - Python dependency checker for known security vulnerabilities
+  - [bundler-audit](https://github.com/rubysec/bundler-audit) - Patch-level verification for Bundler (Auditing Ruby 3rd party libs versions)
+
+- #### Commercial
+
+  - [Hakiri](https://hakiri.io/) - A commercial tool that offers dependency checking for Ruby and Rails-based GitHub projects using static code analysis
+  - [HCL AppScan on Cloud](https://cloud.appscan.com) - SAST tool built as a service that can perform both SAST, SCA & IaC at the same time.
+  - [Snyk](https://snyk.io/) - SCA tool offer as a SaaS solution.
+  - [WhiteSource](https://www.whitesourcesoftware.com/) - WhiteSource identifies every open source component in your software, including dependencies. It then secures you from vulnerabilities and enforces license policies throughout the software development lifecycle.
+  - [Synopsys BlackDuck](https://www.blackducksoftware.com/) - Black Duck automated policy management allows you to define policies for open source use, security risk, and license compliance up front, and automate enforcement across the software development life cycle (SDLC).
 
 ### References
 
-+ [SCA - OWASP](https://owasp.org/www-community/Component_Analysis)
-+ [SBOM - OWASP](https://owasp.org/www-community/Component_Analysis#software-bill-of-materials-sbom)
+- [SCA - OWASP](https://owasp.org/www-community/Component_Analysis)
+- [SBOM - OWASP](https://owasp.org/www-community/Component_Analysis#software-bill-of-materials-sbom)
