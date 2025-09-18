@@ -1,0 +1,23 @@
+---
+# pre-commit install --allow-missing-config &&  pre-commit autoupdate && pre-commit run --all-files --color auto
+exclude: |
+  (?x)^(
+    old-versions/.*
+  )
+fail_fast: true
+default_stages:
+  - pre-commit
+default_language_version:
+  python: python3.13
+default_install_hook_types:
+  - commit-msg
+  - pre-commit
+ci:
+  autoupdate_schedule: monthly
+repos:
+  - repo: meta
+    hooks:
+      - id: identity
+        name: "meta | pre-commit hooks"
+        stages:
+          - manual
