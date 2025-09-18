@@ -7,7 +7,6 @@ several bug bounties write-ups are related to this kind of issue, eg hard-coded 
 
 You should scan your commits and your repository, and detect any sensitive information such as password, secret key, confidential, etc.
 following the process shown in the picture.
-<br/>
 
 The ideal approach is detecting and preventing the exposure of sensitive data before that they hit the repository,
 because they are then visible in the history. In case of code hosting platforms, secrets can still linger
