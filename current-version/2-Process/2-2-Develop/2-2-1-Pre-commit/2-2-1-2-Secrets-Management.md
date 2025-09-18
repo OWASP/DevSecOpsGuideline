@@ -36,23 +36,32 @@ note that when a credential is leaked, it is already compromised and should be i
 Well, the best location is the **pre-commit** location, This ensure that before a secret actually enters your code base, it is intercepted, and the developer or to committer gets a message. Using **SAST IDE plugins** comes in handy while trying to fix such issues where the IDE warnings can be found as soon as the developer writes an insecure code with security misconfigurations.  Another location is the build server or the **build** process. The build server retrieves source code, which is already committed and then it can analyze the source code where it contains new secrets or when it contains known secrets that the secrets are actually validated or audited.
 
 ---
+
 Here are some helpful tools to automatically scan repositories for sensitive information.
 Scans can be implemented directly in our pipeline, and be repeatable and efficient.
 
-## Tools
+## Tools[^1]
 
-- **Open-source**:
-  - [gittyleaks](https://github.com/kootenpv/gittyleaks) - Find sensitive information for a git repo
-  - [git-secrets](https://github.com/awslabs/git-secrets) - Prevents you from committing secrets and credentials into git repositories
-  - [Repo-supervisor](https://github.com/auth0/repo-supervisor) - Scan your code for security misconfiguration, search for passwords and secrets
-  - [truffleHog](https://github.com/dxa4481/truffleHog) - Searches through git repositories for high entropy strings and secrets, digging deep into commit history
-  - [Git Hound](https://github.com/ezekg/git-hound) - Git plugin that prevents sensitive data from being committed
-  - [Github Secret Scanning](https://docs.github.com/en/code-security/secret-scanning) - Github built in feature for secret detection
+### Open-source
 
-- **Proprietary software**:
-  - [GitGuardian](https://gitguardian.com) - Keep secrets out of your source code
-  - [Spectralops](https://spectralops.io) - Developer-first Cloud Security
-  - [TruffleSecurity](https://trufflesecurity.com) - Unhearth your secrets
-  - [GitHub Advanced Security](https://docs.github.com/en/code-security/secret-scanning/about-secret-scanning) - GitHub scans repositories for known types of secrets, to prevent fraudulent use of secrets that were committed accidentally
-  - [BluBracket](https://blubracket.com) - Prevent secrets and credentials in code
-  - [Nightfall](https://nightfall.ai) - Find and protect secrets and keys across the cloud
+- [Git Hound](https://github.com/ezekg/git-hound) - Git plugin that prevents sensitive data from being committed
+- [git-secrets](https://github.com/awslabs/git-secrets) - Prevents you from committing secrets and credentials into git repositories
+- [Github Secret Scanning](https://docs.github.com/en/code-security/secret-scanning) - Github built in feature for secret detection
+- [gittyleaks](https://github.com/kootenpv/gittyleaks) - Find sensitive information for a git repo
+- [Repo-supervisor](https://github.com/auth0/repo-supervisor) - Scan your code for security misconfiguration, search for passwords and secrets
+- [truffleHog](https://github.com/dxa4481/truffleHog) - Searches through git repositories for high entropy strings and secrets, digging deep into commit history
+
+### Commercial
+
+- [BluBracket](https://blubracket.com) - Prevent secrets and credentials in code
+- [GitGuardian](https://gitguardian.com) - Keep secrets out of your source code
+- [GitHub Advanced Security](https://docs.github.com/en/code-security/secret-scanning/about-secret-scanning) - GitHub scans repositories for known types of secrets, to prevent fraudulent use of secrets that were committed accidentally
+- [Nightfall](https://nightfall.ai) - Find and protect secrets and keys across the cloud
+- [Spectralops](https://spectralops.io) - Developer-first Cloud Security
+- [TruffleSecurity](https://trufflesecurity.com) - Unhearth your secrets
+
+---
+
+### Links
+
+[^1]: Listed in alphabetical order.

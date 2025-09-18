@@ -1,4 +1,4 @@
-### Data Protection
+# Data Protection
 
 Privacy has become an important aspect of application security. GDPR, LGPD, CCPA and other laws and regulations have impose several controls over processing PII (Personally Identifiable Information). To comply with those regulations, DevSecOps have to be sure to use PII accordingly and protect data agains leaking.
 

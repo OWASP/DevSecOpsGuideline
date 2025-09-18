@@ -1,4 +1,4 @@
-## Pre-commit
+# Pre-commit
 
 The Pre-commit phase is important because it can prevent security issues before they are submitted to a central (Git) repository.
 
@@ -19,10 +19,16 @@ The following image can give you a better view of what the pre-commit means and 
 
 ![Pre Commit](/current-version/assets/images/pre-commit.png)
 
-## Tools
+---
 
-+ [Pre-Commit](https://pre-commit.com/) - A framework for managing and maintaining multi-language pre-commit hooks.
+## Tools[^1]
 
-### References
+### Open-source
 
-+ [Wikipedia - Lint (software)](https://en.wikipedia.org/wiki/Lint_(software))
+- [Pre-Commit](https://pre-commit.com/) - A framework for managing and maintaining multi-language pre-commit hooks.
+
+### Links
+
+- [Wikipedia - Lint (software)](https://en.wikipedia.org/wiki/Lint_(software))
+
+[^1]: Listed in alphabetical order.

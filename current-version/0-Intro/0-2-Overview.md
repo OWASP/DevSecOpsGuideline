@@ -1,4 +1,4 @@
-## DevSecOps Intro
+# DevSecOps Intro
 
 Today, DevOps is empowering any organizations to deploy changes to production environments at blazing rates.
 Since time to deliver is so important feature during this process, the main question for a security person is
@@ -7,7 +7,7 @@ In this regard, we can embed some security-related steps entire our DevOps proce
 So considering the DevSecOps or secure DevOps culture helps us to promote the shift-left security strategy in our company,
 at least in the tech department.
 
-### What's the Shift-left security strategy?
+## What's the Shift-left security strategy?
 
 As a simple definition, the shift-left security strategy is a way or solution to embedding security as a part of our development process
 and consider security from the inception steps of application or system design.
@@ -15,9 +15,9 @@ In other words, security is responsible for everyone who works in the software d
 Of course, security is a profession and we need highly skilled people to play security-related roles;
 but in this approach, any designer, software architecture, developer, DevOps engineer, and ... together with security guys have liability about security.
 
-### Dev+Sec+Ops
+## Dev+Sec+Ops
 
-<img align="right" width="200" height="180" src="/current-version/assets/images/DevSecOps.png">
+![DevSecOps Venn Diagram](/current-version/assets/images/DevSecOps.png)
 
 Suppose that these 3 different areas for covering each other is something like the image,
 so in conclusion with the above words, we need to implement some tools and working on promoting a DevSecOps culture too.
@@ -29,7 +29,7 @@ As Shannon Lietz - founder at DevSecOps foundation - said:
 > security decisions at speed and scale to those who hold the highest level of
 > context without sacrificing the safety required."
 
-### The DevSecOps culture
+## The DevSecOps culture
 
 As you heard before we want to talk about the Shift-left security.
 It means we should consider security from design (in a simple definition) which target is moving security earlier in the development process.
@@ -49,33 +49,33 @@ The following picture shows the differences between DevOps and DevSecOps lifecyc
 
 ![DevOps vs DevSecOps](/current-version/assets/images/DevOps-vs-DevSecOps.png)
 
-### Privacy
+## Privacy
 
 Privacy has become a major topic for companies of all sizes, since GDPR (Europe’s General Data Protection Regulations), CCPA (California Consumer Privacy Act), LGPD – Brazil’s Lei Geral de Proteção de Dados, and other laws and regulations are being enforced around the world.
 
 Applications that will process a large volume of PII (personally identifiable information) should adapt the DevSecOps to follow the Privacy by Design approach, where the development process addresses privacy concerns thru the whole cycle.
 
-### Software testing strategies
+## Software testing strategies
 
 When, we talk about testing we should have in mind
 we have different definitions in testing which is can change our route to achieving
 a secure DevSecOps cycle.
 Let's take look into this definitions.
 
-#### Different software testing strategies
+### Different software testing strategies
 
 1. **Positive testing**
 
-Positive testing assumes that, under normal conditions and inputs,
-everything will behave as expected.
-It is performed with the assumption that only valid and relevant things will happen:
-data set and all other functionalities will be as expected.
+   Positive testing assumes that, under normal conditions and inputs,
+   everything will behave as expected.
+   It is performed with the assumption that only valid and relevant things will happen:
+   data set and all other functionalities will be as expected.
 
 2. **Negative testing**
 
-Negative testing checks the system behavior under unexpected conditions.
-Negative testing plays a much important role in high-performance software development:
-it checks the software behavior under unexpected conditions and inputs.
+   Negative testing checks the system behavior under unexpected conditions.
+   Negative testing plays a much important role in high-performance software development:
+   it checks the software behavior under unexpected conditions and inputs.
 
 #### Methods of testing
 

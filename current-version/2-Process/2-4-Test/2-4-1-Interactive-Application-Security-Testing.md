@@ -9,24 +9,24 @@ IAST requires zero changes to the way teams build, test, and deploy code. IAST p
 IAST can be deployed to development servers, CI/CD pipelines, or quality assurances servers, or even while in production. Wherever the code runs, that's where IAST is installed, including servers, containers, virtual machines, cloud, and other environments. IAST is uniquely well suited for API security testing, as it overcomes the challenges SAST and DAST have with complex API code and data.
 
 IAST sensors have access to:
-+ Entire code
-+ Full HTTP request and response
-+ Data flow and control
-+ Configuration data
-+ Libraries and frameworks and how they are used
-+ Back-end connection data
+
+- Entire code
+- Full HTTP request and response
+- Data flow and control
+- Configuration data
+- Libraries and frameworks and how they are used
+- Back-end connection data
 
 This rich context makes IAST extremely accurate compared with traditional appsec testing tools and it enables IAST to deliver very detailed findings that enable developers to understand issues and fix them correctly. It also enables IAST to cover a very broad range of appsec vulnerabilities, including:
-+ Code issues like hardcoded secrets and weak encryption algorithms
-+ Data flow issues like injection and SSRF
-+ HTTP issues like clickjacking, parameter pollution, and missing headers
-+ Backend connection issues like SSRF
-+ Configuration issues like verb tampering and weak authentication
-+ and more...
 
+- Code issues like hardcoded secrets and weak encryption algorithms
+- Data flow issues like injection and SSRF
+- HTTP issues like clickjacking, parameter pollution, and missing headers
+- Backend connection issues like SSRF
+- Configuration issues like verb tampering and weak authentication
+- and more...
 
 One challenge with IAST is that only code that is exercised is tested. However, it's easy to use simple end-to-end "smoke" tests, or even a simple crawler, to generate this coverage. IAST does not require extensive functional testing, just basic end-to-end execution of routes.  Some IAST tools extract the set of routes from an application and simplify the process of getting to 100% route coverage.
-
 
 ---
 
@@ -40,21 +40,28 @@ One challenge with IAST is that only code that is exercised is tested. However, 
 
 ---
 
-### Tools
+## Tools[^1]
 
-+ [Contrast Assess](https://www.contrastsecurity.com/contrast-assess) and [Contrast Community Edition](https://www.contrastsecurity.com/contrast-community-edition)
-+ [Checkmarx Interactive Application Security Testing(CxIAST)](https://www.checkmarx.com/products/interactive-application-security-testing/)
-+ [Seeker Interactive Application Security Testing](https://www.synopsys.com/software-integrity/security-testing/interactive-application-security-testing.html)
-+ [HCL AppScan on Cloud](https://cloud.appscan.com)
+### Open-source
+
+### Commercial
+
+- [Checkmarx Interactive Application Security Testing(CxIAST)](https://www.checkmarx.com/products/interactive-application-security-testing/)
+- [Contrast Assess](https://www.contrastsecurity.com/contrast-assess) and [Contrast Community Edition](https://www.contrastsecurity.com/contrast-community-edition)
+- [HCL AppScan on Cloud](https://cloud.appscan.com)
+- [Seeker Interactive Application Security Testing](https://www.synopsys.com/software-integrity/security-testing/interactive-application-security-testing.html)
 
 ---
-### References
 
-+ [OWASP - Free IAST Tools](https://owasp.org/www-community/Free_for_Open_Source_Application_Security_Tools#:~:text=open%20source%20projects.-,IAST%20Tools,-IAST%20tools%20are)
-+ [Contrast Security - What is Interactive Application Security Testing?](https://www.contrastsecurity.com/knowledge-hub/glossary/interactive-application-security-testing)
-+ [Veracode - IAST](https://www.veracode.com/security/interactive-application-security-testing-iast)
-+ [Hdivsecurity - IAST](https://hdivsecurity.com/bornsecure/what-is-iast-interactive-application-security-testing/)
-+ [Synk - IAST](https://snyk.io/learn/iast-interactive-application-security-testing/)
-+ [Acunetix - IAST](https://www.acunetix.com/blog/web-security-zone/what-is-iast-interactive-application-security-testing/)
-+ [Contrast Security - Why the difference sast, dast, and iast mastters](https://www.contrastsecurity.com/security-influencers/why-the-difference-between-sast-dast-and-iast-matters)
-+ [Esecurityplanet - Application security vendors](https://www.esecurityplanet.com/products/application-security-vendors/)
+### Links
+
+- [Acunetix - IAST](https://www.acunetix.com/blog/web-security-zone/what-is-iast-interactive-application-security-testing/)
+- [Contrast Security - What is Interactive Application Security Testing?](https://www.contrastsecurity.com/knowledge-hub/glossary/interactive-application-security-testing)
+- [Contrast Security - Why the difference sast, dast, and iast mastters](https://www.contrastsecurity.com/security-influencers/why-the-difference-between-sast-dast-and-iast-matters)
+- [Esecurityplanet - Application security vendors](https://www.esecurityplanet.com/products/application-security-vendors/)
+- [Hdivsecurity - IAST](https://hdivsecurity.com/bornsecure/what-is-iast-interactive-application-security-testing/)
+- [OWASP - Free IAST Tools](https://owasp.org/www-community/Free_for_Open_Source_Application_Security_Tools#:~:text=open%20source%20projects.-,IAST%20Tools,-IAST%20tools%20are)
+- [Synk - IAST](https://snyk.io/learn/iast-interactive-application-security-testing/)
+- [Veracode - IAST](https://www.veracode.com/security/interactive-application-security-testing-iast)
+
+[^1]: Listed in alphabetical order.

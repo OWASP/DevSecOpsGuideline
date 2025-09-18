@@ -1,3 +1,5 @@
+# Policy as Code
+
 ## What is Policy
 
 In each company there are lots of rules, requirements, or procedures that must consider before deploying any application or product to be in production level, and other of them for other type of level like staging or developing. These rules, requirements, or procedures must check and pass and if there is any misconfiguration, process has to be suspend until it fix.
@@ -16,14 +18,22 @@ Having multiple security checklist in your organization will come to be time con
 
 **Faster and Efficient**: Efficiency is heightened as manual policy enforcement is eliminated, enabling dynamic updates and sharing of policies, thereby streamlining the process. Additionally, the combination of centralization and versioning fosters repeatability and idempotence in code execution. Repeatability ensures consistent code execution, while idempotence guarantees that repeated executions yield the same output. This reliability is crucial for instilling confidence among operators, empowering them to execute deployments without hesitation or fear.
 
-### Tools
+---
 
-- #### Open-source
+## Tools[^1]
 
-  - [OPA](https://www.openpolicyagent.org/) - Open Policy Agent (OPA) is an open source, general-purpose policy engine that enables unified, context-aware policy enforcement across the entire stack.
-  - [Kyverno](https://kyverno.io/) - Kyverno (Greek for “govern”) is a policy engine designed specifically for Kubernetes.
+### Open-source
 
-- #### Commercial
+- [Kyverno](https://kyverno.io/) - Kyverno (Greek for “govern”) is a policy engine designed specifically for Kubernetes.
+- [OPA](https://www.openpolicyagent.org/) - Open Policy Agent (OPA) is an open source, general-purpose policy engine that enables unified, context-aware policy enforcement across the entire stack.
 
-  - [Styra DAS](https://www.styra.com/pricing/) - Commercial tools for managing OPA at scale and created by the founders and maintainers of Open Policy Agent (OPA)
-  - [HashiCorp Sentinel](https://developer.hashicorp.com/sentinel) - A language and framework for policy built to be embedded in existing software to enable fine-grained, logic-based policy decisions.
+### Commercial
+
+- [HashiCorp Sentinel](https://developer.hashicorp.com/sentinel) - A language and framework for policy built to be embedded in existing software to enable fine-grained, logic-based policy decisions.
+- [Styra DAS](https://www.styra.com/pricing/) - Commercial tools for managing OPA at scale and created by the founders and maintainers of Open Policy Agent (OPA)
+
+---
+
+### Links
+
+[^1]: Listed in alphabetical order.

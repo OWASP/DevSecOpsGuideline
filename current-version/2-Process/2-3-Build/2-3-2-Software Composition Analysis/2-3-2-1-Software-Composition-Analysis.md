@@ -1,4 +1,4 @@
-### Software Component/Composition Analysis (SCA)
+# Software Component/Composition Analysis (SCA)
 
 Software Component Analysis is the process of automating application security for managing third-party and open-source components of the codebase. SCA will find any potentially vulnerable components in our codebase to prevent high-security risks like **Supply-Chain Attack**, not only that but also provide licensing for each component. By doing this, it helps organizations to reduce security risks in their codebase libraries and needs to be early in the modern software development life cycle.
 
@@ -36,27 +36,31 @@ TBD
 
 ---
 
-### Tools
+## Tools[^1]
 
-- #### Open-source
+### Open-source
 
-  - [OWASP Dependency-Track](https://owasp.org/www-project-dependency-track/) - Dependency-Track is an intelligent Component Analysis platform that allows organizations to identify and reduce risk in the software supply chain. It takes a unique and highly beneficial approach by leveraging the capabilities of Software Bill of Materials (SBOM).
-  - [OWASP Dependency-check](https://owasp.org/www-project-dependency-check) - Software Composition Analysis (SCA) tool that attempts to detect publicly disclosed vulnerabilities contained within a project’s dependencies and it supports Java, .NET, JavaScript, Ruby
-  - [OWASP CycloneDX](https://cyclonedx.org/) - SBOM standard format with many [compatible generators](https://cyclonedx.org/tool-center/) and support for SPDX license IDs and expressions.
-  - [OWASP dep-scan](https://owasp.org/www-project-dep-scan/) - Audit tool based on known vulnerabilities for repositories in multiple languages and containers. Generates SBOM and CSAF documents.
-  - [RetireJS](https://github.com/RetireJS/retire.js) - JavaScript-specific dependency checker
-  - [Safety](https://github.com/pyupio/safety) - Python dependency checker for known security vulnerabilities
-  - [bundler-audit](https://github.com/rubysec/bundler-audit) - Patch-level verification for Bundler (Auditing Ruby 3rd party libs versions)
+- [bundler-audit](https://github.com/rubysec/bundler-audit) - Patch-level verification for Bundler (Auditing Ruby 3rd party libs versions)
+- [OWASP CycloneDX](https://cyclonedx.org/) - SBOM standard format with many [compatible generators](https://cyclonedx.org/tool-center/) and support for SPDX license IDs and expressions.
+- [OWASP dep-scan](https://owasp.org/www-project-dep-scan/) - Audit tool based on known vulnerabilities for repositories in multiple languages and containers. Generates SBOM and CSAF documents.
+- [OWASP Dependency-check](https://owasp.org/www-project-dependency-check) - Software Composition Analysis (SCA) tool that attempts to detect publicly disclosed vulnerabilities contained within a project’s dependencies and it supports Java, .NET, JavaScript, Ruby
+- [OWASP Dependency-Track](https://owasp.org/www-project-dependency-track/) - Dependency-Track is an intelligent Component Analysis platform that allows organizations to identify and reduce risk in the software supply chain. It takes a unique and highly beneficial approach by leveraging the capabilities of Software Bill of Materials (SBOM).
+- [RetireJS](https://github.com/RetireJS/retire.js) - JavaScript-specific dependency checker
+- [Safety](https://github.com/pyupio/safety) - Python dependency checker for known security vulnerabilities
 
-- #### Commercial
+### Commercial
 
-  - [Hakiri](https://hakiri.io/) - A commercial tool that offers dependency checking for Ruby and Rails-based GitHub projects using static code analysis
-  - [HCL AppScan on Cloud](https://cloud.appscan.com) - SAST tool built as a service that can perform both SAST, SCA & IaC at the same time.
-  - [Snyk](https://snyk.io/) - SCA tool offer as a SaaS solution.
-  - [WhiteSource](https://www.whitesourcesoftware.com/) - WhiteSource identifies every open source component in your software, including dependencies. It then secures you from vulnerabilities and enforces license policies throughout the software development lifecycle.
-  - [Synopsys BlackDuck](https://www.blackducksoftware.com/) - Black Duck automated policy management allows you to define policies for open source use, security risk, and license compliance up front, and automate enforcement across the software development life cycle (SDLC).
+- [Hakiri](https://hakiri.io/) - A commercial tool that offers dependency checking for Ruby and Rails-based GitHub projects using static code analysis
+- [HCL AppScan on Cloud](https://cloud.appscan.com) - SAST tool built as a service that can perform both SAST, SCA & IaC at the same time.
+- [Snyk](https://snyk.io/) - SCA tool offer as a SaaS solution.
+- [Synopsys BlackDuck](https://www.blackducksoftware.com/) - Black Duck automated policy management allows you to define policies for open source use, security risk, and license compliance up front, and automate enforcement across the software development life cycle (SDLC).
+- [WhiteSource](https://www.whitesourcesoftware.com/) - WhiteSource identifies every open source component in your software, including dependencies. It then secures you from vulnerabilities and enforces license policies throughout the software development lifecycle.
 
-### References
+---
+
+### Links
 
 - [SCA - OWASP](https://owasp.org/www-community/Component_Analysis)
 - [SBOM - OWASP](https://owasp.org/www-community/Component_Analysis#software-bill-of-materials-sbom)
+
+[^1]: Listed in alphabetical order.
