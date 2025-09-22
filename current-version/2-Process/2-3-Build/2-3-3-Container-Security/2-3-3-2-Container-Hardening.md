@@ -1,7 +1,8 @@
-## Container Hardening
+# Container Hardening
+
 Containers have revolutionized the way applications are deployed and managed, offering flexibility and scalability. However, like any other technology, containers are not immune to security risks. To mitigate these risks, it is crucial to implement container hardening practices. This document outlines best practices and guidelines for securing containers and provides references for further information.
 
-### Container Hardening Best Practices
+## Container Hardening Best Practices
 
 - **Use Only Trusted Base Images**
 Ensure that you use base images from trusted sources, such as official repositories or reputable vendors. Regularly update base images to include the latest security patches and fixes.
@@ -34,9 +35,11 @@ Implement logging and monitoring mechanisms to detect and respond to security in
 Protect container images by securing the container registry. Implement authentication, access controls, and encryption to ensure that only authorized users can access and modify container images.
 
 ---
-### References
-+ [Docker Security](https://docs.docker.com/engine/security/)
-+ [Kubernetes Security](https://kubernetes.io/docs/concepts/security/)
-+ [CIS Benchmarks for Docker and Kubernetes](https://www.cisecurity.org/benchmark/docker/)
-+ [OWASP Docker Security Project](https://owasp.org/www-project-docker-security/)
-+ [NIST Special Publication 800-190: Application Container Security Guide](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-190.pdf)
+
+### Links
+
+- [CIS Benchmarks for Docker and Kubernetes](https://www.cisecurity.org/benchmark/docker/)
+- [Docker Security](https://docs.docker.com/engine/security/)
+- [Kubernetes Security](https://kubernetes.io/docs/concepts/security/)
+- [NIST Special Publication 800-190: Application Container Security Guide](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-190.pdf)
+- [OWASP Docker Security Project](https://owasp.org/www-project-docker-security/)
