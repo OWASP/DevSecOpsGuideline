@@ -1,0 +1,77 @@
+---
+# pre-commit install --allow-missing-config &&  pre-commit autoupdate && pre-commit run --all-files --color auto
+exclude: |
+  (?x)^(
+    old-versions/.*
+  )
+fail_fast: true
+default_stages:
+  - pre-commit
+default_language_version:
+  python: python3.13
+default_install_hook_types:
+  - commit-msg
+  - pre-commit
+ci:
+  autoupdate_schedule: monthly
+repos:
+  - repo: meta
+    hooks:
+      - id: identity
+        name: "meta | pre-commit hooks"
+        stages:
+          - manual
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        name: "git | block large files"
+        args: [--maxkb=2048]
+      - id: check-json
+        name: "general | check JSON files"
+      - id: check-toml
+        name: "general | check TOML files"
+      - id: check-xml
+        name: "general | check XML files"
+      - id: check-yaml
+        name: "general | check YAML files"
+      - id: end-of-file-fixer
+        name: "general | fix end of file"
+      - id: forbid-new-submodules
+        name: "git | forbid new submodules"
+      - id: forbid-submodules
+        name: "git | forbid submodules usage"
+      - id: mixed-line-ending
+        name: "general | fix line ending"
+        args:
+          - --fix=auto
+      - id: pretty-format-json
+        name: "general | prettify JSON files"
+        args:
+          - --autofix
+          - --no-ensure-ascii
+      - id: trailing-whitespace
+        name: "general | remove trailing whitespace"
+  - repo: local
+    hooks:
+      - id: pin-github-action
+        name: "gh-action | lint: pinned sha"
+        files: ^\.github/workflows/[^/]+\.ya?ml$
+        entry: "pin-github-action ."
+        language: node
+        additional_dependencies:
+          - pin-github-action@3.4.0
+        stages:
+          - manual
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.45.0
+    hooks:
+      - id: markdownlint
+        name: "md | lint: run markdownlint-cli"
+        args:
+          - --config
+          - .config/.markdown-lint.yml
+        exclude: |
+          (?x)^(
+            doc-utilities/scripts/toc.md
+          )
