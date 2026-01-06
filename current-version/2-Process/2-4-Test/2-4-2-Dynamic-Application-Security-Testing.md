@@ -30,7 +30,8 @@ DAST tools allow for extensive scans from the client side and server side withou
 - [InsightAppSec (AppSpider)](https://www.rapid7.com/products/insightappsec) - Application security testing for the modern web
 - [Netsparker](https://www.netsparker.com) - It can identify vulnerabilities in all types of modern web applications, regardless of the underlying architecture or platform
 - [Nuclei](https://github.com/projectdiscovery/nuclei) - Fast and customisable vulnerability scanner based on simple YAML based DSL.
-- [Veracode Dynamic Analysis](https://www.veracode.com/products/dynamic-analysis-dast) - Veracode Dynamic Analysis helps companies scan their web applications for exploitable vulnerabilities at scale
+- [Veracode Dynamic Analysis](https://www.veracode.com/products/dynamic-analysis-dast) - Veracode Dynamic Analysis helps companies scan their web applications for exploitable vulnerabilities at scale.
+- [Escape DAST](https://escape.tech) - Escape DAST is purposely built for testing for business logic vulnerabilities at scale and handling complex auth scenarios in modern applications: APIs (including GraphQL) and Single Page Apps (SPAs)
 
 ---
 
