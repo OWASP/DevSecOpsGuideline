@@ -31,8 +31,8 @@ Utilize security features provided by container runtimes, such as SELinux, AppAr
 - **Monitor Container Activity**
 Implement logging and monitoring mechanisms to detect and respond to security incidents. Monitor container behavior, access logs, and system logs to identify any suspicious activity.
 
-- **Secure Container Registry**
-Protect container images by securing the container registry. Implement authentication, access controls, and encryption to ensure that only authorized users can access and modify container images.
+- **Secure Container Registry and supply chain**
+Protect container images by securing the container registry. Implement authentication, access controls, and encryption to ensure that only authorized users can access and modify container images. Thus, enforce image signing and verification (with Notary, Sigstore) and only allow deployment of signed, policy‑compliant images from approved registries into production environments
 
 ---
 
