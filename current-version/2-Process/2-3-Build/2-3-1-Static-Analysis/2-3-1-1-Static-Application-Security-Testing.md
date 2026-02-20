@@ -50,3 +50,5 @@ So according to the above lines the possible actions in this step are as follows
 ### Links
 
 [^1]: Listed in alphabetical order.
+
+- [AppSec Santa — SAST Tools Comparison](https://appsecsanta.com/sast-tools) - Independent comparison of 30+ SAST tools
