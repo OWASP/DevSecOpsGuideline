@@ -69,3 +69,5 @@ Supply chain attacks involve exploiting vulnerabilities in the interconnected ne
 - [SBOM - OWASP](https://owasp.org/www-community/Component_Analysis#software-bill-of-materials-sbom)
 
 [^1]: Listed in alphabetical order.
+
+- [AppSec Santa — SCA Tools Comparison](https://appsecsanta.com/sca-tools) - Independent comparison of SCA tools with features and alternatives
