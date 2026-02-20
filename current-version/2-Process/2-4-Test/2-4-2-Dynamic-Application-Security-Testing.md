@@ -41,3 +41,5 @@ DAST tools allow for extensive scans from the client side and server side withou
 - [RAPID7 - Dynamic Application Security Testing](https://www.rapid7.com/fundamentals/dast/)
 
 [^1]: Listed in alphabetical order.
+
+- [AppSec Santa — DAST Tools Comparison](https://appsecsanta.com/dast-tools) - Independent comparison of DAST tools with features and alternatives
