@@ -66,7 +66,60 @@ Scan at multiple points so nothing slips through:
   with:
     sarif_file: trivy-results.sarif
 ```
+## Combining multiple scanners for container image scanning
 
+Running more than one scanner against the same container images is worth the extra CI execution time. Different scanners pull from different vulnerability databases and advisory sources, so their findings often only partially overlap. For example, a typical pipeline might run Trivy for OS-level packages and OSV-Scanner for application-level dependencies within the container.
+
+When running two scanners against the same container image, exit codes must be handled explicitly. Exit code semantics differ per tool:
+*   **Trivy** exits `0` by default regardless of findings; any non-zero exit means the scanner itself crashed.
+*   **OSV-Scanner** uses exit code `1` to mean "scan completed, vulnerabilities found." 
+
+If you run OSV-Scanner natively in a pipeline, it will break the build prematurely before the final gate can evaluate the findings. You must normalize its specific exit code to a success state so the overarching CI gate can read the generated SARIF files.
+
+```yaml
+# Example: dual-scanner image scan in GitHub Actions
+- name: Build image
+  run: docker build -t myapp:${{ github.sha }} .
+
+- name: Scan image with Trivy
+  run: |
+    trivy image myapp:${{ github.sha }} \
+      --format sarif \
+      --output trivy-results.sarif
+
+- name: Scan image with OSV-Scanner
+  # Normalizes exit code 1 (vulnerabilities found) to 0, but fails on actual crashes (e.g., exit 2)
+  run: |
+    osv-scanner scan image myapp:${{ github.sha }} \
+      --format sarif \
+      --output-file osv-scanner-results.sarif || \
+      { [ $? -eq 1 ] && echo "Vulnerabilities found, deferring to SARIF gate" || exit 1; }
+```
+
+### Centralizing the Gate Decision to Prevent Alert Fatigue
+
+Neither tool's normalized exit code should serve as the final pass/fail decision for the pipeline. Failing a build on every low-severity finding guarantees developer alert fatigue and ensures the security gate will eventually be bypassed. 
+
+Because both tools produce standardized SARIF output, the pipeline should defer the final verdict to a central security script that parses the `security-severity` scores. The gate should only block the pipeline if a specific, intolerable risk threshold is met (e.g., CVSS >= 8.0).
+
+```python
+# Pseudocode: Extracting severity to prevent alert fatigue
+threshold = 8.0
+max_score = 0.0
+
+# Parse the normalized SARIF outputs from both scanners
+for sarif_file in ["trivy-results.sarif", "osv-scanner-results.sarif"]:
+    results = parse_sarif(sarif_file)
+    for finding in results:
+        if finding.cvss_score > max_score:
+            max_score = finding.cvss_score
+
+# Gate decision: Only fail the build for high/critical vulnerabilities
+if max_score >= threshold:
+    fail_pipeline(f"Gate failed: CVSS {max_score} found. Immediate remediation required.")
+else:
+    pass_pipeline("Gate passed: Vulnerabilities are below the blocking threshold.")
+```
 ## Generating SBOMs from container images
 
 Container scanning and SBOM generation are complementary. Generate an SBOM from the built image to capture exactly what packages are present at runtime — not what the source code imports, but what the image actually contains:
