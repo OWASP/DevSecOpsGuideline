@@ -96,6 +96,8 @@ def gate_status(score: float) -> str:
 | `FAILED` | Highest score is 8.0 or above | **Yes** |
 | `ERROR` | A scanner crashed, subprocess failed, or produced malformed SARIF | **Yes** |
 
+The thresholds above (5.0, 8.0) are examples, not a prescribed standard. Each organization should set its own thresholds based on its risk tolerance, the criticality of the affected system, and its remediation capacity.
+
 Treating "scanner crashed" as its own `ERROR` state, distinct from `FAILED`, matters: a gate that only checks whether anything failed on severity will silently pass a pipeline where a scanner never actually ran.
 
 ### The exit code trap
