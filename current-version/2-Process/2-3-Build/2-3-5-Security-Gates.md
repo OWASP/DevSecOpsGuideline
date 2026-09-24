@@ -34,6 +34,107 @@ The hard part is not adding gates; it is designing gates that reduce risk **with
   env:
     SEMGREP_BASELINE_REF: ${{ github.base_ref }}  # diff-aware: new findings only
 ```
+## Normalizing multi-scanner output into a single gate decision
+
+Real pipelines rarely run a single scanner. A typical SCA stage, for example, might run both an application dependency scanner (e.g., OSV-Scanner) and a container/SBOM scanner (e.g., Trivy) to get broader vulnerability database coverage. Each tool produces its own result, its own exit code semantics, and its own idea of "severity". Without normalization, you end up with N independent pass/fail signals instead of one gate decision, and inconsistent exit code handling across tools becomes a silent source of false negatives.
+
+### Standardize on SARIF as the common interface
+
+Most modern scanners can emit [SARIF](https://sarifweb.azurewebsites.net/) (Static Analysis Results Interchange Format). SARIF's `security-severity` property (under each rule's `properties`) is typically populated with a CVSS-like score, which gives you a single numeric field to gate on regardless of which tool produced the finding.
+
+```python
+# Read every SARIF file produced by the pipeline's scanners and
+# return the single highest security-severity score found across all of them.
+import json
+import logging
+
+def max_severity(sarif_paths: list[str]) -> float:
+    max_score = 0.0
+    for path in sarif_paths:
+        try:
+            with open(path) as f:
+                sarif = json.load(f, strict=False)
+        except (json.JSONDecodeError, FileNotFoundError) as e:
+            logging.error(f"Failed to parse SARIF file {path}: {e}")
+            return -1.0 # Explicitly signal a tool ERROR state
+
+        for run in sarif.get("runs", []):
+            rules = run.get("tool", {}).get("driver", {}).get("rules", [])
+            severities = {
+                r.get("id"): r.get("properties", {}).get("security-severity")
+                for r in rules if r.get("id")
+            }
+            for result in run.get("results", []):
+                score = severities.get(result.get("ruleId"))
+                if score is not None:
+                    try:
+                        max_score = max(max_score, float(score))
+                    except ValueError:
+                        logging.warning(f"Invalid security-severity value: {score}")
+                        continue
+
+    return max_score
+```
+
+### Map the score to a gate decision
+
+```python
+def gate_status(score: float) -> str:
+    if score < 0.0:
+        return "ERROR"      # tool crashed or output is malformed
+    if score >= 8.0:
+        return "FAILED"     # block the pipeline
+    if score >= 5.0:
+        return "WARNING"    # log only, do not block
+    return "PASSED"
+```
+
+| Status | Meaning | Blocks the pipeline? |
+|---|---|---|
+| `PASSED` | Highest score across all scanners is below 5.0 | No |
+| `WARNING` | Highest score is 5.0 to 7.9 | No (logged only) |
+| `FAILED` | Highest score is 8.0 or above | **Yes** |
+| `ERROR` | A scanner crashed, subprocess failed, or produced malformed SARIF | **Yes** |
+
+The thresholds above (5.0, 8.0) are examples, not a prescribed standard. Each organization should set its own thresholds based on its risk tolerance, the criticality of the affected system, and its remediation capacity.
+
+Treating "scanner crashed" as its own `ERROR` state, distinct from `FAILED`, matters: a gate that only checks whether anything failed on severity will silently pass a pipeline where a scanner never actually ran.
+
+### The exit code trap
+
+Do not assume a non-zero exit code always means vulnerabilities were found, or that zero always means the scan is clean. Exit code semantics differ per tool and must be normalized individually. For example, OSV-Scanner uses exit code `1` to mean "scan completed, vulnerabilities were found," not a tool failure. Treating that as a pipeline error would incorrectly flag every scan with findings as broken, rather than letting the SARIF based gate decide pass, warn, or fail on its own terms:
+
+```python
+def run_osv_scanner(cmd: list[str]) -> int:
+    exit_code = subprocess.run(cmd).returncode
+    if exit_code == 1:
+        # OSV-Scanner returns 1 when vulnerabilities are found, not a crash.
+        # The real pass/warn/fail decision comes later, from the SARIF scores.
+        return 0
+    return exit_code
+```
+
+Each scanner's documentation should be checked individually for this distinction before wiring it into a gate. Some tools, like Trivy by default, exit `0` regardless of findings, so any non-zero exit from them is a genuine tool failure.
+
+### Enforcing the gate in CI
+
+Once the orchestrator has parsed the SARIF files and determined the final severity score, it must translate that decision into a pipeline action. In CI/CD environments (like GitHub Actions, GitLab CI, or Jenkins), this is achieved by exiting the orchestrator script with a non-zero exit code to block the merge or deployment.
+
+```python
+import sys
+
+def enforce_pipeline_gate(status: str):
+    """
+    Halts the CI pipeline if the status is FAILED or ERROR.
+    """
+    if status in ("FAILED", "ERROR"):
+        # Writing to stderr ensures CI systems prominently display the failure reason
+        print(f"::error::Security gate {status}. Halting pipeline.", file=sys.stderr)
+        sys.exit(1) 
+    
+    print(f"Security gate {status}. Pipeline may proceed.")
+    sys.exit(0)
+```
 
 ## Exception and risk-acceptance process
 
