@@ -74,7 +74,7 @@ tags:
   - attack.t1110
 ```
 
-[Sigma](https://github.com/SigmaHQ/sigma) is the vendor-neutral format; rules translate to Splunk SPL, Elastic KQL, and other query languages automatically.
+[Sigma](https://github.com/SigmaHQ/sigma) is the vendor-neutral format; rules translate to Splunk SPL, Elastic KQL, and other query languages automatically. [RSigma](https://github.com/timescale/rsigma) is an open-source toolkit that lints and tests those rules, evaluates them against log events, and converts them to backend queries.
 
 ### MITRE ATT&CK mapping
 
@@ -124,6 +124,7 @@ An alert that nobody can act on is worse than none — it trains the team to ign
 - [Grafana + Loki](https://grafana.com/oss/loki/) — Log aggregation and visualization; Loki indexes metadata (labels), not full text, making it cost-efficient at scale; best when paired with the Grafana observability stack.
 - [OpenSearch](https://opensearch.org/) — Search, analytics, and log analysis suite (AWS-maintained Elasticsearch fork); strong query capabilities and Dashboards UI; good for teams already using Elasticsearch.
 - [Prometheus](https://prometheus.io/) — Metrics-based monitoring and alerting; pair with Grafana for dashboards; does not handle logs (use with Loki for full observability).
+- [RSigma](https://github.com/timescale/rsigma) — Sigma detection engineering toolkit; lint, test, and evaluate rules against logs in real time, and convert them to SIEM queries.
 - [Sigma](https://github.com/SigmaHQ/sigma) — Open standard for detection rules; write once, compile to any SIEM query language.
 - [Wazuh](https://wazuh.com/) — Open-source SIEM with threat detection, file integrity monitoring, vulnerability detection, and compliance dashboards.
 
