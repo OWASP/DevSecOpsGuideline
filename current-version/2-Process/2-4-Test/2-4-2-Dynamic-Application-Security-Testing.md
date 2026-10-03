@@ -211,6 +211,7 @@ DAST belongs in the Test stage against a running build, and can also run continu
 
 ### Open-source
 
+- [Darkmoon](https://github.com/ASCIT31/Dark-Moon) — Open-source (GPLv3) autonomous AI penetration-testing CLI that runs black-box, DAST-style assessments against a running application; 50 specialist agents orchestrate 140+ offensive tools over MCP, runs on a local or cloud LLM, and integrates with CI via a GitHub Action and a GitLab CI/CD component.
 - [Nikto](https://github.com/sullo/nikto) — Web server scanner for known vulnerabilities and misconfigurations; fast and simple, best for quick server-level checks on infrastructure rather than application logic.
 - [Nuclei](https://github.com/projectdiscovery/nuclei) — Fast, template-based vulnerability scanner with a massive community template library; ideal for targeted checks, custom business-logic tests, and CVE-specific validation. Highly scriptable.
 - [OWASP ZAP](https://www.zaproxy.org/) — Full-featured web application scanner and intercepting proxy; the most widely used open-source DAST tool with strong CI/CD integrations (GitHub Actions, Jenkins, GitLab CI). Best general-purpose DAST starting point.
