@@ -8,7 +8,7 @@ Unprotected branches are the most common repository vulnerability. Every commit 
 
 **GitHub branch protection settings to enable:**
 
-```
+```text
 Branch protection rule for: main, master, release/*
   [x] Require a pull request before merging
        [x] Require approvals: 2
@@ -27,7 +27,7 @@ Branch protection rule for: main, master, release/*
 
 **CODEOWNERS** ensures that changes to high-risk paths require review from the team that owns them:
 
-```
+```text
 # .github/CODEOWNERS
 # Auth and crypto: require security team review
 /src/auth/           @org/security-team
@@ -89,6 +89,7 @@ Tags feed the release pipeline. An attacker who can move or delete a tag can mak
 ```
 
 Sign release tags:
+
 ```bash
 git tag -s v1.2.3 -m "Release v1.2.3"
 git push origin v1.2.3

@@ -92,13 +92,15 @@ spec:
 ## OPA integration in CI — step by step
 
 1. **Install Conftest** in your CI image or as a binary download step:
+
    ```bash
    wget https://github.com/open-policy-agent/conftest/releases/download/v0.50.0/conftest_0.50.0_Linux_x86_64.tar.gz
    tar xzf conftest_*.tar.gz && mv conftest /usr/local/bin/
    ```
 
 2. **Store policies** in a `policy/` directory in your repo (or reference a shared OCI bundle):
-   ```
+
+   ```text
    policy/
      deny_latest_tag.rego
      require_non_root.rego
@@ -106,6 +108,7 @@ spec:
    ```
 
 3. **Run in CI** against generated Kubernetes manifests before applying:
+
    ```bash
    helm template my-app ./chart > rendered.yaml
    conftest test rendered.yaml --policy ./policy/

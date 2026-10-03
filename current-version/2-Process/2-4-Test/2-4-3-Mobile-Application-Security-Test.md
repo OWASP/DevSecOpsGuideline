@@ -27,29 +27,35 @@ A mobile banking app should target L2 + R. A general consumer utility app target
 Mobile introduces threat vectors that do not exist in web apps:
 
 ### Data storage
+
 - Sensitive data in unprotected `SharedPreferences` (Android) or `NSUserDefaults` (iOS) — readable by any app with filesystem access on a rooted device
 - Cleartext credentials in SQLite databases, log files, or OS-level screenshot captures
 - Auto-backup to cloud (Android) and iCloud (iOS) may exfiltrate data unintentionally
 
 ### Transport and certificate security
+
 - **Certificate pinning bypass** — on rooted/jailbroken devices, an attacker can install a custom CA (e.g., Burp Suite CA) to MitM all TLS traffic. Apps handling sensitive data should implement certificate pinning and detect bypass attempts.
 - Missing or misconfigured Network Security Config (Android) or App Transport Security (iOS) allows cleartext HTTP
 
 ### Authentication and biometrics
+
 - Biometric authentication (Face ID, fingerprint) can be bypassed at the OS level on compromised devices. The app must use hardware-backed biometric APIs (Android BiometricPrompt with `BIOMETRIC_STRONG`, iOS LocalAuthentication with `.deviceOwnerAuthenticationWithBiometrics`) and must not fall back to PIN trivially.
 - JWT or session tokens stored in SharedPreferences or NSUserDefaults instead of Android Keystore / iOS Keychain are readable on rooted devices
 
 ### Deep links and inter-app communication
+
 - Unvalidated deep links accept attacker-controlled URLs that invoke privileged in-app actions
 - Android Intents with exported Activities/Services/Broadcast Receivers that lack permission checks allow any app to trigger internal functionality
 - iOS Universal Links require proper apple-app-site-association configuration; improper setup allows link hijacking
 
 ### Reverse engineering
+
 - Debug builds with `android:debuggable="true"` allow arbitrary code injection via `adb`
 - Hardcoded API keys, encryption keys, or credentials in `strings.xml`, `BuildConfig`, or `Info.plist`
 - Unobfuscated business logic exposes algorithms, backend endpoints, and internal decision trees to competitors or attackers
 
 ### Jailbreak and root detection
+
 - On jailbroken (iOS) or rooted (Android) devices, security controls enforced by the OS (sandboxing, Keychain isolation, certificate pinning) may be bypassed. L2/R apps should detect and respond to compromised device states.
 
 ## What to test (organized by MASVS category)

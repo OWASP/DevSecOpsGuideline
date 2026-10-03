@@ -10,7 +10,7 @@ A VDP is the baseline: a published policy that invites anyone to report vulnerab
 
 **`security.txt`** — publish a standardized [security.txt](https://securitytxt.org/) file at `/.well-known/security.txt` so automated tools and researchers can find your contact and policy:
 
-```
+```text
 Contact: mailto:security@yourcompany.com
 Expires: 2026-12-31T00:00:00.000Z
 Acknowledgments: https://yourcompany.com/security/hall-of-fame
@@ -19,6 +19,7 @@ Preferred-Languages: en
 ```
 
 **Clear policy** — a published disclosure policy must address:
+
 - Scope: which systems, domains, and products are in scope and explicitly out of scope.
 - How to report: encrypted email (PGP key), web form, or platform (HackerOne, Bugcrowd).
 - What to expect: acknowledgment SLA, validation SLA, disclosure timeline.
@@ -43,6 +44,7 @@ Nothing discourages researchers faster than silence. A VDP with poor triage is w
 ### Legal and regulatory considerations
 
 VDPs are increasingly expected or required:
+
 - [CISA](https://www.cisa.gov/resources-tools/resources/guidance-coordinated-vulnerability-disclosure-processes) recommends all US federal agencies maintain a VDP; many civilian agencies are required to.
 - [ISO/IEC 29147](https://www.iso.org/standard/72311.html) covers vulnerability disclosure processes; [ISO/IEC 30111](https://www.iso.org/standard/69725.html) covers vulnerability handling.
 - The EU Cyber Resilience Act will require coordinated vulnerability disclosure for products with digital elements.
@@ -55,6 +57,7 @@ A bug bounty program adds **financial incentives** on top of a VDP, attracting m
 ### Readiness prerequisites
 
 Before launching a bug bounty:
+
 - A working VDP with demonstrated SLA adherence.
 - A vulnerability management system capable of handling a sustained inflow of reports.
 - Dedicated triage capacity (internal security team or managed triage from the platform).

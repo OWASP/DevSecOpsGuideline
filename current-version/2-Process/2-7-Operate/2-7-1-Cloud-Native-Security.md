@@ -21,12 +21,14 @@ By correlating signals across these layers — and back to code — CNAPP priori
 ### Threat detection with eBPF
 
 Modern runtime protection uses **eBPF** (extended Berkeley Packet Filter) to attach observers to the Linux kernel without loadable kernel modules, providing:
+
 - Full syscall visibility at near-zero overhead.
 - Process lineage: which parent spawned which child, with what arguments.
 - Network connection tracking: which process opened which socket to which destination.
 - File access: reads/writes to sensitive paths (`/etc/shadow`, credential files, PKI directories).
 
 Falco uses eBPF to apply declarative rules against this stream:
+
 ```yaml
 # Falco rule: detect shell spawned inside a container
 - rule: Terminal Shell in Container
@@ -62,6 +64,7 @@ Then add explicit allow rules for required communication paths only. Use a servi
 ### Drift detection
 
 Alert when the running state diverges from the declared, reviewed GitOps state:
+
 - A Kubernetes admission controller prevented a bad deploy — but a manual `kubectl exec` that modifies a running container is drift.
 - IaC defined a security group — but an operator added an inbound rule in the console. CSPM catches this and alerts.
 - Detect file integrity changes inside containers (writes to binary directories, new executables) as indicators of compromise.
@@ -69,6 +72,7 @@ Alert when the running state diverges from the declared, reviewed GitOps state:
 ### Workload identity
 
 Static secrets embedded in workloads are a persistent attack surface. Use platform-native workload identity instead:
+
 - **AWS IRSA** (IAM Roles for Service Accounts) — Kubernetes pods assume AWS IAM roles via short-lived OIDC tokens; no AWS access keys stored anywhere.
 - **GCP Workload Identity Federation** — analogous for GCP services.
 - **SPIFFE/SPIRE** — standards-based workload identity for cross-cloud and non-cloud workloads; issues short-lived X.509 SVIDs.

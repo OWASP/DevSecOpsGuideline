@@ -24,7 +24,7 @@ Log4Shell is the clearest argument for continuous SCA with full transitive depen
 
 A direct dependency is a package your team explicitly chose. A transitive dependency is everything that package depends on — and everything *those* packages depend on. The depth can be surprising:
 
-```
+```text
 your-app
 └── web-framework@4.2.0          (direct)
     └── http-client@2.1.0        (transitive, depth 1)
@@ -38,7 +38,7 @@ In this example, your application never imported Log4j, but it ships inside the 
 
 SCA tools and SBOMs use **Package URLs (PURLs)** to uniquely identify components across ecosystems:
 
-```
+```text
 pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1
 pkg:npm/%40angular/core@16.0.0
 pkg:pypi/requests@2.31.0
@@ -52,6 +52,7 @@ PURLs enable unambiguous cross-tool correlation: when an SBOM, a scanner, and a 
 Most dependency CVEs are never actually exploitable in a given application. Standard SCA flags every known CVE regardless of whether the vulnerable code is called. **Reachability analysis** goes further: it builds a call graph of your application code and determines whether execution can actually reach the vulnerable function.
 
 How it works:
+
 1. Identify the vulnerable function(s) named in the CVE advisory (e.g., `JndiLookup.lookup()` in Log4Shell).
 2. Build a call graph from the application's entry points (API handlers, message consumers, scheduled jobs).
 3. Determine if any path in the call graph reaches the vulnerable function.
@@ -71,6 +72,7 @@ Vulnerability Exploitability eXchange (VEX) is a machine-readable statement decl
 | `under_investigation` | Impact assessment is in progress. |
 
 **Step-by-step VEX workflow:**
+
 1. SCA scanner flags CVE-YYYY-NNNN in a dependency.
 2. Developer or security engineer investigates: is the vulnerable code path reachable? Is the affected feature enabled?
 3. If not reachable: create a `not_affected` VEX statement with justification (e.g., "vulnerable HTTP server module never initialized; application uses embedded server").
@@ -103,11 +105,13 @@ Apply the block policy to pull requests (new findings only, vs. baseline). Apply
 ## SCA in monorepos
 
 Monorepos introduce additional complexity:
+
 - Multiple language ecosystems in one repository (Go services, Python scripts, Node frontends).
 - Shared internal libraries with their own dependency trees.
 - Different release cadences per service within the same repo.
 
 Best practices for monorepo SCA:
+
 - Configure the scanner to detect package manifests recursively (`--recursive` in most tools).
 - Tag findings with the service or module path so ownership is clear.
 - Generate per-service SBOMs, not a single monorepo SBOM — downstream consumers need component scope, not the entire monorepo inventory.

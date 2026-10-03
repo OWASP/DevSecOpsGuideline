@@ -17,6 +17,7 @@ The release stage is the final checkpoint before software leaves the build pipel
 Once released, an artifact must never change. Any fix produces a new versioned artifact. Without this guarantee, a "tested" artifact can be silently substituted for a malicious one, and the test results become meaningless.
 
 Enforce immutability technically:
+
 - Enable **tag immutability** in your container registry (AWS ECR, GitHub Packages, Artifactory) so a published tag cannot be overwritten.
 - Use **content-addressable references** (image digest `sha256:...`) in deployment manifests, not mutable tags like `latest` or `v1.2`.
 - Protect release tags in source control: see [Repository Hardening](../2-2-Develop/2-2-1-Pre-commit/2-2-1-4-Repository-Hardening.md).
@@ -24,6 +25,7 @@ Enforce immutability technically:
 ### Trusted registry
 
 Publish artifacts to a controlled registry with:
+
 - Access controls: only CI pipelines (via OIDC, not long-lived keys) can push; humans read-only.
 - Retention policies: retain all released versions; automatically clean up pre-release candidates.
 - Vulnerability scanning at rest: re-scan stored images as new CVEs are disclosed (many registries offer this natively).
@@ -53,6 +55,7 @@ Mature pipelines build an artifact **once** and promote the same artifact throug
 - Use **GitOps** to make promotion declarative and auditable: a promotion is a pull request (image digest bump in the environment manifest), not a manual action or a shell script with credentials.
 
 Example promotion gate with cosign:
+
 ```bash
 # In the production promotion workflow
 IMAGE_DIGEST=$(crane digest myregistry/myimage:v1.2.3)

@@ -21,6 +21,7 @@ Recruit volunteers first; intrinsic motivation produces far better champions tha
 > "We're looking for engineers curious about security who want to help their team ship more confidently. As a Security Champion you'll get advanced training, direct access to the security team, and recognition for the security outcomes you drive. Time commitment: roughly 10–15% of your week, protected in your sprint."
 
 When evaluating candidates, prioritize:
+
 - **Curiosity and communication** over technical depth or seniority. A mid-level developer trusted by their peers is more effective than a senior engineer who works in isolation.
 - **Peer influence** — a champion nobody talks to cannot shift team culture.
 - Aim for at least one champion per product team or squad. Larger teams (10+) may need two.
@@ -65,6 +66,7 @@ This 8–10 hour allocation (10–15% for a full-time engineer) should be reflec
 Champions burn out when they take on too much without organizational backing. Warning signs: missed community calls, declining triage activity, requests to step down.
 
 Prevention:
+
 - Enforce the time allocation — check in with team leads quarterly to ensure sprint planning protects champion hours.
 - **Rotate coverage** for champions going on leave so their team is not left uncovered and they do not return to a backlog.
 - Provide an escalation path: champions should never be expected to resolve a security problem that requires specialist expertise alone. A clear "call the security team" path removes the burden of being the final answer.

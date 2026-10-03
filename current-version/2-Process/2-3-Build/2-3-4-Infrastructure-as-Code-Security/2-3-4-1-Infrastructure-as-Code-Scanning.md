@@ -20,6 +20,7 @@ This is the canonical case for why IaC security cannot be treated as optional or
 ## Misconfiguration examples by IaC type
 
 **Terraform (AWS):**
+
 ```hcl
 # BAD: S3 bucket publicly accessible
 resource "aws_s3_bucket_acl" "example" {
@@ -47,6 +48,7 @@ resource "aws_security_group_rule" "good" {
 ```
 
 **Kubernetes / Helm (running as root):**
+
 ```yaml
 # BAD: Pod running as root
 spec:
@@ -67,6 +69,7 @@ spec:
 ```
 
 **CloudFormation (unrestricted ingress):**
+
 ```yaml
 # BAD
 SecurityGroupIngress:
@@ -137,6 +140,7 @@ Run with: `checkov -d ./infra --external-checks-dir ./custom_checks`
 ## Shift-left IaC: IDE integration
 
 IDE plugins bring IaC scanning to the point of authorship — the cheapest fix:
+
 - **VS Code Checkov extension** — real-time inline highlighting of misconfigurations as Terraform or Kubernetes YAML is written. No CLI required.
 - **Snyk IaC VS Code plugin** — live fix suggestions alongside detected issues.
 - **IntelliJ + Terraform plugin** — structural validation before any CI run.

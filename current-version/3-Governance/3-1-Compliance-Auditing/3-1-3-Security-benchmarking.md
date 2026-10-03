@@ -25,7 +25,7 @@ Security benchmarking measures your security posture against an objective standa
 
 CIS Benchmarks produce a pass/fail result for each check. Consider the CIS Kubernetes Benchmark for a cluster control plane:
 
-```
+```text
 [PASS] 1.1.1 Ensure that the API server pod specification file permissions are set to 644 or more restrictive
 [FAIL] 1.2.6 Ensure that the --authorization-mode argument is not set to AlwaysAllow
 [PASS] 1.2.9 Ensure that the admission control plugin EventRateLimit is set
@@ -50,7 +50,7 @@ GITHUB_AUTH_TOKEN=<token> scorecard --repo github.com/myorg/myrepo
 
 A sample output with scores per check:
 
-```
+```text
 Maintained:           10 / 10
 Code-Review:           8 / 10  (some PRs merged without review)
 Dangerous-Workflow:   10 / 10

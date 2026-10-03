@@ -43,7 +43,7 @@ For every significant user story, write a corresponding abuse case that describe
 
 Add a security acceptance criteria section to your story template alongside functional acceptance criteria. This makes security testable by QA and automated tests, not optional.
 
-```
+```markdown
 ## Security Acceptance Criteria
 - [ ] Input is validated server-side (type, length, allowlist where applicable)
 - [ ] Output is encoded for the rendering context

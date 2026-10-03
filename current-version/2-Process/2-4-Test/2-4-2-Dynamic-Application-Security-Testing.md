@@ -135,11 +135,12 @@ zap-cli --zap-url http://localhost:8090 import-har /path/to/authenticated-sessio
 
 Modern CI practices spin up a complete application stack per PR (review apps). DAST fits naturally here:
 
-```
+```text
 PR opened → build image → deploy to ephemeral namespace (k8s) → run DAST → report findings as PR comment → teardown
 ```
 
 Key considerations for ephemeral DAST:
+
 - **Seed the database** with realistic test data so the scanner reaches meaningful application states
 - **Exclude destructive operations** from active scanning in shared environments (configure ZAP's active scan policy to skip SQL mutation tests)
 - **Time-box the scan** — a full active scan against a complex app can take 30–60 minutes; use a targeted policy that covers the highest-risk rules in under 10 minutes for PR feedback
@@ -150,11 +151,13 @@ Key considerations for ephemeral DAST:
 DAST produces false positives when it misinterprets safe behavior as a vulnerability (e.g., flagging a reflected query parameter as XSS when output is properly encoded). Management strategies:
 
 1. **Rules file (`.zap/rules.tsv`)** — suppress specific rule IDs for paths where the finding is a known false positive:
-   ```
+
+   ```text
    # .zap/rules.tsv format: alert-id  action  url-regex
    10038  IGNORE  .*  # CSP: acceptable in staging
    90033  IGNORE  /health  # info disclosure: health endpoint by design
    ```
+
 2. **Baseline file** — ZAP's `--baseline` mode stores known findings; subsequent runs only fail on *new* issues. Commit the baseline file to source control.
 3. **Separate confirmed from informational findings** — gate only on HIGH and MEDIUM confirmed findings; route INFORMATIONAL to a triage queue.
 4. **Review the request/response** — for any flagged finding, ZAP records the exact HTTP request that triggered it. Always verify by replaying the request before escalating.

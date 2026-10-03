@@ -9,6 +9,7 @@ Misconfigurations are exploitable with little skill — no custom exploit is nee
 ## Common misconfigurations by layer
 
 ### Application and web server
+
 - Missing security headers: `Content-Security-Policy`, `Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`, `Permissions-Policy`.
 - Insecure TLS: TLS 1.0/1.1 still enabled, weak cipher suites, missing HSTS, missing certificate pinning.
 - Verbose error messages leaking stack traces, internal paths, or framework versions.
@@ -16,6 +17,7 @@ Misconfigurations are exploitable with little skill — no custom exploit is nee
 - Default or sample accounts not removed.
 
 ### Infrastructure as Code
+
 - Open-to-internet security groups (`0.0.0.0/0` on port 22 or 3389).
 - Storage buckets with public read/write ACLs.
 - Unencrypted EBS volumes, RDS databases, or S3 buckets.
@@ -24,6 +26,7 @@ Misconfigurations are exploitable with little skill — no custom exploit is nee
 These are best caught before provisioning — see [IaC Scanning](../2-3-Build/2-3-4-Infrastructure-as-Code-Security/2-3-4-1-Infrastructure-as-Code-Scanning.md).
 
 ### Containers and Kubernetes
+
 - Containers running as root with no `runAsNonRoot: true` pod spec.
 - Privileged containers (`privileged: true`) or excessive capabilities (`CAP_SYS_ADMIN`).
 - Missing resource limits (CPU/memory) creating DoS risk.
@@ -32,6 +35,7 @@ These are best caught before provisioning — see [IaC Scanning](../2-3-Build/2-
 - Public-facing Kubernetes dashboard with weak or no authentication.
 
 ### Cloud (runtime posture)
+
 - IAM users with full `*:*` permissions or stale access keys (>90 days without rotation).
 - Root account MFA not enabled.
 - CloudTrail/audit logging disabled for critical APIs.

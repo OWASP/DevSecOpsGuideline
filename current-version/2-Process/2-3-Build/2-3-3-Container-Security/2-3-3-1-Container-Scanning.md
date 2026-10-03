@@ -6,7 +6,7 @@ Containers package an application together with its operating-system libraries a
 
 Understanding when and how vulnerabilities enter images is essential for an effective scanning strategy:
 
-```
+```text
 1. Base image published (debian:12, ubuntu:22.04, python:3.11-slim)
         │
         ▼

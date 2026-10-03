@@ -44,6 +44,7 @@ GitOps makes the desired state of an environment a version-controlled, auditable
 - Rollback is a `git revert` — fast, auditable, and not dependent on tribal knowledge.
 
 Use **image digest pinning** in deployment manifests rather than mutable tags:
+
 ```yaml
 # Prefer this (immutable):
 image: myregistry.io/myapp@sha256:a1b2c3d4...
@@ -65,6 +66,7 @@ Roll out changes gradually so a bad release — whether a bug, a security regres
 ### Deploy identity
 
 The service account or role used by the deployment pipeline should have:
+
 - Write access only to the target environment (not all environments).
 - Permission to update the specific workloads it manages, not cluster-admin.
 - Time-limited credentials: use OIDC workload identity (GitHub Actions → AWS IRSA, GCP Workload Identity) rather than long-lived access keys.

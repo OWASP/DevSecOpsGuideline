@@ -51,6 +51,7 @@ permissions:
 ```
 
 Teach developers to:
+
 - Always declare an explicit `permissions:` block; never rely on the workflow-level default which may be overly broad.
 - Audit what each job actually needs and remove anything it does not use.
 - Treat pipeline tokens like production credentials — they often have equivalent or greater blast radius.

@@ -35,6 +35,7 @@ Plain-text logs are difficult to query, correlate, and parse reliably. Adopt str
 ```
 
 Key practices:
+
 - Consistent event names across services (using a taxonomy like `noun.verb`).
 - Correlation IDs (`trace_id`, `request_id`) that flow through the entire request chain for end-to-end reconstruction.
 - UTC timestamps with millisecond precision.
@@ -79,6 +80,7 @@ tags:
 ### MITRE ATT&CK mapping
 
 Map detection rules to [MITRE ATT&CK](https://attack.mitre.org/) technique IDs. This allows you to:
+
 - Visualize coverage gaps on the ATT&CK Navigator.
 - Prioritize new detection rules against the most likely attack techniques for your environment.
 - Speak a common language with threat intelligence and incident response teams.
@@ -86,6 +88,7 @@ Map detection rules to [MITRE ATT&CK](https://attack.mitre.org/) technique IDs. 
 ### Alerting quality
 
 An alert that nobody can act on is worse than none — it trains the team to ignore alerts. Every alert must:
+
 - Be actionable: the on-call person knows what to do in response.
 - Be specific enough to investigate: contains sufficient context (user, IP, affected resource, event sequence).
 - Be calibrated: false positive rate below 15% for critical alerts; tune aggressively.

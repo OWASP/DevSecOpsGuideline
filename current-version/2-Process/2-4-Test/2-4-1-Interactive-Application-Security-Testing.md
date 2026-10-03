@@ -112,7 +112,8 @@ curl -H "API-Key: $CONTRAST_API_KEY" \
 Run IAST in QA/test environments alongside automated functional and integration tests, and feed its findings into [Security Gates](../2-3-Build/2-3-5-Security-Gates.md) and the central [vulnerability dashboard](../../3-Governance/3-3-Reporting/3-3-2-Central-vulnerability-management-dashboard.md). Pair it with [DAST](2-4-2-Dynamic-Application-Security-Testing.md) for broader runtime coverage.
 
 A practical pipeline integration:
-```
+
+```text
 build → deploy to test env (IAST agent active) → run functional/integration tests → IAST findings exported → gate check → promote or block
 ```
 

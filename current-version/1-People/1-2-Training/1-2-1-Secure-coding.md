@@ -36,6 +36,7 @@ Generic security training does not stick as well as guidance tied to the develop
 How to read code adversarially — spotting anti-patterns, data flow from untrusted input to dangerous sinks, missing authorization checks, and insecure defaults. Code review is where security knowledge directly translates into prevented vulnerabilities.
 
 A minimal secure code review checklist:
+
 - [ ] All inputs validated server-side (type, length, allowlist where feasible)
 - [ ] Parameterized queries used for all database access; no string concatenation
 - [ ] Authorization checked on every state-changing operation, not just at login

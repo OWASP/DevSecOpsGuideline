@@ -88,6 +88,7 @@ Client-side hooks improve developer experience but are **not a security control 
 ```
 
 This creates a two-layer model:
+
 - **Pre-commit (local):** fast feedback for the developer, zero round-trip time.
 - **CI (server-side):** authoritative, un-bypassable enforcement.
 
