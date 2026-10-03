@@ -151,9 +151,8 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  FAIL_ON_CRITICAL: true
-  FAIL_ON_HIGH: true
+permissions:
+  contents: read
 
 jobs:
   # Gate 1: Secret Scanning
@@ -165,12 +164,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      # No base/head overrides: the action derives the commit range from the
+      # push or pull_request event itself. Hard-coding the default branch as
+      # base makes base == HEAD on pushes to that branch, which TruffleHog rejects.
       - name: TruffleHog Secret Scan
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
           extra_args: --only-verified
 
       - name: Gitleaks Scan
@@ -183,10 +183,16 @@ jobs:
     name: "SAST Gate"
     runs-on: ubuntu-latest
     permissions:
-      security-events: write
+      contents: read          # checkout (required in private repos once permissions are restricted)
+      actions: read           # CodeQL upload processing
+      security-events: write  # upload SARIF to code scanning
     steps:
       - uses: actions/checkout@v4
 
+      # CodeQL uploads findings to GitHub code scanning but does NOT fail this job.
+      # Its results are enforced separately via a code-scanning merge-protection
+      # rule / ruleset ("Code scanning results" with a severity threshold). That
+      # protects merges only — the job below is what gates this pipeline.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
@@ -196,23 +202,28 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
       - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v1
-        with:
-          config: >-
-            p/security-audit
-            p/secrets
-            p/owasp-top-ten
+        run: |
+          python3 -m pip install --quiet semgrep
+          semgrep scan \
+            --config p/security-audit \
+            --config p/secrets \
+            --config p/owasp-top-ten \
+            --json --output semgrep.json .
 
       - name: Check SAST Results
         run: |
-          # Parse results and fail if critical/high issues found
-          if [ -f semgrep.json ]; then
-            CRITICAL=$(jq '[.results[] | select(.extra.severity == "ERROR")] | length' semgrep.json)
-            if [ "$CRITICAL" -gt 0 ]; then
-              echo "Found $CRITICAL critical SAST issues"
-              exit 1
-            fi
+          # Fail closed: a missing report means the scanner did not run.
+          if [ ! -f semgrep.json ]; then
+            echo "SAST Gate ERROR: semgrep.json not produced"
+            exit 1
           fi
+          CRITICAL=$(jq '[.results[] | select(.extra.severity == "ERROR")] | length' semgrep.json)
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "SAST Gate FAILED: $CRITICAL high/critical findings"
+            jq '.results[] | select(.extra.severity == "ERROR") | {rule: .check_id, file: .path, line: .start.line}' semgrep.json
+            exit 1
+          fi
+          echo "SAST Gate PASSED"
 
   # Gate 3: SCA Gate (Dependency Scanning)
   sca-gate:
@@ -233,19 +244,19 @@ jobs:
 
       - name: Evaluate SCA Gate
         run: |
+          if [ ! -f trivy-sca-results.json ]; then
+            echo "SCA Gate ERROR: trivy-sca-results.json not produced"
+            exit 1
+          fi
           CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-sca-results.json)
           HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-sca-results.json)
 
           echo "SCA Results: Critical=$CRITICAL, High=$HIGH"
 
-          if [ "$CRITICAL" -gt 0 ]; then
-            echo "SCA Gate FAILED: $CRITICAL critical vulnerabilities found"
-            jq '.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL") | {Package: .PkgName, Version: .InstalledVersion, CVE: .VulnerabilityID, Title: .Title}' trivy-sca-results.json
-            exit 1
-          fi
-
-          if [ "$HIGH" -gt 5 ]; then
-            echo "SCA Gate FAILED: More than 5 high vulnerabilities ($HIGH found)"
+          # Policy: zero critical AND zero high (matches the threshold table above)
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+            echo "SCA Gate FAILED: $CRITICAL critical, $HIGH high vulnerabilities found"
+            jq '.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL" or .Severity == "HIGH") | {Package: .PkgName, Version: .InstalledVersion, CVE: .VulnerabilityID, Severity: .Severity, Title: .Title}' trivy-sca-results.json
             exit 1
           fi
 
@@ -253,7 +264,13 @@ jobs:
 
       - name: License Compliance Check
         run: |
-          pip install pip-licenses
+          # pip-licenses inventories the packages installed in the current
+          # environment, so install the project's *locked* dependencies into an
+          # isolated venv first — otherwise only the reporting tool is inventoried.
+          python3 -m venv .venv-licenses
+          . .venv-licenses/bin/activate
+          pip install --quiet -r requirements.txt   # or: pip-sync, poetry install --only main, etc.
+          pip install --quiet pip-licenses
           pip-licenses --format=json --output-file=licenses.json
 
           # Check for denied licenses
@@ -285,13 +302,17 @@ jobs:
 
       - name: Evaluate Container Gate
         run: |
+          if [ ! -f trivy-container-results.json ]; then
+            echo "Container Gate ERROR: trivy-container-results.json not produced"
+            exit 1
+          fi
           CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-container-results.json)
           HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-container-results.json)
 
           echo "Container Scan Results: Critical=$CRITICAL, High=$HIGH"
 
-          if [ "$CRITICAL" -gt 0 ]; then
-            echo "Container Gate FAILED: $CRITICAL critical vulnerabilities"
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+            echo "Container Gate FAILED: $CRITICAL critical, $HIGH high vulnerabilities"
             exit 1
           fi
 
@@ -316,21 +337,32 @@ jobs:
           directory: .
           framework: terraform,kubernetes,dockerfile
           output_format: json
-          output_file_path: checkov-results.json
-          soft_fail: true
+          # Checkov treats this as a *directory* and writes results_json.json inside it
+          output_file_path: checkov-results
+          soft_fail: true   # defer the pass/fail decision to the evaluator below
 
       - name: Evaluate IaC Gate
         run: |
-          if [ -f checkov-results.json ]; then
-            FAILED=$(jq '.results.failed_checks | length' checkov-results.json 2>/dev/null || echo "0")
-            CRITICAL=$(jq '[.results.failed_checks[]? | select(.check_result.evaluated_keys[]? | contains("CRITICAL"))] | length' checkov-results.json 2>/dev/null || echo "0")
+          REPORT=checkov-results/results_json.json
+          # Fail closed: no report means Checkov did not run or crashed.
+          if [ ! -f "$REPORT" ]; then
+            echo "IaC Gate ERROR: $REPORT not produced"
+            exit 1
+          fi
 
-            echo "IaC Scan Results: Failed Checks=$FAILED"
+          # Open-source Checkov output carries no severity field (severity requires
+          # the Prisma Cloud platform), so gate on failed checks directly. Multi-framework
+          # runs emit an *array* of per-framework reports; single runs emit one object —
+          # handle both. Use .checkov.yaml `skip-check:` for documented exceptions.
+          FAILED=$(jq '[.. | objects | select(has("failed_checks")) | .failed_checks[]?] | length' "$REPORT") || {
+            echo "IaC Gate ERROR: malformed Checkov report"; exit 1; }
 
-            if [ "$CRITICAL" -gt 0 ]; then
-              echo "IaC Gate FAILED: Critical misconfigurations found"
-              exit 1
-            fi
+          echo "IaC Scan Results: Failed Checks=$FAILED"
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo "IaC Gate FAILED: $FAILED policy violations"
+            jq -r '.. | objects | select(has("failed_checks")) | .failed_checks[]? | "\(.check_id) \(.file_path):\(.file_line_range[0]) \(.check_name)"' "$REPORT"
+            exit 1
           fi
           echo "IaC Gate PASSED"
 
@@ -376,15 +408,12 @@ jobs:
             echo "IaC Gate: FAILED" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Fail if Any Gate Failed
-        if: |
-          needs.secrets-gate.result == 'failure' ||
-          needs.sast-gate.result == 'failure' ||
-          needs.sca-gate.result == 'failure' ||
-          needs.container-gate.result == 'failure' ||
-          needs.iac-gate.result == 'failure'
+      - name: Fail if Any Gate Did Not Succeed
+        # Treat cancelled/skipped like failure: an unfinished scan must not leave
+        # this required check green.
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
         run: |
-          echo "One or more security gates failed. Blocking deployment."
+          echo "One or more security gates did not succeed. Blocking deployment."
           exit 1
 ```
 
@@ -393,61 +422,81 @@ jobs:
 ```yaml
 # .gitlab-ci.yml
 stages:
+  - build
   - security-scan
   - security-gate
-  - build
   - deploy
 
 variables:
   SECURITY_GATE_CRITICAL_THRESHOLD: 0
   SECURITY_GATE_HIGH_THRESHOLD: 0
+  IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+# Shared rules: every job that the gate depends on must run in the same
+# pipelines as the gate, otherwise GitLab cannot create the pipeline
+# ("job needs a job that does not exist").
+.gate-rules:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Build and push the image first so the container scan has something to scan
+build-image:
+  stage: build
+  extends: .gate-rules
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - /kaniko/executor --context "$CI_PROJECT_DIR" --dockerfile "$CI_PROJECT_DIR/Dockerfile" --destination "$IMAGE"
 
 # Secret Scanning Gate
 secrets-scan:
   stage: security-scan
-  image: trufflesecurity/trufflehog:latest
+  extends: .gate-rules
+  image:
+    name: trufflesecurity/trufflehog:latest
+    entrypoint: [""]   # the image's entrypoint is the CLI itself; clear it so the runner's shell works
   script:
-    - trufflehog git file://. --only-verified --json > secrets-report.json
-    - |
-      SECRETS_FOUND=$(cat secrets-report.json | wc -l)
-      if [ "$SECRETS_FOUND" -gt 0 ]; then
-        echo "Secrets detected in repository"
-        cat secrets-report.json
-        exit 1
-      fi
-  artifacts:
-    reports:
-      secret_detection: secrets-report.json
+    # --fail exits non-zero when verified secrets are found. Do NOT dump the JSON
+    # output: it contains the raw credential values and would leak them into job
+    # logs and artifacts. The default (non-JSON) output is redacted.
+    - trufflehog git file://. --only-verified --fail
 
 # SAST Gate
 sast-scan:
   stage: security-scan
-  image: returntocorp/semgrep
+  extends: .gate-rules
+  image: semgrep/semgrep
   script:
     - semgrep scan --config=p/security-audit --config=p/owasp-top-ten --json -o semgrep-report.json .
   artifacts:
+    # Native scanner JSON is kept as a plain artifact for the jq evaluator below.
+    # If you also want findings in GitLab's Security Dashboard, emit a *separate*
+    # GitLab-schema report (semgrep --gitlab-sast) and declare that under reports.sast.
     paths:
       - semgrep-report.json
-    reports:
-      sast: semgrep-report.json
 
 # Container Scanning Gate
 container-scan:
   stage: security-scan
+  extends: .gate-rules
+  needs: [build-image]
   image:
     name: aquasec/trivy:latest
     entrypoint: [""]
   script:
-    - trivy image --format json --output trivy-report.json $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - trivy image --format json --output trivy-report.json "$IMAGE"
   artifacts:
+    # Same as above: for the Security Dashboard, additionally generate
+    # `--format template --template "@contrib/gitlab.tpl"` under reports.container_scanning.
     paths:
       - trivy-report.json
-    reports:
-      container_scanning: trivy-report.json
 
 # Security Gate Evaluation
 security-gate:
   stage: security-gate
+  extends: .gate-rules
   image: alpine:latest
   needs:
     - secrets-scan
@@ -459,28 +508,31 @@ security-gate:
     - |
       echo "Evaluating Security Gates..."
 
-      # Check SAST results
-      if [ -f semgrep-report.json ]; then
-        SAST_CRITICAL=$(jq '[.results[]? | select(.extra.severity == "ERROR")] | length' semgrep-report.json)
-        if [ "$SAST_CRITICAL" -gt "$SECURITY_GATE_CRITICAL_THRESHOLD" ]; then
-          echo "SAST Gate Failed: $SAST_CRITICAL critical issues found"
-          exit 1
-        fi
+      # Fail closed: missing reports mean a scanner did not run.
+      for f in semgrep-report.json trivy-report.json; do
+        if [ ! -f "$f" ]; then echo "Gate ERROR: $f missing"; exit 1; fi
+      done
+
+      # SAST: Semgrep ERROR == high/critical, WARNING == medium
+      SAST_CRITICAL=$(jq '[.results[]? | select(.extra.severity == "ERROR")] | length' semgrep-report.json)
+      if [ "$SAST_CRITICAL" -gt "$SECURITY_GATE_CRITICAL_THRESHOLD" ]; then
+        echo "SAST Gate Failed: $SAST_CRITICAL high/critical issues found"
+        exit 1
       fi
 
-      # Check Container results
-      if [ -f trivy-report.json ]; then
-        CONTAINER_CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-report.json)
-        if [ "$CONTAINER_CRITICAL" -gt "$SECURITY_GATE_CRITICAL_THRESHOLD" ]; then
-          echo "Container Gate Failed: $CONTAINER_CRITICAL critical vulnerabilities"
-          exit 1
-        fi
+      # Container: check both thresholds
+      CONTAINER_CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-report.json)
+      CONTAINER_HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-report.json)
+      if [ "$CONTAINER_CRITICAL" -gt "$SECURITY_GATE_CRITICAL_THRESHOLD" ]; then
+        echo "Container Gate Failed: $CONTAINER_CRITICAL critical vulnerabilities"
+        exit 1
+      fi
+      if [ "$CONTAINER_HIGH" -gt "$SECURITY_GATE_HIGH_THRESHOLD" ]; then
+        echo "Container Gate Failed: $CONTAINER_HIGH high vulnerabilities (threshold $SECURITY_GATE_HIGH_THRESHOLD)"
+        exit 1
       fi
 
       echo "All Security Gates Passed"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 ```
 
 ### Interpreting gate results
@@ -642,18 +694,31 @@ exceptions:
 
 ### Emergency bypass (use sparingly)
 
-Sometimes production is down and the fix has to ship. Provide an explicit, audited bypass path that requires a named approver and a manual step — never a silent `continue-on-error`. Every bypass should produce a ticket that tracks when the gate is re-enabled:
+Sometimes production is down and the fix has to ship. Provide an explicit, audited bypass path — never a silent `continue-on-error`. The authorization must come from the **platform**, not from a variable the caller sets: a pipeline variable like `APPROVED_BY=alice` proves nothing, since whoever triggers the job can type any name. Use a protected environment with a restricted deployer list and deployment approvals, so the approving identity is recorded by GitLab/GitHub itself. Require a tracking ticket so the gate is re-enabled and the finding is remediated:
 
 ```yaml
-# Emergency bypass (requires approval)
-deploy-production:
+# Emergency bypass — GitLab example
+# Authorization is enforced by the *protected environment* "production":
+#   Settings > CI/CD > Protected environments: allowed to deploy = release-managers,
+#   required approvals = 1 from @security-team.
+# Only members of those groups can play the job, and the approver's identity is
+# recorded on the deployment — not taken from a caller-supplied variable.
+deploy-production-bypass:
+  stage: deploy
+  environment:
+    name: production
+    deployment_tier: production
   rules:
-    - if: $SECURITY_BYPASS == "true" && $APPROVED_BY != ""
+    # Manual, and only when a tracking ticket is supplied
+    - if: $SECURITY_BYPASS == "true" && $BYPASS_TICKET =~ /^SEC-[0-9]+$/
       when: manual
       allow_failure: false
-    - if: $SECURITY_GATES_PASSED == "true"
-      when: on_success
+  script:
+    - echo "Security gate bypassed under $BYPASS_TICKET by $GITLAB_USER_LOGIN (approved via protected environment)"
+    - ./deploy.sh
 ```
+
+On GitHub Actions the equivalent is a job bound to `environment: production` with **required reviewers** configured on that environment; the reviewer's approval is logged in the deployment history.
 
 ## Smarter prioritization
 
