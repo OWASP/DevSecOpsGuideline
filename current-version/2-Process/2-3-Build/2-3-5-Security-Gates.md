@@ -273,11 +273,18 @@ jobs:
           pip install --quiet pip-licenses
           pip-licenses --format=json --output-file=licenses.json
 
-          # Check for denied licenses
-          DENIED=$(jq '[.[] | select(.License | test("GPL-3.0|AGPL"))] | length' licenses.json)
+          # Check for denied licenses. pip-licenses reports the package's *native*
+          # classifier/metadata name (e.g. "GNU General Public License v3 (GPLv3)",
+          # "GNU Affero General Public License v3", "GPL-3.0-only"), not a normalized
+          # SPDX id, so match the family rather than an exact SPDX string. The
+          # pattern below catches GPL/AGPL in both spellings and deliberately
+          # excludes LGPL. For strict SPDX-based policy use a lockfile/SBOM license
+          # scanner (e.g. `trivy fs --scanners license`, ScanCode, or Dependency-Track).
+          DENY_RE='(^|[^L])GPL|Affero|General Public License v[23]'
+          DENIED=$(jq --arg re "$DENY_RE" '[.[] | select(.License | test($re; "i") and (test("Lesser|LGPL"; "i") | not))] | length' licenses.json)
           if [ "$DENIED" -gt 0 ]; then
             echo "License Gate FAILED: Found $DENIED packages with denied licenses"
-            jq '.[] | select(.License | test("GPL-3.0|AGPL"))' licenses.json
+            jq --arg re "$DENY_RE" '.[] | select(.License | test($re; "i") and (test("Lesser|LGPL"; "i") | not))' licenses.json
             exit 1
           fi
           echo "License Gate PASSED"
@@ -448,6 +455,12 @@ build-image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   script:
+    # Kaniko does not read CI_REGISTRY_USER/PASSWORD on its own — write a Docker
+    # auth config from the job's registry credentials before pushing.
+    - mkdir -p /kaniko/.docker
+    - |
+      AUTH=$(printf '%s:%s' "$CI_REGISTRY_USER" "$CI_REGISTRY_PASSWORD" | base64 | tr -d '\n')
+      printf '{"auths":{"%s":{"auth":"%s"}}}\n' "$CI_REGISTRY" "$AUTH" > /kaniko/.docker/config.json
     - /kaniko/executor --context "$CI_PROJECT_DIR" --dockerfile "$CI_PROJECT_DIR/Dockerfile" --destination "$IMAGE"
 
 # Secret Scanning Gate
@@ -486,7 +499,9 @@ container-scan:
     name: aquasec/trivy:latest
     entrypoint: [""]
   script:
-    - trivy image --format json --output trivy-report.json "$IMAGE"
+    # This job runs in its own container with no registry session; pass the job's
+    # registry credentials so Trivy can pull the (private) image it just built.
+    - TRIVY_USERNAME="$CI_REGISTRY_USER" TRIVY_PASSWORD="$CI_REGISTRY_PASSWORD" trivy image --format json --output trivy-report.json "$IMAGE"
   artifacts:
     # Same as above: for the Security Dashboard, additionally generate
     # `--format template --template "@contrib/gitlab.tpl"` under reports.container_scanning.
@@ -705,6 +720,10 @@ Sometimes production is down and the fix has to ship. Provide an explicit, audit
 # recorded on the deployment — not taken from a caller-supplied variable.
 deploy-production-bypass:
   stage: deploy
+  # `needs` turns this into a DAG job: it depends only on the built artifact, so a
+  # failed scanner or security-gate job does not skip it (without `needs`, a failure
+  # in an earlier stage would skip the whole deploy stage and the bypass could never run).
+  needs: [build-image]
   environment:
     name: production
     deployment_tier: production
@@ -715,7 +734,7 @@ deploy-production-bypass:
       allow_failure: false
   script:
     - echo "Security gate bypassed under $BYPASS_TICKET by $GITLAB_USER_LOGIN (approved via protected environment)"
-    - ./deploy.sh
+    - ./deploy.sh "$IMAGE"
 ```
 
 On GitHub Actions the equivalent is a job bound to `environment: production` with **required reviewers** configured on that environment; the reviewer's approval is logged in the deployment history.
