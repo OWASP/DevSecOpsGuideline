@@ -605,8 +605,8 @@ def enforce_pipeline_gate(status: str):
     if status in ("FAILED", "ERROR"):
         # Writing to stderr ensures CI systems prominently display the failure reason
         print(f"::error::Security gate {status}. Halting pipeline.", file=sys.stderr)
-        sys.exit(1) 
-    
+        sys.exit(1)
+
     print(f"Security gate {status}. Pipeline may proceed.")
     sys.exit(0)
 ```
