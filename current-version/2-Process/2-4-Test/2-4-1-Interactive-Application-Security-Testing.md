@@ -1,42 +1,143 @@
-# Interactive Application Security Testing
+# Interactive Application Security Testing (IAST)
 
-**IAST (interactive application security testing)** is an application security testing method that tests an application, API, or function while it is being exercised by automated tests, human testers, or any other "interaction" with the code's functionality. This makes it highly compatible with just about any software development lifecycle, especially DevOps.
+Interactive Application Security Testing combines the strengths of static and dynamic analysis by **instrumenting the running application** — typically with an agent inside the runtime — and observing it from the inside while it executes. As functional tests, QA, or normal usage exercise the application, the IAST agent watches data flow through the code and reports vulnerabilities with the precise line of code *and* runtime context.
 
-IAST does not scan applications, but installs onto application and API servers and continuously analyzes applications forever. IAST works by instrumenting code with sensors that can directly observe security relevant application behavior. IAST uses the same proven technqiues as APM tools and profilers, just highly optimized for security and speed.
+## How IAST differs from SAST and DAST
 
-IAST requires zero changes to the way teams build, test, and deploy code. IAST performs security testing in real time during normal development and testing, and identifies vulnerabilities without requiring them to be exploited. This means with IAST, anyone can perform high quality security tests, even without a security background.
+| Dimension | SAST | DAST | IAST |
+|---|---|---|---|
+| When it runs | At rest (code/build) | Against running app (black-box) | Inside running app (white-box at runtime) |
+| What it sees | Full code, no runtime context | External behavior only | Code paths actually exercised |
+| False positive rate | Higher (no runtime proof) | Medium | Very low (confirms real execution) |
+| Fix guidance | File + line | HTTP request/response | File + line + full data-flow trace |
+| CI integration effort | Low | Medium | Medium (requires test harness) |
+| Source code required | Yes | No | No (agent instruments bytecode/binary) |
 
-IAST can be deployed to development servers, CI/CD pipelines, or quality assurances servers, or even while in production. Wherever the code runs, that's where IAST is installed, including servers, containers, virtual machines, cloud, and other environments. IAST is uniquely well suited for API security testing, as it overcomes the challenges SAST and DAST have with complex API code and data.
+The combination of inside-view (like SAST) and runtime-view (like DAST) is what makes IAST highly accurate: it only reports a vulnerability when it observes tainted data actually flowing to a dangerous sink in a live execution.
 
-IAST sensors have access to:
+## How it works
 
-- Entire code
-- Full HTTP request and response
-- Data flow and control
-- Configuration data
-- Libraries and frameworks and how they are used
-- Back-end connection data
+An IAST agent is loaded into the application runtime — as a Java agent (`-javaagent`), a .NET profiler, a Node.js hook, or a Python middleware. From there it:
 
-This rich context makes IAST extremely accurate compared with traditional appsec testing tools and it enables IAST to deliver very detailed findings that enable developers to understand issues and fix them correctly. It also enables IAST to cover a very broad range of appsec vulnerabilities, including:
+1. **Instruments** method calls, framework hooks, and I/O operations at runtime.
+2. **Tracks taint propagation** — marks data coming from user-controlled sources (HTTP params, headers, cookies) and follows it through the call stack.
+3. **Alerts on sink contact** — triggers a finding when tainted data reaches a dangerous operation (SQL query, shell execution, file write, deserialization).
+4. **Attaches context** — records the exact stack trace, the HTTP request that triggered it, and the source-to-sink path.
 
-- Code issues like hardcoded secrets and weak encryption algorithms
-- Data flow issues like injection and SSRF
-- HTTP issues like clickjacking, parameter pollution, and missing headers
-- Backend connection issues like SSRF
-- Configuration issues like verb tampering and weak authentication
-- and more...
+Because the agent is passive, it piggybacks on whatever tests are already running — functional tests, integration tests, manual QA — without needing a dedicated attack tool.
 
-One challenge with IAST is that only code that is exercised is tested. However, it's easy to use simple end-to-end "smoke" tests, or even a simple crawler, to generate this coverage. IAST does not require extensive functional testing, just basic end-to-end execution of routes.  Some IAST tools extract the set of routes from an application and simplify the process of getting to 100% route coverage.
+## Agent-based vs proxy-based IAST
 
----
+Some vendors offer a proxy-based variant that sits between the test client and the application (similar to a DAST proxy) while also receiving a lightweight signal from a server-side component. The distinction matters for deployment:
 
-## IAST vs SAST
+| Approach | How it instruments | Best for |
+|---|---|---|
+| Agent-based (in-process) | JVM agent, .NET profiler, language hook | Precise taint tracking, low FP, full stack traces; requires supported runtime |
+| Proxy-based (network layer) | Intercepts requests/responses; optional server hook | Language-agnostic; less deep taint analysis; easier to deploy in polyglot environments |
 
-**Static Application Security Testing** method examines source code in a non-runtime environment early in the SDLC. It looks for suspicious code patterns that indicate security risks. Even though they are easy to deploy, SASTs report large numbers of false positives because SASTs do not take into account the presence of other security countermeasures, and they lack visibility during runtime. SAST tools normally run during the build process, and can introduce delays as the scan process takes time to finish. IASTs are more flexible than SASTs, because they are applicable in production runtime environments (SASTs require direct access to the source code).
+Most enterprise IAST tools use the agent-based approach for precision. If your runtime is not supported by an agent, evaluate proxy-based tools or rely on DAST + SAST instead.
 
-## IAST vs DAST
+## Deploying a Java IAST agent (walkthrough)
 
-**Dynamic Application Security Testing** method works like a black-box scanner that sends malicious HTTP requests to an application and evaluate the HTTP responses to determine whether a security vulnerability was found. DASTs look at the applications from the exterior and determine the presence of risks by looking at the response (including body and headers) of the server to a battery of tests, but DASTs have no visibility of the internal workings of the app. Furthermore, DAST tests are hard to automate, because DASTs must be operated by experienced appsec teams, such as penetration testers, to be truly useful. Forrester estimates that the duration of a DAST scan can take around 5 to 7 days, while testing with IAST is a real-time (zero minutes) operation.
+Most IAST agents for JVM languages are attached via the standard `-javaagent` JVM flag. Example with Contrast Assess:
+
+```bash
+# 1. Download the agent JAR (or include via Maven/Gradle)
+curl -L -o contrast.jar https://your-contrast-instance/Contrast/api/ng/contrast.jar
+
+# 2. Set required environment variables
+export CONTRAST__API__URL=https://your-contrast-instance/Contrast
+export CONTRAST__API__API_KEY=<your-api-key>
+export CONTRAST__API__SERVICE_KEY=<your-service-key>
+export CONTRAST__API__USER_NAME=<your-username>
+export CONTRAST__APPLICATION__NAME=my-app
+
+# 3. Launch the application with the agent attached
+java -javaagent:/path/to/contrast.jar \
+     -Dcontrast.application.name=my-app \
+     -jar myapp.jar
+
+# 4. Run your existing test suite against the instrumented app
+mvn verify -Dtest.base.url=http://localhost:8080
+```
+
+The agent instruments the JVM bytecode at load time — no source changes required. Findings are reported in real time to the Contrast platform as tests exercise the application.
+
+For CI pipelines, add the `-javaagent` flag to the application startup in your test environment's Dockerfile or Helm values, keeping the agent active for the duration of integration tests.
+
+## Language and framework support
+
+IAST coverage varies by vendor and runtime. Evaluate agents against your stack before committing:
+
+| Runtime | General support level | Notes |
+|---|---|---|
+| Java / Kotlin (JVM) | Excellent | Most mature; deep framework support (Spring, Struts, Jakarta EE) |
+| .NET / .NET Core | Excellent | Good vendor support; profiler API enables deep instrumentation |
+| Node.js | Good | Hook-based; coverage varies by framework (Express, Fastify) |
+| Python | Moderate | Middleware-based; less deep taint tracking than JVM |
+| Go | Limited | No JVM/profiler API; typically proxy-based only |
+| Ruby | Limited | Available from some vendors; less mature |
+
+If your primary stack is Go or Ruby, IAST may not deliver the same depth as on JVM/.NET — supplement with strong SAST and DAST coverage.
+
+## Licensing and cost considerations
+
+Most IAST agents are priced per instrumented application instance (per agent process). Costs to model:
+
+- **Per-instance licensing** — if you run IAST in a multi-replica Kubernetes deployment, each pod with the agent counts. For large-scale testing, this adds up.
+- **Developer-tier / community editions** — some vendors offer free single-application tiers (e.g., Contrast Community Edition) to evaluate before scaling.
+- **Test-only deployment** — containing IAST to test/staging environments (not production) limits licensing cost while still covering meaningful attack surface.
+
+Before selecting a vendor, clarify: per-agent vs per-application pricing, whether replicas count separately, and whether findings from ephemeral environments (PR preview deployments) are included.
+
+## How IAST findings feed vulnerability management
+
+IAST findings should flow into the same vulnerability management pipeline as SAST and DAST:
+
+1. IAST agent reports findings to the vendor platform (or a self-hosted aggregator).
+2. Findings are exported via API to [DefectDojo](https://defectdojo.github.io/django-DefectDojo/) or your ASPM platform for deduplication and correlation with SAST/DAST results.
+3. New high/critical IAST findings trigger pipeline gates or create tickets in Jira automatically.
+4. Developers see a finding with: vulnerable line, HTTP request that triggered it, full taint flow — reducing triage time dramatically.
+
+```bash
+# Example: Export IAST findings from Contrast via API
+curl -H "API-Key: $CONTRAST_API_KEY" \
+     -H "Authorization: $CONTRAST_AUTH" \
+     "https://your-contrast/Contrast/api/ng/$ORG_ID/traces/$APP_ID/filter?status=Reported&severity=HIGH,CRITICAL" \
+  | jq '.traces[] | {title:.ruleName, severity:.severity, file:.events[-1].stackFrames[0].file}'
+```
+
+## Where it fits
+
+Run IAST in QA/test environments alongside automated functional and integration tests, and feed its findings into [Security Gates](../2-3-Build/2-3-5-Security-Gates.md) and the central [vulnerability dashboard](../../3-Governance/3-3-Reporting/3-3-2-Central-vulnerability-management-dashboard.md). Pair it with [DAST](2-4-2-Dynamic-Application-Security-Testing.md) for broader runtime coverage.
+
+A practical pipeline integration:
+```
+build → deploy to test env (IAST agent active) → run functional/integration tests → IAST findings exported → gate check → promote or block
+```
+
+## Common pitfalls and anti-patterns
+
+- **Running IAST against a low-coverage test suite** — results will be sparse and give false confidence. Invest in test coverage first, or add an automated crawler/DAST alongside.
+- **Treating IAST as a replacement for SAST** — IAST only covers executed paths; SAST covers the whole codebase. Use both.
+- **Ignoring agent version drift** — an outdated agent may miss newly discovered vulnerability classes. Pin agent versions and update on a schedule.
+- **Not integrating with the issue tracker** — findings that don't create tickets get lost. Automate the export from IAST to your vulnerability management tool.
+- **Running IAST in production** — the performance overhead and potential for finding-triggered alerts in live user sessions make this inadvisable. Confine to test and staging.
+
+## Maturity progression
+
+**Starter** — Deploy one IAST agent on your most critical application in a test environment. Run it during existing integration test runs and review findings manually weekly.
+
+**Intermediate** — Instrument all tier-1 applications. Automate finding export to DefectDojo or Jira. Add a pipeline gate that blocks promotion if new high/critical IAST findings appear.
+
+**Advanced** — Extend to all applications. Correlate IAST findings with SAST and DAST results in an ASPM platform to deduplicate and prioritize. Track IAST coverage as a metric (code paths exercised vs total). Use IAST findings to identify gaps in test suites.
+
+## Metrics and KPIs
+
+- **IAST-verified high/critical findings per release** — should trend downward over time.
+- **Mean time to remediate IAST findings** — compare against SAST to assess value of runtime confirmation.
+- **Code-path coverage during IAST run** — low coverage indicates test-suite gaps, not application health.
+- **False-positive rate** — IAST should be near zero; any FPs indicate misconfiguration of source/sink rules.
 
 ---
 
@@ -44,24 +145,17 @@ One challenge with IAST is that only code that is exercised is tested. However, 
 
 ### Open-source
 
+- [Contrast Community Edition](https://www.contrastsecurity.com/contrast-community-edition) — Free IAST/runtime protection for a single Java or .NET application; good starting point for evaluating agent-based approaches without licensing cost.
+
 ### Commercial
 
-- [Checkmarx Interactive Application Security Testing(CxIAST)](https://www.checkmarx.com/products/interactive-application-security-testing/)
-- [Contrast Assess](https://www.contrastsecurity.com/contrast-assess) and [Contrast Community Edition](https://www.contrastsecurity.com/contrast-community-edition)
-- [HCL AppScan on Cloud](https://cloud.appscan.com)
-- [Seeker Interactive Application Security Testing](https://www.synopsys.com/software-integrity/security-testing/interactive-application-security-testing.html)
+- [Checkmarx](https://checkmarx.com/) — Application security platform with interactive testing capabilities; strong if you already use Checkmarx SAST for unified reporting and a single-vendor AppSec suite.
+- [Contrast Assess](https://www.contrastsecurity.com/) — Instrumentation-based IAST for multiple runtimes; the most mature agent ecosystem with broad language support and runtime protection (RASP) available on the same agent.
+- [HCL AppScan](https://www.hcl-software.com/appscan) — Application security suite including interactive testing; well-suited for enterprises with existing HCL tooling and compliance reporting needs.
+- [Seeker (Synopsys)](https://www.synopsys.com/software-integrity/security-testing/interactive-application-security-testing.html) — Strong Java/.NET support with compliance reporting for regulated industries; integrates with Synopsys Black Duck for combined SCA+IAST coverage.
 
 ---
 
 ### Links
-
-- [Acunetix - IAST](https://www.acunetix.com/blog/web-security-zone/what-is-iast-interactive-application-security-testing/)
-- [Contrast Security - What is Interactive Application Security Testing?](https://www.contrastsecurity.com/knowledge-hub/glossary/interactive-application-security-testing)
-- [Contrast Security - Why the difference sast, dast, and iast mastters](https://www.contrastsecurity.com/security-influencers/why-the-difference-between-sast-dast-and-iast-matters)
-- [Esecurityplanet - Application security vendors](https://www.esecurityplanet.com/products/application-security-vendors/)
-- [Hdivsecurity - IAST](https://hdivsecurity.com/bornsecure/what-is-iast-interactive-application-security-testing/)
-- [OWASP - Free IAST Tools](https://owasp.org/www-community/Free_for_Open_Source_Application_Security_Tools#:~:text=open%20source%20projects.-,IAST%20Tools,-IAST%20tools%20are)
-- [Synk - IAST](https://snyk.io/learn/iast-interactive-application-security-testing/)
-- [Veracode - IAST](https://www.veracode.com/security/interactive-application-security-testing-iast)
 
 [^1]: Listed in alphabetical order.

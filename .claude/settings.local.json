@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(set -e)",
+      "Bash(git mv *)",
+      "Bash(mkdir -p current-version/0-Intro current-version/1-People/1-1-Shape-the-team current-version/1-People/1-2-Training current-version/2-Process/2-1-Design current-version/2-Process/2-2-Develop/2-2-1-Pre-commit current-version/2-Process/2-3-Build/2-3-1-Static-Analysis current-version/2-Process/2-3-Build/2-3-2-Software-Composition-Analysis current-version/2-Process/2-3-Build/2-3-3-Container-Security current-version/2-Process/2-3-Build/2-3-4-Infrastructure-as-Code-Security current-version/2-Process/2-3-Build/2-3-6-Supply-Chain-Security current-version/2-Process/2-4-Test current-version/2-Process/2-5-Release current-version/2-Process/2-6-Deploy current-version/2-Process/2-7-Operate current-version/3-Governance/3-1-Compliance-Auditing current-version/3-Governance/3-3-Reporting)",
+      "Bash(cp -R \"old-versions/V0.3/assets\" \"current-version/assets\")",
+      "Bash(python3 doc-utilities/scripts/toc-generator.py)"
+    ]
+  }
+}

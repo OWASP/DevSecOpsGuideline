@@ -1,45 +1,129 @@
 # Container Hardening
 
-Containers have revolutionized the way applications are deployed and managed, offering flexibility and scalability. However, like any other technology, containers are not immune to security risks. To mitigate these risks, it is crucial to implement container hardening practices. This document outlines best practices and guidelines for securing containers and provides references for further information.
+Scanning tells you what is *wrong* with an image; **hardening** is how you build images that are right by construction — small, minimal-privilege, and resistant to compromise. A hardened container limits both the likelihood of a vulnerability being exploitable and the blast radius if one is exploited. Defense-in-depth applies at every layer: image content, runtime configuration, and cluster policy.
 
-## Container Hardening Best Practices
+## Build a minimal image
 
-- **Use Only Trusted Base Images**
-Ensure that you use base images from trusted sources, such as official repositories or reputable vendors. Regularly update base images to include the latest security patches and fixes.
+Every package, binary, and layer you include is a potential attack surface. The goal is to ship only what the application needs to run:
 
-- **Apply Security Patches**
-Keep all container software and dependencies up to date by regularly applying security patches. This includes the host system, container runtime, and any additional software or libraries.
+- **Use minimal or distroless base images** — every package you omit is a vulnerability you cannot inherit. Google's [distroless images](https://github.com/GoogleContainerTools/distroless) contain only a language runtime and application code — no shell, no package manager, no debugging tools. An attacker who achieves code execution has nowhere to go.
+- **Multi-stage builds** — compile in a full build stage and copy only the final artifact into a clean minimal runtime stage:
 
-- **Implement Principle of Least Privilege**
-Apply the principle of least privilege to container configurations. Limit container capabilities, such as restricting root access and minimizing privilege escalation opportunities.
+  ```dockerfile
+  # Build stage
+  FROM golang:1.22 AS builder
+  WORKDIR /app
+  COPY . .
+  RUN CGO_ENABLED=0 go build -o myapp ./cmd/server
 
-- **Enable Resource Limitations**
-Define resource limitations for containers to prevent resource exhaustion attacks. Set appropriate limits for CPU, memory, and network bandwidth to ensure fair resource sharing and protect against DoS attacks.
+  # Runtime stage — no build tools, no shell
+  FROM gcr.io/distroless/static-debian12
+  COPY --from=builder /app/myapp /myapp
+  ENTRYPOINT ["/myapp"]
+  ```
 
-- **Use Image Vulnerability Scanning**
-Employ image vulnerability scanning tools to identify and remediate known vulnerabilities in container images. These tools can provide valuable insights into security risks and suggest appropriate fixes. Check out [Container Vulnerability Scanning](3-1-3-1-Container-scanning.md) for more information.
+- **Pin base images to digests** — mutable tags (`:latest`, `:22.04`) can change without warning. Pin to an immutable digest and automate periodic base image rebuilds:
 
-- **Employ Secure Network Configuration**
-Implement network security controls, such as container network segmentation and isolation. Use firewalls and network policies to restrict container communication and prevent unauthorized access.
+  ```dockerfile
+  FROM ubuntu@sha256:abc1234... AS base
+  ```
 
-- **Harden Host Systems**
-Ensure that host systems running container engines are hardened and regularly updated. Follow best practices for securing the underlying infrastructure, including patch management, access control, and intrusion detection.
+- **No secrets in layers** — every layer is permanently part of the image history. Use `--secret` mounts for build-time secrets and runtime environment injection for all credentials.
 
-- **Implement Container Runtime Security Measures**
-Utilize security features provided by container runtimes, such as SELinux, AppArmor, or seccomp, to enforce additional security policies and restrict container behavior.
+## Run with least privilege
 
-- **Monitor Container Activity**
-Implement logging and monitoring mechanisms to detect and respond to security incidents. Monitor container behavior, access logs, and system logs to identify any suspicious activity.
+A container that runs as root and has broad Linux capabilities is one kernel exploit away from a full host compromise:
 
-- **Secure Container Registry**
-Protect container images by securing the container registry. Implement authentication, access controls, and encryption to ensure that only authorized users can access and modify container images.
+- **Non-root user** — always set a non-root `USER` in the Dockerfile. For distroless images, use the nonroot variant:
+
+  ```dockerfile
+  USER nonroot:nonroot
+  ```
+
+- **Read-only root filesystem** — mount the container filesystem read-only; declare explicit writable volumes only where needed:
+
+  ```yaml
+  # Kubernetes pod spec
+  securityContext:
+    readOnlyRootFilesystem: true
+  volumeMounts:
+    - name: tmp
+      mountPath: /tmp
+  volumes:
+    - name: tmp
+      emptyDir: {}
+  ```
+
+- **Drop Linux capabilities** — start from zero and add back only what is required. Most application containers need no capabilities at all:
+
+  ```yaml
+  securityContext:
+    capabilities:
+      drop: ["ALL"]
+      add: []   # add only if explicitly required, e.g. NET_BIND_SERVICE
+    allowPrivilegeEscalation: false
+  ```
+
+- **No privileged containers** — avoid `--privileged` and host namespace sharing (`hostPID`, `hostNetwork`, `hostIPC`). These break container isolation entirely.
+- **Resource limits** — set CPU and memory limits to contain denial-of-service conditions and runaway workloads. An unconstrained container can starve co-located services.
+
+## Verify against benchmarks
+
+Measure image and runtime configuration against established security baselines rather than relying on internal convention:
+
+- [CIS Docker Benchmark](https://www.cisecurity.org/benchmark/docker) — covers the Docker daemon, image build practices, and container runtime configuration.
+- [CIS Kubernetes Benchmark](https://www.cisecurity.org/benchmark/kubernetes) — covers the Kubernetes control plane, worker nodes, and etcd configuration.
+- [Kubernetes Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/) — defines three profiles (Privileged, Baseline, Restricted); enforce the `Restricted` profile for all production workloads via namespace labels and admission controllers.
+- Run **kube-bench** and **Docker Bench for Security** as part of CI for infrastructure validation.
+
+## Tie into the supply chain
+
+Hardened images should also be **signed and traceable**. Sign images with cosign/Sigstore and attach provenance (SLSA) and SBOMs as attestations so that only verified, hardened images are admitted to production — see [Artifact Signing and Provenance](../2-3-6-Supply-Chain-Security/2-3-6-2-Artifact-Signing-and-Provenance.md) and [Container Scanning](2-3-3-1-Container-Scanning.md).
+
+## Common pitfalls and anti-patterns
+
+- **Hardening the Dockerfile but leaving a debug sidecar running in production** — sidecars with shells and tools negate the work done in the main container.
+- **`USER` set to a non-root UID but without a matching group** — some applications rely on group membership; verify runtime behavior after adding the USER directive.
+- **Assuming distroless means invulnerable** — distroless dramatically reduces the attack surface but the language runtime and your application code still carry their own vulnerabilities. Scanning remains necessary.
+- **Resource limits set too tight** — containers that hit memory limits are OOM-killed; set limits based on real profiling, not guesses.
+- **Build tools left in final image** — compilers, package managers, and test frameworks significantly increase image size and attack surface. Enforce multi-stage builds in code review.
+
+## Maturity progression
+
+**Starter** — Enforce non-root `USER` in all Dockerfiles. Add hadolint to CI to lint Dockerfiles. Remove obviously unnecessary packages from base images.
+
+**Intermediate** — Migrate to distroless or minimal base images. Enforce multi-stage builds. Add `readOnlyRootFilesystem: true` and drop all capabilities in Kubernetes manifests. Run kube-bench in CI for infrastructure pipelines.
+
+**Advanced** — Pin all base images to digests; automate weekly rebuilds. Sign images with Sigstore keyless signing and verify at admission with Kyverno or the Sigstore policy controller. Enforce `Restricted` pod security standards cluster-wide. Use Chainguard Images for critical base images; track CVE count and mean severity of base images as operational KPIs.
+
+## Metrics and KPIs
+
+| Metric | Target |
+|---|---|
+| % of containers running as non-root | 100% |
+| % of containers with read-only root filesystem | > 90% |
+| % of containers with all capabilities dropped | > 90% |
+| % of images using minimal/distroless base | > 80% |
+| kube-bench score (CIS benchmark pass rate) | > 95% |
+
+---
+
+## Tools[^1]
+
+### Open-source
+
+- [Docker Bench for Security](https://github.com/docker/docker-bench-security) - Checks Docker hosts and containers against CIS benchmark recommendations; useful as a configuration audit step.
+- [Dockle](https://github.com/goodwithtech/dockle) - Dockerfile and image linter for security best practices; catches common misconfigurations before the image is built.
+- [hadolint](https://github.com/hadolint/hadolint) - Dockerfile linter enforcing best practices including multi-stage build patterns, pinned digests, and non-root USER; integrates with most CI systems and IDEs.
+- [kube-bench](https://github.com/aquasecurity/kube-bench) - Checks Kubernetes cluster configuration against the CIS Kubernetes Benchmark; runs as a job in the cluster or in CI for infrastructure pipelines.
+
+### Commercial
+
+- [Chainguard Images](https://www.chainguard.dev/) - Continuously rebuilt, SLSA-signed minimal container base images with near-zero CVEs; eliminates base-image vulnerability debt by design.
+- [Sysdig Secure](https://sysdig.com/products/secure/) - Container hardening, drift detection, and runtime security for Kubernetes; detects when a running container deviates from its hardened image.
 
 ---
 
 ### Links
 
-- [CIS Benchmarks for Docker and Kubernetes](https://www.cisecurity.org/benchmark/docker/)
-- [Docker Security](https://docs.docker.com/engine/security/)
-- [Kubernetes Security](https://kubernetes.io/docs/concepts/security/)
-- [NIST Special Publication 800-190: Application Container Security Guide](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-190.pdf)
-- [OWASP Docker Security Project](https://owasp.org/www-project-docker-security/)
+[^1]: Listed in alphabetical order.

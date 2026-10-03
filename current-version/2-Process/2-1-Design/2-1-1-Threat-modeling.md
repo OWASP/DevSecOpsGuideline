@@ -1,145 +1,96 @@
 # Threat Modeling
 
-Threat modeling is a crucial component of the DevSecOps approach, focused on identifying and managing risks in a structured way. Here’s a more detailed look at this topic:
+Threat modeling is a structured way to find security problems in a **design** before any code is written — the earliest and cheapest point to fix them. By reasoning about what you are building and how it could be attacked, teams uncover design flaws that no scanner can detect, because scanners only see implementation, not intent.
 
-## What is Threat Modeling?
+The cost of finding a design flaw in a whiteboard session is negligible. The cost of discovering the same flaw in production — after an incident — is orders of magnitude higher. Threat modeling is the discipline that closes that gap.
 
-Threat modeling involves enumerating all potential attack vectors on an application, producing a list of threat scenarios along with mitigations. This holistic and collaborative process ensures comprehensive coverage of potential threats.
+## The four key questions
 
-Another important note is that Threat Modeling is a **Collaborative** and **Repeatable** process and it is a process **NOT** a project!
+The [Threat Modeling Manifesto](https://www.threatmodelingmanifesto.org/) frames the practice around four questions:
 
-### Key Outputs
+1. **What are we working on?** — diagram the system, data flows, and trust boundaries.
+2. **What can go wrong?** — enumerate threats against each component and flow.
+3. **What are we going to do about it?** — decide on mitigations for the threats that matter.
+4. **Did we do a good enough job?** — review and validate the model and its mitigations.
 
-- **System Diagrams:** Detailed representations of the architecture and data flows.
-- **Security Requirements:** Specific criteria for safeguarding the system.
-- **Threat List:** Catalog of potential threats with mitigation strategies.
+These questions are intentionally methodology-agnostic — they work whether your team uses sticky notes, a whiteboard, a formal tool, or code-based models.
 
-### Terms
+## Methodologies
 
-- **Weakness:** A software defect or bug. (e.g., input validation errors,  missing user email validation)
-- **Vulnerability:** A weakness that can be exploited. (Ex: we can abuse the user email field to insert SQL statements)
-- **Attack:** Exploitation of vulnerabilities.
-  - **Target:** The objective of the attack (e.g., sensitive data).
-  - **Attack Vector:** The path that the attacker can take to exploit a vulnerability (e.g., web interface).
-  - **Threat Actor:** The threat source (e.g., hacker, insider).
-- **Attack Surface:** Anything that can be obtained, used, or attacked by a threat actor.
-- **Risk:** Impact and likelihood of a threat being exploited (Risk = Impact x Likelihood).
-  - **Impact:** Size of negative consequences that each risk brings.
-  - **Likelihood:** Probability of a risk to happen.
-- **Approach:** Describes how one could start with the process.
-- **Methodology:** Describes the process itself.
+- **STRIDE** — categorizes threats as Spoofing, Tampering, Repudiation, Information disclosure, Denial of service, and Elevation of privilege. Each element in your data-flow diagram is examined against each STRIDE category. A good general-purpose starting point.
+- **PASTA** — a seven-stage, risk-centric process (Process for Attack Simulation and Threat Analysis) that ties threats to business impact. Better suited to mature programs with defined risk appetite.
+- **LINDDUN** — focuses on **privacy** threats (Linkability, Identifiability, Non-repudiation, Detectability, Disclosure of information, Unawareness, Non-compliance). Use alongside STRIDE for applications handling personal data.
+- **Attack trees** — model how an attacker could reach a goal step by step. Excellent for high-value targets or specific threat scenarios where you want to reason about attacker economics.
+- **OCTAVE** — operationally focused, suitable for organizations analyzing risk at the process and asset level rather than the feature level.
 
-## Why Threat Modeling?
+## Building the data-flow diagram
 
-As benefits ofthreat modeling, we can say:
+The data-flow diagram (DFD) is the foundation. A minimal DFD identifies:
 
-- **Proactive Threat Identification:** Early discovery of potential security issues.
-- **Cost Efficiency:** Mitigating threats early reduces remediation costs.
-- **Prioritization:** Focus on the most critical vulnerabilities.
-- **System Understanding:** Better comprehension of system interactions and data flows.
+- **Processes** — components that transform or act on data (services, functions, jobs).
+- **Data stores** — databases, caches, file systems, queues.
+- **External entities** — actors outside the trust boundary (users, third-party services, partners).
+- **Data flows** — how data moves between the above, including protocols and encryption status.
+- **Trust boundaries** — lines across which data passes from a lower-trust to a higher-trust zone (or vice versa). Every crossing is a candidate threat.
 
-## Who should be involved in the threat modeling?
+Keep DFDs at the right level of abstraction: one diagram per service or bounded context is more useful than one giant diagram for the entire system.
 
-- **Architect:** Knows how the application has been designed and how data flows across to ensure proper design and flow.
-- **Developer:** Knows how the application was built, and the interactions between components to provide insight into code and interactions.
-- **Tester:** Knows the requirements, and what the application is supposed to do, to validate requirements and behavior.
-- **Security expert:** Knows about specific attack factors and vulnerabilities to identify and assess security risks.
+## STRIDE applied — a worked example
 
-But, the best answer to this question is, **it depends on the organization**.
+For a REST API endpoint that accepts a user-uploaded file:
 
-## When to perform Threat modeling?
+| STRIDE category | Threat example | Mitigation |
+|---|---|---|
+| Spoofing | Caller forges user identity in request header | Validate JWT on every request, never trust client-supplied identity fields |
+| Tampering | File content modified in transit | Enforce TLS; verify file hash after upload |
+| Repudiation | Uploader denies submitting malicious file | Log upload events with authenticated user ID and file hash |
+| Information disclosure | Error message leaks server path or stack trace | Sanitize error responses; log details server-side only |
+| Denial of service | Attacker uploads gigabyte files to exhaust storage | Enforce file size limits and upload rate limits |
+| Elevation of privilege | File is stored in a path the web server executes | Store uploads outside the web root; scan before serving |
 
-Ideally, Threat Modeling should be performed early in the software design process. This allows for easier and cheaper fixes.
+## Making it fit DevSecOps
 
-In an Agile environment, Threat Modeling should be done during each sprint. But, we do not have to start from scratch each time. Each sprint only requires an iteration of the previous threat model output.
+Traditional threat modeling was a heavyweight, document-driven exercise done once. To keep pace with agile delivery:
 
-## Selecting the Right Approach & Methodology
+- **Right-size it** — model the riskiest features and changes, not every story. A 30-minute whiteboard session beats a 40-page document nobody reads.
+- **Do it continuously** — trigger a lightweight model update for any change that crosses a trust boundary, adds an external integration, or handles new categories of sensitive data.
+- **Threat-model as code** — express models in version-controlled, diffable formats ([pytm](https://github.com/OWASP/pytm), [threagile](https://threagile.io/)) so they evolve with the system and integrate into CI pipelines for automated risk reporting.
+- **Make it collaborative** — involve developers, architects, product managers, and security champions; the conversation is often more valuable than the artifact itself.
+- **Close the loop** — every identified threat should produce a ticket in the backlog. Unmitigated threats should have an explicit risk-acceptance decision, not be silently ignored.
 
-### Common Methodologies
+## When to threat model
 
-Common Threat Modeling methodologies are:
+| Trigger | Scope |
+|---|---|
+| New service or major feature | Full model of the new component and its integrations |
+| New external integration | Trust boundary analysis for the integration and its data |
+| Authentication or authorization change | Focused STRIDE analysis on identity and access paths |
+| Post-incident review | Update existing model to reflect how the attacker actually moved |
+| Periodic refresh | Annual or semi-annual full model review |
 
-- **PASTA (Process for Attack Simulation and Threat Analysis):** Focuses on business impact.
-- **Microsoft Threat Modeling:** Uses data flow diagrams (DFDs) to identify threats.
-- **OCTAVE (Operationally Critical Threat, Asset, and Vulnerability Evaluation):** Emphasizes organizational risk.
-- **TRIKE:** A security auditing framework.
-- **VAST (Visual, Agile, and Simple Threat):** Supports Agile development with automation.
+## Common pitfalls
 
-## Approaches
+- **Modeling too late** — threat modeling *after* code is written captures fewer high-impact findings and produces expensive rework. Start during design.
+- **Doing it alone** — security-team-only threat models miss the developer's knowledge of implementation nuance. Threat modeling is a team sport.
+- **Treating it as a one-time gate** — a threat model written at project kickoff and never updated is misleading, not helpful.
+- **Producing threats without owners** — every threat that warrants action must have an assigned owner and a ticket. Unowned threats disappear.
+- **Ignoring the "did we do a good enough job?" question** — review your threat model against actual test results and penetration findings to calibrate model quality over time.
 
-| **Approach**            | **Steps**                                                                                                                                                                   |
-|-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Asset-Centric**       | 1. Identify and classify assets. <br> 2. Diagram components and data flows. <br> 3. Identify threats specific to each element.                                              |
-| **Attacker-Centric**    | 1. Define potential threat actors (e.g., insiders, external hackers). <br> 2. Determine their motives, means, and opportunities. <br> 3. List and prioritize potential threats. |
-| **Application-Centric** | 1. Create detailed diagrams of the application. <br> 2. Identify threats for each element. <br> 3. Use threat classification models (e.g., STRIDE, OWASP Top 10). <br> 4. Rank threats using risk classification models (e.g., DREAD - Damage, Reproducibility, Exploitability, Affected Users, Discoverability). |
+## Metrics
 
-## Detailed Steps for Each Approach
+- Number of threat-modeled features per quarter vs total features shipped.
+- Average threats identified per model (rising over time suggests improving depth; sudden drops suggest model quality degraded).
+- Percentage of modeled threats with closed mitigations within the sprint.
+- Vulnerabilities discovered in production that were not in the threat model (escape rate — a calibration metric).
 
-### Asset-Centric
+## Maturity progression
 
-1. Asset Identification:
-   - List all assets, including data, software, and hardware.
-   - Classify assets based on their criticality and sensitivity.
-2. Component Diagramming:
-   - Use data flow diagrams (DFDs) to map out interactions.
-   - Highlight trust boundaries and data entry points.
-3. Threat Identification:
-   - Analyze each component for possible threats.
-   - Use tools like Microsoft Threat Modeling Tool to automate threat discovery.
-4. Threat Mitigation:
-   - Develop specific countermeasures for each identified threat.
-   - Prioritize mitigations based on risk assessment.
-
-### Attacker-Centric
-
-1. Threat Actor Identification:
-   - Identify potential attackers (e.g., external hackers, malicious insiders).
-   - Categorize actors by their access level and intent.
-2. Attacker Profiling:
-   - Understand attackers’ goals and capabilities.
-   - Use threat intelligence sources to gather information about typical attack methods.
-3. Threat Enumeration:
-   - List potential attack scenarios.
-   - Use attack trees to map out how an attacker might exploit vulnerabilities.
-4. Threat Mitigation:
-   - Implement defenses like intrusion detection systems, access controls, and encryption.
-   - Regularly update threat profiles and defenses based on new intelligence.
-
-### Application-Centric
-
-1. Application Diagramming:
-   - Create detailed architecture diagrams.
-   - Include data flows, components, and interactions.
-2. Threat Identification:
-   - Apply models like STRIDE or OWASP Top 10 to each component.
-   - Identify threats such as spoofing, tampering, and data breaches.
-3. Risk Assessment:
-   - Use the DREAD model to evaluate threats.
-   - Rank threats based on their potential impact and exploitability.
-4. Threat Mitigation:
-   - Develop countermeasures for high-risk threats.
-   - Implement secure coding practices and conduct regular security reviews.
-
-## What is DREAD?
-
-DREAD is a risk assessment model used in cybersecurity to evaluate and prioritize potential threats. The acronym stands for:
-
-- **Damage potential:** Assessing the potential damage that could result from a successful exploit.
-- **Reproducibility:** Evaluating how easily the exploit can be replicated.
-- **Exploitability:** Determining the ease with which the vulnerability can be exploited.
-- **Affected users:** Identifying the number of users or systems affected by the vulnerability.
-- **Discoverability:** Assessing how easily the vulnerability can be discovered.
-
-Each of these factors is typically scored on a scale, often from 0 to 10, with higher scores indicating a greater level of risk.
-
-## Practical Steps for Threat Modeling
-
-1. **Define Scope:** Identify boundaries of the system and critical assets.
-2. **Create Diagrams:** Develop DFDs and architecture diagrams.
-3. **Identify Threats:** Use methodologies like STRIDE to discover potential threats.
-4. **Analyze Threats:** Assess risk using models like DREAD.
-5. **Develop Mitigations:** Define strategies to mitigate identified threats.
-6. **Review and Iterate:** Regularly update the threat model throughout the development lifecycle.
+| Level | Practice |
+|---|---|
+| Starting | Ad-hoc whiteboard sessions for highest-risk features; output is a list of threats in the backlog |
+| Developing | STRIDE applied consistently to all new features crossing trust boundaries; DFDs stored in the repo |
+| Defined | Threat-model-as-code (pytm or threagile) integrated into CI; model reviews at sprint milestones |
+| Advanced | Automated threat generation from architecture diagrams; threat model findings correlated with SAST/DAST/pentest findings |
 
 ---
 
@@ -147,22 +98,28 @@ Each of these factors is typically scored on a scale, often from 0 to 10, with h
 
 ### Open-source
 
-- [CAIRIS](https://cairis.org/): A tool for building models and conducting risk assessments based on these models.
-- [Microsoft Threat Modeling Tool](https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool) - A tool for creating data flow diagrams and identifying threats using STRIDE.
-- [OWASP Threat Dragon](https://owasp.org/www-project-threat-dragon/) - An open-source tool for creating threat model diagrams and managing threats.
-- [threat-composer](https://github.com/awslabs/threat-composer?tab=readme-ov-file) - A simple threat modeling tool to help humans to reduce time-to-value when threat modeling.
+- [OWASP pytm](https://github.com/OWASP/pytm) — A Python-based framework for expressing threat models as code. Generates DFDs, sequence diagrams, and STRIDE reports from a Python definition file. Integrates into CI.
+- [OWASP Threat Dragon](https://owasp.org/www-project-threat-dragon/) — Free, open-source threat modeling tool with a visual DFD editor and STRIDE categorization. Stores models as JSON for version control.
+- [OWASP ThreatAtlas](https://github.com/OWASP/ThreatAtlas) — A community-maintained, structured knowledge base of real-world threats mapped to attack patterns, MITRE ATT&CK techniques, and mitigations. Where Threat Dragon helps you *create* a model, ThreatAtlas helps you *populate* it with curated, evidence-based threat intelligence drawn from documented incidents. Use it during the "what can go wrong?" phase to ensure your threat library reflects the actual attacker landscape rather than only theoretical concerns.
+- [Threagile](https://threagile.io/) — Agile, YAML-based threat modeling. Takes a YAML model of your architecture and outputs a risk report with data-flow diagrams. Designed for CI integration.
+- [Attack Flow](https://center-for-threat-informed-defense.github.io/attack-flow/) — MITRE CTID project for modeling sequences of adversary actions using ATT&CK techniques. Useful for post-incident and red team threat analysis.
 
 ### Commercial
 
-- [IriusRisk](https://www.iriusrisk.com/threat-modeling-platform) - A platform for automated threat modeling and risk management.
-- [ThreatModeler](https://threatmodeler.com/) - An enterprise-grade tool for automated threat modeling, integrating with CI/CD pipelines.
+- [IriusRisk](https://www.iriusrisk.com/) — Automated threat modeling platform with rules-based threat generation from architecture questionnaires. Integrates with Jira for backlog creation.
+- [SD Elements](https://www.securitycompass.com/sdelements/) — Combines threat modeling with security requirements management; generates tasks directly into the development backlog.
+- [Microsoft Threat Modeling Tool](https://aka.ms/threatmodelingtool) — Free from Microsoft; focuses on DFD-based STRIDE analysis. Best suited to Microsoft-stack environments.
 
 ---
 
 ### Links
 
-- [Awesome Threat Modeling](https://github.com/hysnsec/awesome-threat-modelling)
-- [OWASP - Threat Modeling](https://owasp.org/www-community/Threat_Modeling)
-- [Threat Modeling Cheat Sheet](https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Threat_Modeling_Cheat_Sheet.md)
-
 [^1]: Listed in alphabetical order.
+
+## Further reading
+
+- [Threat Modeling Manifesto](https://www.threatmodelingmanifesto.org/)
+- [OWASP Threat Modeling Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html)
+- [OWASP ThreatAtlas](https://github.com/OWASP/ThreatAtlas)
+- [Adam Shostack — Threat Modeling: Designing for Security](https://www.wiley.com/en-us/Threat+Modeling%3A+Designing+for+Security-p-9781118809990)
+- [STRIDE per Element — Microsoft Security Blog](https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)

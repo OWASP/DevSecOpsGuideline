@@ -1,106 +1,94 @@
-# DevSecOps Intro
+# Overview
 
-Today, DevOps is empowering any organizations to deploy changes to production environments at blazing rates.
-Since time to deliver is so important feature during this process, the main question for a security person is
-"How I can secure this process?" or "How much our deliverable products are secure?".
-In this regard, we can embed some security-related steps entire our DevOps process to perform some automated tests.
-So considering the DevSecOps or secure DevOps culture helps us to promote the shift-left security strategy in our company,
-at least in the tech department.
+## From DevOps to DevSecOps
 
-## What's the Shift-left security strategy?
+DevOps unified development and operations to deliver software faster and more reliably through automation, continuous integration, and continuous delivery. **DevSecOps** extends that model by making security a shared responsibility integrated into every phase, rather than a separate audit performed at the end.
 
-As a simple definition, the shift-left security strategy is a way or solution to embedding security as a part of our development process
-and consider security from the inception steps of application or system design.
-In other words, security is responsible for everyone who works in the software development and operating process.
-Of course, security is a profession and we need highly skilled people to play security-related roles;
-but in this approach, any designer, software architecture, developer, DevOps engineer, and ... together with security guys have liability about security.
+The driving idea is **shift-left**: move security feedback as close as possible to the moment code is written, when issues are cheapest to fix. In practice, mature programs now **shift everywhere** — running fast, low-friction checks early *and* deeper validation continuously through build, test, deploy, and runtime.
 
-## Dev+Sec+Ops
+The difference is not just where security happens, but *who owns it*: DevSecOps moves security ownership from a separate team to the whole engineering organization, supported by automation, tooling, and a champions network.
 
-![DevSecOps Venn Diagram](/current-version/assets/images/DevSecOps.png)
+## What to add to a pipeline
 
-Suppose that these 3 different areas for covering each other is something like the image,
-so in conclusion with the above words, we need to implement some tools and working on promoting a DevSecOps culture too.
+A reasonable progression of controls to introduce:
 
-As Shannon Lietz - founder at DevSecOps foundation - said:
+- **Secrets scanning** — find credentials before they are committed or merged. Tools like TruffleHog and Gitleaks run in pre-commit hooks or CI with near-zero false-positive rates on high-entropy strings and known secret formats. A single leaked cloud credential can compromise an entire environment within minutes of appearing in a public repo.
+- **SCA (Software Composition Analysis)** — detect vulnerable and malicious open-source dependencies. SCA tools map your dependency tree against CVE databases and increasingly flag malicious packages (typosquatting, dependency confusion) and license issues. Log4Shell (2021) demonstrated what a critical CVE in a transitive dependency can do at scale: hundreds of millions of systems affected by a library most of their developers had never heard of.
+- **SAST (Static Application Security Testing)** — analyze first-party source code for flaws. Effective SAST runs in the pull request and reports only *new* findings against the base branch so developers see only what they introduced.
+- **IaC scanning** — find misconfigurations in Terraform, Helm, Kubernetes manifests, Ansible, etc. These flaws — overly permissive IAM, unencrypted storage, open network rules — are frequently the easiest path into cloud environments. The Capital One breach (2019) exploited a misconfigured WAF combined with excessive IAM permissions to exfiltrate over 100 million records.
+- **Container security** — scan and harden images and their base layers. Container scanning should run at build time and again continuously against the registry, since new CVEs emerge after an image is published.
+- **Supply-chain security** — generate SBOMs, sign artifacts, and produce build provenance (SLSA). Signed provenance lets you verify that a release artifact was built from the expected source by the expected pipeline, catching tampering before production. The SolarWinds attack (2020) injected malicious code into the build process; signed provenance would have created a verifiable record of the anomaly.
+- **IAST / DAST** — test running applications interactively and dynamically. IAST instruments the application at test time for deep, low-noise findings; DAST probes from the outside, as an attacker would.
+- **API security** — discover, test, and protect APIs. REST and GraphQL surfaces are often undertested; dedicated API security tools enumerate endpoints from specs, traffic, or code and fuzz them for the OWASP API Top 10.
+- **CNAPP / cloud-native security** — protect cloud and Kubernetes workloads at runtime. CNAPP platforms (CSPM + CWPP + CIEM + KSPM) give a unified view of misconfigurations, vulnerable workloads, excessive permissions, and runtime threats.
+- **Continuous monitoring and vulnerability management** — aggregate, prioritize, and remediate findings over time. A vulnerability management process with defined SLAs (e.g., critical CVEs within 7 days, high within 30) closes the loop between detection and fix.
+- **Compliance checks** — continuously verify controls against policy and regulation using policy-as-code tools so compliance state is always known, not discovered at audit time.
 
-> The purpose and intent of DevSecOps is to build on the mindset that
-> "everyone is responsible for security" with the goal of safely distributing
-> security decisions at speed and scale to those who hold the highest level of
-> context without sacrificing the safety required."
+## A recommended introduction order
 
-## The DevSecOps culture
+| Priority | Control | Why first |
+|---|---|---|
+| 1 | Secrets scanning (pre-commit + CI) | Prevents the single most common and damaging class of pipeline leak; near-zero false positives |
+| 2 | SCA in CI | Finds known CVEs in dependencies with very low false-positive rates; often the largest immediate risk surface |
+| 3 | Branch protection + SAST in PR | Gates new code, surfaces findings where developers can act immediately at lowest cost |
+| 4 | IaC scanning | Catches the misconfiguration class of cloud breach before infrastructure is provisioned |
+| 5 | Container scanning | Stops vulnerable base images reaching production; runs automatically at build time |
+| 6 | DAST / IAST | Tests the running application from inside and outside; requires a test environment |
+| 7 | SBOM + signing | Establishes supply-chain trust and meets emerging regulatory requirements (EU CRA, NIST guidance) |
 
-As you heard before we want to talk about the Shift-left security.
-It means we should consider security from design (in a simple definition) which target is moving security earlier in the development process.
+Start with controls 1–3. They provide the highest risk reduction per implementation effort and build the cultural habit of security-in-CI before adding more sophisticated controls.
 
-Let's suppose that you are working in a DevOps team and you are traditionally doing security test
-(yes, end of all QA tests and before going to production), what happens?
-Well, all bugs should be fixed ASAP, Developer team is under pressure to fix issues,
-QA tests should be performed again, and security test again.
-This means that the costs, money and time, increase.
-In the end, you sacrifice agility for security things do not like a business team.
+## A finding's journey through the pipeline
 
-The solution is introducing security earlier in the process instead of having it in the final steps.
-Considering security in design by threat modeling and
-break down huge security tests in smaller security testing and integrating them in the development pipeline.
+To understand how the pieces connect, follow a typical SAST finding from discovery to closure:
 
-The following picture shows the differences between DevOps and DevSecOps lifecycles.
+1. **Developer writes code** with a SQL string built by concatenation (potential injection). The IDE plugin (e.g., Semgrep LSP, Snyk IDE) flags it inline — the developer sees it before a single commit.
+2. **Pre-commit hook** runs a fast Semgrep scan on staged files. If the developer ignored the IDE warning, the hook catches it before the commit lands.
+3. **Pull request CI** runs a full SAST scan against the base branch. A PR comment is posted automatically with the finding, the file, the line, the CWE reference, and a remediation suggestion. The PR is blocked from merge until the finding is addressed.
+4. **Developer fixes** the injection by using a parameterized query. They push an updated commit; the SAST re-runs and the gate passes.
+5. **The fix is merged.** The scan result (pass, with the finding resolved) is automatically ingested into the vulnerability management platform (e.g., DefectDojo) via webhook, closing the finding ticket.
+6. **Governance dashboard** shows the MTTR for this finding (time from PR open to fix merged), contributing to the team's remediation SLA metric.
 
-![DevOps vs DevSecOps](/current-version/assets/images/DevOps-vs-DevSecOps.png)
+This flow is fully automated. No security team member touched it. The developer was informed, guided, and unblocked within their normal workflow.
 
-## Privacy
+## Integration architecture
 
-Privacy has become a major topic for companies of all sizes, since GDPR (Europe’s General Data Protection Regulations), CCPA (California Consumer Privacy Act), LGPD – Brazil’s Lei Geral de Proteção de Dados, and other laws and regulations are being enforced around the world.
+Tools in a DevSecOps pipeline connect through a few standard integration patterns:
 
-Applications that will process a large volume of PII (personally identifiable information) should adapt the DevSecOps to follow the Privacy by Design approach, where the development process addresses privacy concerns thru the whole cycle.
+- **CI hooks** — SAST, SCA, IaC, and secrets scanners run as pipeline steps. They emit exit codes (0 = pass, non-zero = fail) and produce structured output (SARIF, JSON, CycloneDX) consumed by downstream tooling.
+- **SARIF ingestion** — GitHub Code Scanning, GitLab Security Dashboard, and DefectDojo all consume SARIF. A scanner that emits SARIF automatically integrates with any of these platforms without custom parsing.
+- **Webhooks / APIs** — CI platforms push scan results to vulnerability management tools via webhook. Defect management tools (Jira, DefectDojo) create and close tickets via API. Dashboards pull from both.
+- **OCI attestations** — SBOM and provenance attestations are stored as OCI artifacts alongside container images in the registry, discovered and verified by admission controllers at deploy time.
+- **Policy engines** — OPA/Gatekeeper and Kyverno receive admission requests from Kubernetes and evaluate policies against them in real time. The decision (allow/deny) is logged for audit.
 
-## Software testing strategies
+## Security gates without breaking flow
 
-When, we talk about testing we should have in mind
-we have different definitions in testing which is can change our route to achieving
-a secure DevSecOps cycle.
-Let's take look into this definitions.
+The goal is not to block every build on every finding — that destroys developer trust and creates alert fatigue. Instead:
 
-### Different software testing strategies
+- Gate on **risk** (severity, exploitability, reachability), not raw counts.
+- Baseline existing issues so teams are accountable only for *new* risk they introduce. Many SAST tools support a `--baseline` flag or new-findings-only mode.
+- Give developers actionable, in-context results in the tools they already use (IDE plugin, PR comment, Slack message) — not just a CI log they have to go digging for.
+- Support a documented exception process for the rare cases where a finding cannot be remediated immediately, so teams do not disable gates as a workaround.
 
-1. **Positive testing**
+## Secure the pipeline, not just the app
 
-   Positive testing assumes that, under normal conditions and inputs,
-   everything will behave as expected.
-   It is performed with the assumption that only valid and relevant things will happen:
-   data set and all other functionalities will be as expected.
+CI/CD tooling expands your attack surface. Build runners, package registries, third-party Actions/plugins, and long-lived tokens are all attractive targets. Concrete hardening steps include:
 
-2. **Negative testing**
+- Use **OIDC workload identity** (GitHub OIDC → AWS/GCP/Azure) instead of long-lived cloud credentials stored as secrets.
+- **Pin** third-party Actions and container images to immutable SHA digests, not mutable tags.
+- **Restrict `permissions:`** blocks in GitHub Actions to the minimum required per job.
+- Run jobs in **ephemeral, isolated runners** and restrict network egress to only what the build needs.
+- Audit third-party plugin and Action updates; treat them as supply-chain risk.
 
-   Negative testing checks the system behavior under unexpected conditions.
-   Negative testing plays a much important role in high-performance software development:
-   it checks the software behavior under unexpected conditions and inputs.
+See the [CI/CD Pipeline Security](../2-Process/2-3-Build/2-3-6-Supply-Chain-Security/2-3-6-3-CICD-Pipeline-Security.md) page for a full hardening checklist.
 
-#### Methods of testing
+## Maturity and frameworks
 
-1. **Static testing**
+Use established frameworks to decide *what* to do and *how well*:
 
-   Static Testing checks software defects without executing the application code.
-   It is performed in the early stage of development to avoid errors, as it is easier to find sources of failures and it can be fixed easily.
-   Some issues that can’t be found using Dynamic Testing, can be easily found by Static Testing. Such issues consists of hard coded credentials, deprecated encryption algorithms, 2nd order injections, weak random, etc.
-   Most static analysis tools have the testing scope limited to one component and can not perform tests across different components. (EG. for a microservice architecture, static analysis tools will test each microservice independently)
-   ![Static testing](/current-version/assets/images/sast_scanning.png)
+- [OWASP SAMM](https://owaspsamm.org/) — measure and improve security maturity across business functions.
+- [OWASP DSOMM](https://dsomm.owasp.org/) — map concrete DevSecOps activities to maturity levels.
+- [NIST SSDF (SP 800-218)](https://csrc.nist.gov/Projects/ssdf) — baseline secure-development practices for compliance.
+- [SLSA](https://slsa.dev/) — supply-chain integrity levels.
 
-2. **Dynamic testing**
-
-   Dynamic Testing analyzes the behavior of the application code at runtime. Scanners send specially crafted requests to the target application. Request parameters are constantly modified during testing to try and expose a range of vulnerabilities. Based on the response of the application the tool can then identify potential vulnerabilities and report back. Some issues that can't be found by static analysis are easily detected by dynamic analysis. Such issues include client side vulnerabilities like authentication & session issues, sensitive data sent in plain text, etc.
-   Dynamic analysis tools have the possibility of testing the entire application flow(multiple components at once). (Eg. for a microservice architecture, dynamic analysis tools can point to one microservice, but as they interact with each other results will represent the behaviour of the entire application)
-   ![Dynamic testing](/current-version/assets/images/dast_scanning.png)
-
-3. **Interactive analysis**
-
-   Also known as Interactive Application Security Testig (IAST) monitors the application while other systems interact with it and observe vulnerabilities. This is achieved via sensors or agents deploy with the application. The sensors can see the entire flow from HTTP request down to the executed code, tracing the data through the application. Similar to static analysis, it can test one component at a time, but not multiple components. However, if agents/sensors are deployed on all components, when they interact with eachother this could reveal vulnerabilities in each component used in the application. (Eg. for a microservice architecture, only the microservices that have agents/sensors attached will report vulnerabilities)
-   ![Interactive analysis](/current-version/assets/images/iast_analysis.png)
-
----
-
-#### References
-
-1. <https://www.geeksforgeeks.org/difference-between-positive-testing-and-negative-testing>
-2. <https://www.geeksforgeeks.org/difference-between-static-and-dynamic-testing>
+See [Frameworks and Standards](0-3-Frameworks-and-Standards.md) for how these relate.
