@@ -1,0 +1,58 @@
+site_name: OWASP DevSecOps Guideline
+site_description: Vendor-neutral practices and tools for building and operating a secure software delivery pipeline.
+site_url: https://owasp.github.io/DevSecOpsGuideline/
+repo_url: https://github.com/OWASP/DevSecOpsGuideline
+repo_name: OWASP/DevSecOpsGuideline
+edit_uri: edit/master/current-version/
+docs_dir: current-version
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+watch:
+  - docs-hooks
+  - README.md
+
+hooks:
+  - docs-hooks/home.py
+
+plugins:
+  - search
+
+markdown_extensions:
+  - tables
+  - footnotes
+  - admonition
+  - attr_list
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+# Navigation is generated from the folder tree under current-version/.

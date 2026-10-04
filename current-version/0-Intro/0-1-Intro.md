@@ -61,7 +61,7 @@ Start with the [Develop](../2-Process/2-2-Develop) stage, specifically pre-commi
 Start with the [Overview](0-2-Overview.md) for a full pipeline view, then use the [Frameworks and Standards](0-3-Frameworks-and-Standards.md) page to map this guideline to your regulatory or maturity framework requirements. Use the [Governance](../3-Governance) section to build a reporting and measurement program.
 
 **If you are an engineering manager or CISO:**
-Start with the [Maturity levels](#maturity-levels--where-to-start) table below and the [Tracking Maturities](../3-Governance/3-3-Reporting/3-3-1-Tracking-maturities.md) page. The [People](../1-People) section covers the organizational structures (security champions, roles) that make the program sustainable.
+Start with the [Maturity levels](#maturity-levels-where-to-start) table below and the [Tracking Maturities](../3-Governance/3-3-Reporting/3-3-1-Tracking-maturities.md) page. The [People](../1-People) section covers the organizational structures (security champions, roles) that make the program sustainable.
 
 ## Common anti-patterns to avoid
 
@@ -71,7 +71,7 @@ Start with the [Maturity levels](#maturity-levels--where-to-start) table below a
 - **Treating compliance as security** — passing an audit is not the same as being secure. Compliance is a floor, not a ceiling; design for real-world adversaries, not just checkbox controls.
 - **Ignoring developer experience** — security tooling that is slow, noisy, or hard to use gets disabled or routed around. Developer experience is a security concern.
 
-## Maturity levels — where to start
+## Maturity levels: where to start
 
 | Stage | What to focus on |
 |---|---|

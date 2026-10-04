@@ -1,0 +1,75 @@
+---
+name: Docs - GitHub Pages
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - master
+    paths:
+      - current-version/**
+      - mkdocs.yml
+      - docs-hooks/**
+      - README.md
+      - requirements-docs.txt
+      - .github/workflows/pages.yml
+  pull_request:
+    paths:
+      - current-version/**
+      - mkdocs.yml
+      - docs-hooks/**
+      - README.md
+      - requirements-docs.txt
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-docs.txt
+
+      - name: Install MkDocs Material
+        run: pip install -r requirements-docs.txt
+
+      - name: Build
+        run: mkdocs build --site-dir _site
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
