@@ -6,16 +6,16 @@ Most vulnerabilities are introduced while code is being written. The cheapest pl
 
 ### Core web and application risk
 
-- **The OWASP Top 10** — [owasp.org/www-project-top-ten](https://owasp.org/www-project-top-ten/) — covers the ten most critical web application risks. Every developer writing server-side code should understand injection, broken access control, cryptographic failures, and insecure design.
-- **The relevant variant for your stack** — [OWASP API Top 10](https://owasp.org/www-project-api-security/) for API developers, [OWASP Mobile Top 10](https://owasp.org/www-project-mobile-top-10/) for mobile engineers, [OWASP LLM Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) for teams building AI-powered features.
+- **The OWASP Top 10** — [owasp.org/www-project-top-ten](https://owasp.org/www-project-top-ten/) — covers the ten most critical web application risks. Every developer writing server-side code should understand broken access control, injection, security misconfiguration, software supply chain failures, and insecure design.
+- **The relevant variant for your stack** — [OWASP API Top 10](https://owasp.org/www-project-api-security/) for API developers, [OWASP Mobile Top 10](https://owasp.org/www-project-mobile-top-10/) for mobile engineers, [OWASP Top 10 for LLM Applications](https://genai.owasp.org/llm-top-10/) and the [OWASP Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) for teams building AI-powered features.
 
 ### Security requirements and verification
 
-- **OWASP ASVS** — [owasp.org/www-project-application-security-verification-standard](https://owasp.org/www-project-application-security-verification-standard/) — a concrete checklist of what "secure" means for authentication, session management, input validation, cryptography, API security, and more. Use it as a training curriculum and as the definition-of-done for security requirements.
+- **OWASP ASVS** — [owasp.org/www-project-application-security-verification-standard](https://owasp.org/www-project-application-security-verification-standard/) — a concrete catalog of what "secure" means for authentication, session management, validation, cryptography, APIs, and more (ASVS 5.0 has roughly 350 requirements across three levels). Use it as a training curriculum and as the definition-of-done for security requirements.
 
 ### Defensive techniques
 
-- **OWASP Proactive Controls** — [owasp.org/www-project-proactive-controls](https://owasp.org/www-project-proactive-controls/) — ten defensive techniques developers should apply in every application: define security requirements, leverage security frameworks, secure database access, encode and escape data, validate all inputs, implement digital identity correctly, enforce access controls, protect data everywhere, implement security logging and monitoring, handle all errors and exceptions.
+- **OWASP Proactive Controls** — [owasp.org/www-project-proactive-controls](https://owasp.org/www-project-proactive-controls/) — ten defensive techniques developers should apply in every application (2024 edition): implement access control, use cryptography to protect data, validate all input and handle exceptions, address security from the start, use secure-by-default configurations, keep components secure, secure digital identities, leverage browser security features, implement security logging and monitoring, and stop server-side request forgery.
 
 ### Language- and framework-specific guidance
 
@@ -24,8 +24,8 @@ Generic security training does not stick as well as guidance tied to the develop
 | Language / Area | Key cheat sheets and pitfalls |
 |---|---|
 | Python | [SQL Injection Prevention](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html), avoiding `pickle` deserialization, safe `subprocess` usage, SSRF prevention |
-| Java / Spring | [Spring Security](https://cheatsheetseries.owasp.org/cheatsheets/Spring_Security_Cheat_Sheet.html), avoiding `ObjectInputStream`, XXE in XML parsers, expression language injection |
-| JavaScript / Node.js | Prototype pollution, ReDoS, path traversal in file operations, [npm dependency confusion](https://cheatsheetseries.owasp.org/cheatsheets/npm_Security_Cheat_Sheet.html) |
+| Java / Spring | [Deserialization](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html) (avoiding `ObjectInputStream`), [XXE Prevention](https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html), expression language injection |
+| JavaScript / Node.js | Prototype pollution, ReDoS, path traversal in file operations, [npm dependency confusion](https://cheatsheetseries.owasp.org/cheatsheets/NPM_Security_Cheat_Sheet.html) |
 | Go | SQL injection in raw queries, TLS configuration, goroutine leaks in error paths |
 | Terraform / Helm | [Infrastructure as Code](https://cheatsheetseries.owasp.org/cheatsheets/Infrastructure_as_Code_Security_Cheat_Sheet.html), hardcoded secrets, overly permissive IAM, unsafe default values |
 | Authentication | [Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html), [Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html) |
@@ -36,6 +36,7 @@ Generic security training does not stick as well as guidance tied to the develop
 How to read code adversarially — spotting anti-patterns, data flow from untrusted input to dangerous sinks, missing authorization checks, and insecure defaults. Code review is where security knowledge directly translates into prevented vulnerabilities.
 
 A minimal secure code review checklist:
+
 - [ ] All inputs validated server-side (type, length, allowlist where feasible)
 - [ ] Parameterized queries used for all database access; no string concatenation
 - [ ] Authorization checked on every state-changing operation, not just at login
@@ -61,10 +62,10 @@ Every new developer should complete security onboarding before or alongside tech
 
 | Touchpoint | Delivery |
 |---|---|
-| IDE security plugin | Real-time feedback (Snyk, SonarLint, Semgrep) as code is typed |
+| IDE security plugin | Real-time feedback (Semgrep, Snyk, SonarQube for IDE) as code is typed |
 | PR review | Automated comments linking findings to cheat sheet remediation guidance |
 | Sprint planning | Security champion reviews relevant findings before estimation |
-| Quarterly learning sprints | 2–4 hour focused lab on a current threat (e.g., LLM prompt injection, supply-chain attacks) |
+| Quarterly learning sprints | 2–4 hour focused lab on a current threat (e.g., LLM prompt injection, supply-chain attacks, poisoned CI workflows) |
 | Incident retrospectives | Post-mortems that include secure-coding lessons from real vulnerabilities |
 
 ## Defining a secure coding standard
@@ -139,17 +140,20 @@ Completion rates are a compliance metric, not a security metric. Track:
 
 ### Open-source
 
+- [OWASP crAPI](https://github.com/OWASP/crAPI) — Completely Ridiculous API, a vulnerable API for practising OWASP API Top 10 attacks. Ideal for teams building or testing APIs.
 - [OWASP Juice Shop](https://owasp.org/www-project-juice-shop/) — Modern, intentionally insecure web application covering the OWASP Top 10 and beyond. Ideal for workshops and self-study; includes a Capture the Flag mode. Best for broad web security awareness.
 - [OWASP Security Knowledge Framework (SKF)](https://www.securityknowledgeframework.org/) — Provides security requirements, code examples, and labs mapped to ASVS. Supports integration into the development workflow. Best for teams wanting ASVS-aligned learning paths.
+- [OWASP Security Shepherd](https://owasp.org/www-project-security-shepherd/) — Web and mobile security training platform with gamified, scored challenges. Well suited to classroom and internal competition formats.
 - [OWASP WebGoat](https://owasp.org/www-project-webgoat/) — Deliberately insecure Java application with interactive lessons. Good for teams on JVM stacks; covers a wide set of Java-specific vulnerabilities.
-- [OWASP crAPI](https://github.com/OWASP/crAPI) — Completely Ridiculous API, a vulnerable API for practising OWASP API Top 10 attacks. Ideal for teams building or testing APIs.
 
 ### Commercial
 
 - [Hack The Box](https://www.hackthebox.com/) — Hands-on hacking labs and training for both offensive and defensive skills. Best for engineers with security interest who want to go beyond awareness into technical depth.
+- [PortSwigger Web Security Academy](https://portswigger.net/web-security) — Free, self-paced web security labs and learning paths from the makers of Burp Suite. Best for developers who want deep, practical web vulnerability knowledge at no cost.
 - [Secure Code Warrior](https://www.securecodewarrior.com/) — Gamified, language-specific secure-coding training integrated into the developer workflow; supports tournament-style team challenges. Best for enterprise-scale developer programs with manager dashboards.
 - [SecureFlag](https://www.secureflag.com/) — Hands-on secure-coding training in real, runnable environments across 30+ languages and frameworks. Best for breadth of language support.
 - [Snyk Learn](https://learn.snyk.io/) — Free and integrated secure coding lessons mapped to real CVEs and language-specific vulnerabilities. Best for just-in-time learning tied to actual Snyk findings.
+- [TryHackMe](https://tryhackme.com/) — Guided, browser-based labs and learning paths, including web and application security rooms. Best for beginners who need a structured on-ramp.
 
 ---
 

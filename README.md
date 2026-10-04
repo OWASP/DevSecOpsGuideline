@@ -6,6 +6,16 @@ We try to draw a perspective of a secure DevOps pipeline during this project and
 
 The Ideal goal is **"detect security issues (by design or application vulnerability) as early as possible."**
 
+## How the guideline is organized
+
+The guideline is built around three pillars:
+
+- **People** — teams, roles, culture, and training.
+- **Process** — security activities woven into every SDLC stage: Design, Develop, Build, Test, Release, Deploy, Operate.
+- **Governance** — compliance, policy as code, reporting, ASPM, and AI governance.
+
+The current edition is refreshed for 2025/2026 and aligned with frameworks such as NIST SSDF, OWASP SAMM, OWASP DSOMM, and SLSA. See the [Table of Contents](#table-of-contents) below, or browse the [current version](current-version/README.md).
+
 ## Initial steps
 
 DevSecOps is all about putting security into DevOps. But to keep up with the pace of CI/CD, security has to be injected early into software writing and testing.
@@ -32,7 +42,9 @@ At first, we consider implementing the following steps in a basic pipeline:
 - CNAPP (Cloud Native Application Protection)
 - Infrastructure scanning
 - Continuous Scanning from other tools
-- Compliance check
+- Compliance check and policy as code
+- Security gates (quality gates that block risky builds and releases)
+- Centralized reporting and ASPM (Application Security Posture Management)
 - AI/LLM security and AI governance (securing AI-assisted development and AI-powered features)
 
 We can customize the steps of our pipeline according to our Software Development Life Cycle (SDLC) or software architecture and add automation progressively if we are starting.
@@ -49,10 +61,12 @@ However, when using CI/CD tools to provide automation, keep in mind that the too
   - [0-1-Intro](current-version/0-Intro/0-1-Intro.md)
   - [0-2-Overview](current-version/0-Intro/0-2-Overview.md)
   - [0-3-Frameworks-and-Standards](current-version/0-Intro/0-3-Frameworks-and-Standards.md)
+  - [0-4-Regulatory-Mapping-CRA-NIS2-SSDF](current-version/0-Intro/0-4-Regulatory-Mapping-CRA-NIS2-SSDF.md)
 - [1-People](current-version/1-People)
   - [1-1-Shape-the-team](current-version/1-People/1-1-Shape-the-team)
     - [1-1-1-Security-champions](current-version/1-People/1-1-Shape-the-team/1-1-1-Security-champions.md)
     - [1-1-2-Roles-and-Responsibilities](current-version/1-People/1-1-Shape-the-team/1-1-2-Roles-and-Responsibilities.md)
+    - [1-1-3-Security-champions-playbook-templates](current-version/1-People/1-1-Shape-the-team/1-1-3-Security-champions-playbook-templates.md)
   - [1-2-Training](current-version/1-People/1-2-Training)
     - [1-2-1-Secure-coding](current-version/1-People/1-2-Training/1-2-1-Secure-coding.md)
     - [1-2-2-Security-CICD](current-version/1-People/1-2-Training/1-2-2-Security-CICD.md)
@@ -68,11 +82,15 @@ However, when using CI/CD tools to provide automation, keep in mind that the too
       - [2-2-1-3-Linting-code](current-version/2-Process/2-2-Develop/2-2-1-Pre-commit/2-2-1-3-Linting-code.md)
       - [2-2-1-4-Repository-Hardening](current-version/2-Process/2-2-Develop/2-2-1-Pre-commit/2-2-1-4-Repository-Hardening.md)
     - [2-2-2-IDE-and-AI-assisted-development](current-version/2-Process/2-2-Develop/2-2-2-IDE-and-AI-assisted-development.md)
+    - [2-2-3-Secure-Code-Review](current-version/2-Process/2-2-Develop/2-2-3-Secure-Code-Review.md)
+    - [2-2-4-Developer-Workstation-and-Dev-Container-Security](current-version/2-Process/2-2-Develop/2-2-4-Developer-Workstation-and-Dev-Container-Security.md)
+    - [2-2-5-AI-Agent-and-MCP-Security](current-version/2-Process/2-2-Develop/2-2-5-AI-Agent-and-MCP-Security.md)
   - [2-3-Build](current-version/2-Process/2-3-Build)
     - [2-3-1-Static-Analysis](current-version/2-Process/2-3-Build/2-3-1-Static-Analysis)
       - [2-3-1-1-Static-Application-Security-Testing](current-version/2-Process/2-3-Build/2-3-1-Static-Analysis/2-3-1-1-Static-Application-Security-Testing.md)
     - [2-3-2-Software-Composition-Analysis](current-version/2-Process/2-3-Build/2-3-2-Software-Composition-Analysis)
       - [2-3-2-1-Software-Composition-Analysis](current-version/2-Process/2-3-Build/2-3-2-Software-Composition-Analysis/2-3-2-1-Software-Composition-Analysis.md)
+      - [2-3-2-2-Dependency-Management-and-Cooldown-Policies](current-version/2-Process/2-3-Build/2-3-2-Software-Composition-Analysis/2-3-2-2-Dependency-Management-and-Cooldown-Policies.md)
     - [2-3-3-Container-Security](current-version/2-Process/2-3-Build/2-3-3-Container-Security)
       - [2-3-3-1-Container-Scanning](current-version/2-Process/2-3-Build/2-3-3-Container-Security/2-3-3-1-Container-Scanning.md)
       - [2-3-3-2-Container-Hardening](current-version/2-Process/2-3-Build/2-3-3-Container-Security/2-3-3-2-Container-Hardening.md)
@@ -89,10 +107,12 @@ However, when using CI/CD tools to provide automation, keep in mind that the too
     - [2-4-3-Mobile-Application-Security-Test](current-version/2-Process/2-4-Test/2-4-3-Mobile-Application-Security-Test.md)
     - [2-4-4-API-Security](current-version/2-Process/2-4-Test/2-4-4-API-Security.md)
     - [2-4-5-Misconfiguration-Check](current-version/2-Process/2-4-Test/2-4-5-Misconfiguration-Check.md)
+    - [2-4-6-AI-LLM-Application-Security-Testing](current-version/2-Process/2-4-Test/2-4-6-AI-LLM-Application-Security-Testing.md)
   - [2-5-Release](current-version/2-Process/2-5-Release)
     - [2-5-1-Release](current-version/2-Process/2-5-Release/2-5-1-Release.md)
   - [2-6-Deploy](current-version/2-Process/2-6-Deploy)
     - [2-6-1-Deploy](current-version/2-Process/2-6-Deploy/2-6-1-Deploy.md)
+    - [2-6-2-Secrets-in-Kubernetes-and-GitOps](current-version/2-Process/2-6-Deploy/2-6-2-Secrets-in-Kubernetes-and-GitOps.md)
   - [2-7-Operate](current-version/2-Process/2-7-Operate)
     - [2-7-1-Cloud-Native-Security](current-version/2-Process/2-7-Operate/2-7-1-Cloud-Native-Security.md)
     - [2-7-2-Logging-and-Monitoring](current-version/2-Process/2-7-Operate/2-7-2-Logging-and-Monitoring.md)
@@ -100,6 +120,10 @@ However, when using CI/CD tools to provide automation, keep in mind that the too
     - [2-7-4-Vulnerability-Management](current-version/2-Process/2-7-Operate/2-7-4-Vulnerability-Management.md)
     - [2-7-5-VDP-and-Bug-bounty](current-version/2-Process/2-7-Operate/2-7-5-VDP-and-Bug-bounty.md)
     - [2-7-6-Breach-and-attack-simulation](current-version/2-Process/2-7-Operate/2-7-6-Breach-and-attack-simulation.md)
+    - [2-7-7-Kubernetes-Runtime-Policy-Enforcement](current-version/2-Process/2-7-Operate/2-7-7-Kubernetes-Runtime-Policy-Enforcement.md)
+    - [2-7-8-WAF-WAAP-and-RASP](current-version/2-Process/2-7-Operate/2-7-8-WAF-WAAP-and-RASP.md)
+    - [2-7-9-Serverless-and-PaaS-Runtime-Security](current-version/2-Process/2-7-Operate/2-7-9-Serverless-and-PaaS-Runtime-Security.md)
+    - [2-7-10-Incident-Response-and-Detection-Engineering](current-version/2-Process/2-7-Operate/2-7-10-Incident-Response-and-Detection-Engineering.md)
 - [3-Governance](current-version/3-Governance)
   - [3-1-Compliance-Auditing](current-version/3-Governance/3-1-Compliance-Auditing)
     - [3-1-1-Compliance-Auditing](current-version/3-Governance/3-1-Compliance-Auditing/3-1-1-Compliance-Auditing.md)
@@ -110,8 +134,21 @@ However, when using CI/CD tools to provide automation, keep in mind that the too
     - [3-3-1-Tracking-maturities](current-version/3-Governance/3-3-Reporting/3-3-1-Tracking-maturities.md)
     - [3-3-2-Central-vulnerability-management-dashboard](current-version/3-Governance/3-3-Reporting/3-3-2-Central-vulnerability-management-dashboard.md)
     - [3-3-3-ASPM](current-version/3-Governance/3-3-Reporting/3-3-3-ASPM.md)
+    - [3-3-4-Exposure-Management-CTEM](current-version/3-Governance/3-3-Reporting/3-3-4-Exposure-Management-CTEM.md)
   - [3-4-AI-Governance-and-Risk](current-version/3-Governance/3-4-AI-Governance-and-Risk.md)
 
 ---
+
+## Contributing
+
+Contributions are welcome: fix a typo, add a tool, or propose a new topic by opening an issue or pull request. Please keep tool lists vendor-neutral and alphabetically ordered, and update the Table of Contents when adding or renaming files (see [doc-utilities](doc-utilities/README.md) for the TOC generator).
+
+## Previous versions
+
+Earlier editions are kept in [old-versions](old-versions/) (V0.1, V0.2, V0.3).
+
+## License
+
+This project is licensed under the [Creative Commons Attribution-ShareAlike 4.0 International License](LICENSE.md).
 
 The project page on the OWASP website is available at [OWASP DevSecOps Guideline Project](https://owasp.org/www-project-devsecops-guideline/)

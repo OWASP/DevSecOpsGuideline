@@ -8,17 +8,19 @@ A VDP is the baseline: a published policy that invites anyone to report vulnerab
 
 ### Core components of a VDP
 
-**`security.txt`** — publish a standardized [security.txt](https://securitytxt.org/) file at `/.well-known/security.txt` so automated tools and researchers can find your contact and policy:
+**`security.txt`** — publish a standardized [security.txt](https://securitytxt.org/) file ([RFC 9116](https://www.rfc-editor.org/rfc/rfc9116)) at `/.well-known/security.txt` so automated tools and researchers can find your contact and policy. The `Expires` field is mandatory and should be less than a year ahead, so renew it on a schedule:
 
-```
+```text
 Contact: mailto:security@yourcompany.com
-Expires: 2026-12-31T00:00:00.000Z
+Expires: 2027-09-30T00:00:00.000Z
+Canonical: https://yourcompany.com/.well-known/security.txt
 Acknowledgments: https://yourcompany.com/security/hall-of-fame
 Policy: https://yourcompany.com/security/vulnerability-disclosure-policy
 Preferred-Languages: en
 ```
 
 **Clear policy** — a published disclosure policy must address:
+
 - Scope: which systems, domains, and products are in scope and explicitly out of scope.
 - How to report: encrypted email (PGP key), web form, or platform (HackerOne, Bugcrowd).
 - What to expect: acknowledgment SLA, validation SLA, disclosure timeline.
@@ -26,7 +28,7 @@ Preferred-Languages: en
 
 **Safe harbor** — commit explicitly not to pursue legal action against researchers who discover and report vulnerabilities in good faith within the policy scope. Without safe harbor, researchers avoid reporting for fear of prosecution. Safe harbor is non-negotiable for a functional VDP.
 
-**Coordinated disclosure** — work with the reporter on a fix timeline before public disclosure. Industry standard is 90 days (Google Project Zero model). Communicate progress throughout. If you need more time, request it explicitly and explain why.
+**Coordinated disclosure** — work with the reporter on a fix timeline before public disclosure. A common industry norm is 90 days (the Google Project Zero model). Communicate progress throughout. If you need more time, request it explicitly and explain why.
 
 **Triage SLAs** — define and meet response commitments:
 
@@ -43,9 +45,11 @@ Nothing discourages researchers faster than silence. A VDP with poor triage is w
 ### Legal and regulatory considerations
 
 VDPs are increasingly expected or required:
+
 - [CISA](https://www.cisa.gov/resources-tools/resources/guidance-coordinated-vulnerability-disclosure-processes) recommends all US federal agencies maintain a VDP; many civilian agencies are required to.
 - [ISO/IEC 29147](https://www.iso.org/standard/72311.html) covers vulnerability disclosure processes; [ISO/IEC 30111](https://www.iso.org/standard/69725.html) covers vulnerability handling.
-- The EU Cyber Resilience Act will require coordinated vulnerability disclosure for products with digital elements.
+- The EU Cyber Resilience Act (in force since December 2024) requires manufacturers of products with digital elements to run a coordinated vulnerability disclosure policy and, from 11 September 2026, to report actively exploited vulnerabilities to the national CSIRT and ENISA; remaining obligations apply from 11 December 2027. NIS2 also expects coordinated vulnerability disclosure policies for in-scope entities.
+- Consider becoming a CVE Numbering Authority (CNA) or working with one, so fixed vulnerabilities get CVE IDs and published advisories (CSAF/VEX).
 - Many enterprise procurement processes now require suppliers to have a published VDP.
 
 ## Bug bounty programs
@@ -55,6 +59,7 @@ A bug bounty program adds **financial incentives** on top of a VDP, attracting m
 ### Readiness prerequisites
 
 Before launching a bug bounty:
+
 - A working VDP with demonstrated SLA adherence.
 - A vulnerability management system capable of handling a sustained inflow of reports.
 - Dedicated triage capacity (internal security team or managed triage from the platform).
@@ -96,6 +101,7 @@ Reward levels vary significantly by industry and organization. Financial service
 ## Common pitfalls and anti-patterns
 
 - **VDP with no safe harbor** — researchers will not report without legal protection. A policy that says "don't hack us" but offers no explicit safe harbor is not a VDP.
+- **No defense against low-quality or AI-generated reports** — automated and AI-written submissions can flood triage with plausible but unverified claims. Require a working proof of concept and reproduction steps, and use platform triage or reputation filters.
 - **Slow or silent triage** — researchers who submit reports and receive no response for weeks will escalate publicly. SLA adherence is reputation management.
 - **Scope too broad too soon** — a first VDP or bounty that covers everything creates unmanageable volume. Start narrow (e.g., one public-facing product) and expand as capacity allows.
 - **Bug bounty as a replacement for internal security** — a bounty finds bugs; it does not fix the root causes. Without a strong internal security program, you will remediate the same classes of vulnerability repeatedly.
@@ -115,6 +121,7 @@ Reward levels vary significantly by industry and organization. Financial service
 
 ### Open-source
 
+- [disclose.io](https://disclose.io/) — Open standard and templates for safe-harbor language and VDP policies; a ready starting point for legal review.
 - [security.txt](https://securitytxt.org/) — RFC 9116 standard for a machine-readable security contact and disclosure policy file; minimal investment, immediate benefit.
 
 ### Commercial
@@ -122,7 +129,8 @@ Reward levels vary significantly by industry and organization. Financial service
 - [Bugcrowd](https://www.bugcrowd.com/) — Crowdsourced bug bounty and VDP platform; managed triage services available; strong researcher community across web, mobile, and IoT.
 - [HackerOne](https://www.hackerone.com/) — Vulnerability disclosure and bug bounty platform; largest researcher community; strong tooling for program management, SLA tracking, and integrations with Jira and Slack.
 - [Intigriti](https://www.intigriti.com/) — European-based bug bounty and VDP platform; GDPR-aligned; strong European researcher community; growing global presence.
-- [Synack](https://www.synack.com/) — Managed crowdsourced security with a vetted, full-time researcher pool; higher cost, higher signal-to-noise ratio; popular with financial services and government.
+- [Synack](https://www.synack.com/) — Managed crowdsourced security with a vetted researcher pool; higher cost, higher signal-to-noise ratio; popular with financial services and government.
+- [YesWeHack](https://www.yeswehack.com/) — European bug bounty and VDP platform; strong in EU public sector and regulated industries, with data-residency options.
 
 ---
 

@@ -6,50 +6,60 @@ Mobile applications introduce a distinct threat surface: the app runs on a devic
 
 The [OWASP Mobile Application Security (MAS)](https://mas.owasp.org/) project is the definitive reference:
 
-- **MASVS (Verification Standard)** — the security requirements a mobile app should meet, organized into controls: Storage, Cryptography, Authentication, Network, Platform, Code Quality, and Resilience.
-- **MASTG (Testing Guide)** — concrete techniques and test cases for verifying those requirements on both iOS and Android, with platform-specific tools and scripts.
+- **MASVS (Verification Standard)** — the security requirements a mobile app should meet, organized into eight control groups (v2.1): Storage, Cryptography, Authentication, Network, Platform, Code Quality, Resilience, and Privacy.
+- **MASWE (Weakness Enumeration)** — a catalog of mobile-specific weaknesses that sits between MASVS controls and tests, so findings can be mapped to a consistent weakness ID.
+- **MASTG (Testing Guide)** — concrete, individually referenceable tests, techniques, and demos for verifying those requirements on both iOS and Android (MASTG v2 replaced the monolithic v1 chapters).
 - **MAS Checklist** — maps MASVS controls to MASTG test cases for structured assessments; use it as your test plan template.
 
-### MASVS level selection
+The [OWASP Mobile Top 10 (2024)](https://owasp.org/www-project-mobile-top-10/) is the awareness-level companion list; use MASVS for actual verification requirements.
 
-MASVS defines three security levels. Choose based on your app's risk profile:
+### MAS testing profile selection
+
+Since MASVS 2.0 the former verification levels are expressed as **MAS testing profiles**, applied through the MASTG tests rather than the MASVS itself. Choose based on your app's risk profile; profiles combine (e.g., L2 + R + P):
 
 | Level | Target apps | Key requirements |
 |---|---|---|
 | L1 | All apps — baseline for consumer apps with low sensitivity | No sensitive data in logs/cleartext; TLS enforced; basic input validation |
 | L2 | Apps handling sensitive or personal data (healthcare, financial, enterprise) | Secure storage (Keystore/Keychain), certificate pinning, strong auth, anti-tampering basics |
 | R (Resilience) | High-value apps: banking, digital wallets, DRM, security-sensitive | Obfuscation, jailbreak/root detection, anti-debugging, certificate pinning bypass resistance |
+| P (Privacy) | Apps handling user-sensitive data or subject to privacy regulation | Data minimization, transparency about collection, user control over data (MASVS-PRIVACY) |
 
-A mobile banking app should target L2 + R. A general consumer utility app targets L1. An enterprise MDM app likely targets L2.
+A mobile banking app should target L2 + R + P. A general consumer utility app targets L1. An enterprise MDM app likely targets L2.
 
 ## The mobile-specific threat surface
 
 Mobile introduces threat vectors that do not exist in web apps:
 
 ### Data storage
+
 - Sensitive data in unprotected `SharedPreferences` (Android) or `NSUserDefaults` (iOS) — readable by any app with filesystem access on a rooted device
 - Cleartext credentials in SQLite databases, log files, or OS-level screenshot captures
 - Auto-backup to cloud (Android) and iCloud (iOS) may exfiltrate data unintentionally
 
 ### Transport and certificate security
+
 - **Certificate pinning bypass** — on rooted/jailbroken devices, an attacker can install a custom CA (e.g., Burp Suite CA) to MitM all TLS traffic. Apps handling sensitive data should implement certificate pinning and detect bypass attempts.
 - Missing or misconfigured Network Security Config (Android) or App Transport Security (iOS) allows cleartext HTTP
 
 ### Authentication and biometrics
-- Biometric authentication (Face ID, fingerprint) can be bypassed at the OS level on compromised devices. The app must use hardware-backed biometric APIs (Android BiometricPrompt with `BIOMETRIC_STRONG`, iOS LocalAuthentication with `.deviceOwnerAuthenticationWithBiometrics`) and must not fall back to PIN trivially.
+
+- Biometric authentication (Face ID, fingerprint) can be bypassed at the OS level on compromised devices. The app must use hardware-backed biometric APIs (Android BiometricPrompt with `BIOMETRIC_STRONG`, iOS LocalAuthentication with `.deviceOwnerAuthenticationWithBiometrics`) and must not fall back to PIN trivially. A boolean "success" callback alone is hookable; bind the biometric result to a cryptographic operation (a Keystore key requiring user authentication, or a Keychain item with a biometry access-control flag) so the secret is released only on genuine authentication.
 - JWT or session tokens stored in SharedPreferences or NSUserDefaults instead of Android Keystore / iOS Keychain are readable on rooted devices
 
 ### Deep links and inter-app communication
+
 - Unvalidated deep links accept attacker-controlled URLs that invoke privileged in-app actions
 - Android Intents with exported Activities/Services/Broadcast Receivers that lack permission checks allow any app to trigger internal functionality
-- iOS Universal Links require proper apple-app-site-association configuration; improper setup allows link hijacking
+- Android App Links (verified via `assetlinks.json`) and iOS Universal Links (apple-app-site-association) require proper configuration; improper setup allows link hijacking by other apps
 
 ### Reverse engineering
+
 - Debug builds with `android:debuggable="true"` allow arbitrary code injection via `adb`
 - Hardcoded API keys, encryption keys, or credentials in `strings.xml`, `BuildConfig`, or `Info.plist`
 - Unobfuscated business logic exposes algorithms, backend endpoints, and internal decision trees to competitors or attackers
 
 ### Jailbreak and root detection
+
 - On jailbroken (iOS) or rooted (Android) devices, security controls enforced by the OS (sandboxing, Keychain isolation, certificate pinning) may be bypassed. L2/R apps should detect and respond to compromised device states.
 
 ## What to test (organized by MASVS category)
@@ -61,6 +71,7 @@ Mobile introduces threat vectors that do not exist in web apps:
 - **Platform** — check exported components, deep link handling, clipboard exposure, screenshot protection
 - **Code Quality** — static analysis for dangerous APIs, debug flags, hardcoded secrets
 - **Resilience** (L2+R) — test jailbreak/root detection bypass, debugger attachment, dynamic instrumentation hooks
+- **Privacy** (P) — verify data collection matches the declared privacy disclosures (App Store privacy labels, Play Data safety section), check third-party SDK data flows, and confirm user consent and deletion controls work
 
 ## Static analysis with MobSF (walkthrough)
 
@@ -111,12 +122,13 @@ Java.perform(function () {
   };
 });
 
-// Hook biometric authentication result (for testing fallback behavior)
+// Observe biometric authentication results (for testing fallback behavior)
 Java.perform(function () {
-  var BiometricPrompt = Java.use('androidx.biometric.BiometricPrompt$AuthenticationCallback');
-  BiometricPrompt.onAuthenticationSucceeded.implementation = function (result) {
+  var Callback = Java.use('androidx.biometric.BiometricPrompt$AuthenticationCallback');
+  var original = Callback.onAuthenticationSucceeded;
+  original.implementation = function (result) {
     console.log('[Frida] Biometric auth succeeded (hooked)');
-    this.onAuthenticationSucceeded(result);
+    return original.call(this, result); // call the original, not this.method (would recurse)
   };
 });
 ```
@@ -131,6 +143,7 @@ Both Apple and Google perform automated and manual security review:
 
 - **Google Play** — uses automated scanning for known malware patterns and policy violations. Severe security issues can trigger removal. Play App Signing gives Google control over the final signing key.
 - **Apple App Store** — manual review checks for private API usage, inappropriate data access, and some security patterns. App Attest and DeviceCheck APIs provide server-side device integrity signals.
+- **Play Integrity API** — Google's server-verifiable signal that a request comes from a genuine app binary on a genuine, certified device (it replaced the deprecated SafetyNet Attestation API). Use it, with App Attest on iOS, to support Resilience controls; always verify the verdict server-side.
 
 Neither store's review is a substitute for your own security assessment — store reviews focus on policy compliance, not application security depth. Run your security program independently.
 
@@ -183,15 +196,19 @@ Gate on MobSF's security score and block on critical findings. Complement with p
 
 ### Open-source
 
-- [Frida](https://frida.re/) — Dynamic instrumentation toolkit for inspecting and manipulating apps at runtime; hooks methods, bypasses SSL pinning (for testing), dumps memory, and traces API calls. The foundation of most advanced mobile testing and L2/R validation.
-- [MobSF (Mobile Security Framework)](https://github.com/MobSF/Mobile-Security-Framework-MobSF) — Automated static and dynamic analysis for Android and iOS; supports APK, IPA, and APPX; REST API enables CI integration. Best starting point for automated mobile scanning.
-- [objection](https://github.com/sensepost/objection) — Runtime mobile exploration powered by Frida; provides an interactive shell for real-time security testing without needing to write Frida scripts manually. Fastest path to SSL pinning bypass and biometric testing.
 - [apktool](https://github.com/iBotPeaches/Apktool) — Reverse-engineering tool for Android APKs; decompiles to smali, inspects resources and manifest, and repackages. Used for manifest analysis and detecting debug flags.
+- [Drozer](https://github.com/WithSecureLabs/drozer) — Android security assessment framework for probing exported components (Activities, Services, Content Providers, Broadcast Receivers) and inter-app attack surface.
+- [Frida](https://frida.re/) — Dynamic instrumentation toolkit for inspecting and manipulating apps at runtime; hooks methods, bypasses SSL pinning (for testing), dumps memory, and traces API calls. The foundation of most advanced mobile testing and R-profile validation.
+- [Ghidra](https://ghidra-sre.org/) — NSA open-source reverse-engineering suite; the usual choice for analyzing native libraries (`.so`) and iOS binaries where jadx does not apply.
 - [jadx](https://github.com/skylot/jadx) — Dex-to-Java decompiler; reads Android app logic from compiled bytecode. Cleaner output than apktool's smali for code review.
+- [MobSF (Mobile Security Framework)](https://github.com/MobSF/Mobile-Security-Framework-MobSF) — Automated static and dynamic analysis for Android and iOS; supports APK, AAB, IPA, and APPX; REST API enables CI integration. Best starting point for automated mobile scanning.
+- [objection](https://github.com/sensepost/objection) — Runtime mobile exploration powered by Frida; provides an interactive shell for real-time security testing without needing to write Frida scripts manually. Fastest path to SSL pinning bypass and biometric testing.
 
 ### Commercial
 
 - [Appknox](https://www.appknox.com/) — Mobile application security testing platform with automated SAST/DAST, compliance mapping, and app store integration; good for teams wanting managed mobile security without building their own toolchain.
+- [Corellium](https://www.corellium.com/) — Virtualized iOS and Android devices (including rooted/jailbroken-equivalent access) for scalable dynamic testing without a physical device lab.
+- [Guardsquare (DexGuard / iXGuard)](https://www.guardsquare.com/) — Obfuscation, runtime application self-protection, and anti-tamper hardening for Android and iOS; used to implement Resilience (R) controls.
 - [NowSecure](https://www.nowsecure.com/) — Mobile app security testing and continuous monitoring with automated dynamic analysis on real devices; widely used in financial services for L2 and R assessments.
 - [Oversecured](https://oversecured.com/) — Android-focused static analysis with deep interprocedural analysis; finds vulnerabilities that simpler scanners miss, particularly in complex multi-component apps.
 

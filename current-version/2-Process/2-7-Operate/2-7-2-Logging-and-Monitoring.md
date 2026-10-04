@@ -1,6 +1,6 @@
 # Logging and Monitoring
 
-You cannot respond to what you cannot see. Security logging and monitoring provide the visibility needed to detect attacks, investigate incidents, and prove what happened. [OWASP](https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/) ranks logging and monitoring *failures* in its Top 10 precisely because so many breaches go undetected for months due to inadequate telemetry. The average time between a breach and its detection has been measured in months — logging is what shortens that window.
+You cannot respond to what you cannot see. Security logging and monitoring provide the visibility needed to detect attacks, investigate incidents, and prove what happened. [OWASP](https://top10.owasp.org/2025/A09_2025-Security_Logging_and_Alerting_Failures) ranks logging and alerting *failures* (A09:2021 Security Logging and Monitoring Failures, renamed in the 2025 edition) in its Top 10 precisely because so many breaches go undetected for months due to inadequate telemetry. The average time between a breach and its detection has been measured in months — logging is what shortens that window.
 
 ## What to log
 
@@ -10,11 +10,11 @@ Capture the events needed to detect and reconstruct security-relevant activity:
 - **Input and validation failures** — malformed requests, schema violations, and application errors that may signal probing or injection attempts.
 - **Administrative and configuration changes** — who changed what system configuration, and when.
 - **Access to sensitive data and functions** — reads of PII or financial records, use of admin APIs, bulk data exports.
-- **Security tooling output** — WAF blocks, IDS/IPS alerts, runtime detection events from Falco, cloud trail events.
+- **Security tooling output** — WAF blocks, IDS/IPS alerts, runtime detection events from Falco, cloud control-plane audit logs (CloudTrail, Azure Activity Log, GCP Audit Logs), and Kubernetes audit logs.
 - **Session lifecycle** — session creation, expiry, and invalidation.
 - **Deployment events** — who deployed what to which environment, from which pipeline run.
 
-Equally important is what *not* to log: never log secrets, passwords, tokens, session cookies, credit card numbers, or unnecessary personal data. Apply privacy-aware logging practices and align with [Data Protection](../../3-Governance/3-2-Data-protection.md). Log categories, not values, for sensitive fields.
+Equally important is what *not* to log: never log secrets, passwords, tokens, session cookies, credit card numbers, or unnecessary personal data. Apply privacy-aware logging practices and align with [Data Protection](../../3-Governance/3-2-Data-protection.md). Log categories, not values, for sensitive fields. The [OWASP Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html) and [Logging Vocabulary Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Vocabulary_Cheat_Sheet.html) give concrete guidance and event names.
 
 ## Structured logging
 
@@ -35,8 +35,9 @@ Plain-text logs are difficult to query, correlate, and parse reliably. Adopt str
 ```
 
 Key practices:
+
 - Consistent event names across services (using a taxonomy like `noun.verb`).
-- Correlation IDs (`trace_id`, `request_id`) that flow through the entire request chain for end-to-end reconstruction.
+- Correlation IDs (`trace_id`, `request_id`) that flow through the entire request chain for end-to-end reconstruction; propagate them with [OpenTelemetry](https://opentelemetry.io/) (W3C Trace Context) so logs, metrics, and traces join up.
 - UTC timestamps with millisecond precision.
 - Contextual fields (user, IP, tenant, session) on every security-relevant event.
 
@@ -44,7 +45,7 @@ Key practices:
 
 - **Centralize** — aggregate logs from all services, infrastructure, and cloud APIs into a single platform so they can be correlated. Siloed logs cannot detect multi-stage attacks.
 - **Tamper-resistant** — write logs to a separate, append-only destination that application credentials cannot modify. An attacker who compromises the app should not be able to erase evidence.
-- **Retained sufficiently** — keep logs long enough to investigate slow-burning incidents and meet compliance requirements (PCI DSS requires 12 months; many regulations require at least 6). Hot retention (searchable) for 90 days; cold retention for compliance period.
+- **Retained sufficiently** — keep logs long enough to investigate slow-burning incidents and meet compliance requirements (PCI DSS requires 12 months, with the most recent 3 months immediately available; many regulations require at least 6). Hot retention (searchable) for 90 days; cold retention for compliance period.
 - **Accurate timestamps** — synchronize clocks across all systems via NTP. A 1-second skew makes incident timelines ambiguous; a 1-minute skew makes them unreliable.
 - **Ingestion monitoring** — alert on log gaps (a service that stops logging may have crashed or been tampered with).
 
@@ -55,17 +56,28 @@ Key practices:
 A SIEM aggregates logs and runs detection rules against them to produce actionable alerts. Modern best practice is **detection-as-code**: write, test, and version-control detection rules exactly like application code.
 
 ```yaml
-# Example Sigma rule: brute-force login detection
-title: Multiple Failed Logins from Same IP
-status: stable
+# Example Sigma rule + correlation: brute-force login detection
+title: Failed Login
+name: failed_login
 logsource:
   category: application
   product: custom-app
 detection:
   selection:
     event: auth.login_failed
-  timeframe: 5m
-  condition: selection | count(user_id) by ip > 10
+  condition: selection
+---
+title: Multiple Failed Logins from Same IP
+status: stable
+correlation:
+  type: event_count
+  rules:
+    - failed_login
+  group-by:
+    - ip
+  timespan: 5m
+  condition:
+    gte: 10
 falsepositives:
   - Automated testing environments
 level: high
@@ -74,11 +86,12 @@ tags:
   - attack.t1110
 ```
 
-[Sigma](https://github.com/SigmaHQ/sigma) is the vendor-neutral format; rules translate to Splunk SPL, Elastic KQL, and other query languages automatically. [RSigma](https://github.com/timescale/rsigma) is an open-source toolkit that lints and tests those rules, evaluates them against log events, and converts them to backend queries.
+[Sigma](https://github.com/SigmaHQ/sigma) is the vendor-neutral format; rules translate to Splunk SPL, Elasticsearch queries (Lucene/ES|QL), Microsoft Sentinel KQL, and other query languages automatically. Threshold and aggregation logic uses Sigma *correlation rules* (as above), which replace the deprecated `count() by` aggregation syntax. [RSigma](https://github.com/timescale/rsigma) is an open-source toolkit that lints and tests those rules, evaluates them against log events, and converts them to backend queries.
 
 ### MITRE ATT&CK mapping
 
 Map detection rules to [MITRE ATT&CK](https://attack.mitre.org/) technique IDs. This allows you to:
+
 - Visualize coverage gaps on the ATT&CK Navigator.
 - Prioritize new detection rules against the most likely attack techniques for your environment.
 - Speak a common language with threat intelligence and incident response teams.
@@ -86,6 +99,7 @@ Map detection rules to [MITRE ATT&CK](https://attack.mitre.org/) technique IDs. 
 ### Alerting quality
 
 An alert that nobody can act on is worse than none — it trains the team to ignore alerts. Every alert must:
+
 - Be actionable: the on-call person knows what to do in response.
 - Be specific enough to investigate: contains sufficient context (user, IP, affected resource, event sequence).
 - Be calibrated: false positive rate below 15% for critical alerts; tune aggressively.
@@ -121,8 +135,10 @@ An alert that nobody can act on is worse than none — it trains the team to ign
 
 ### Open-source
 
+- [Fluent Bit](https://fluentbit.io/) — Lightweight log and metrics collector/forwarder (CNCF graduated); useful for shipping, filtering, and redacting logs before they reach the central platform.
 - [Grafana + Loki](https://grafana.com/oss/loki/) — Log aggregation and visualization; Loki indexes metadata (labels), not full text, making it cost-efficient at scale; best when paired with the Grafana observability stack.
-- [OpenSearch](https://opensearch.org/) — Search, analytics, and log analysis suite (AWS-maintained Elasticsearch fork); strong query capabilities and Dashboards UI; good for teams already using Elasticsearch.
+- [OpenSearch](https://opensearch.org/) — Search, analytics, and log analysis suite (open-source Elasticsearch fork, governed by the OpenSearch Software Foundation under the Linux Foundation); strong query capabilities and Dashboards UI; good for teams already using Elasticsearch.
+- [OpenTelemetry](https://opentelemetry.io/) — Vendor-neutral standard and collector for logs, metrics, and traces; enables correlation IDs and portable pipelines across backends.
 - [Prometheus](https://prometheus.io/) — Metrics-based monitoring and alerting; pair with Grafana for dashboards; does not handle logs (use with Loki for full observability).
 - [RSigma](https://github.com/timescale/rsigma) — Sigma detection engineering toolkit; lint, test, and evaluate rules against logs in real time, and convert them to SIEM queries.
 - [Sigma](https://github.com/SigmaHQ/sigma) — Open standard for detection rules; write once, compile to any SIEM query language.
@@ -131,7 +147,9 @@ An alert that nobody can act on is worse than none — it trains the team to ign
 ### Commercial
 
 - [Datadog](https://www.datadoghq.com/) — Observability and security monitoring platform; unified logs, metrics, traces, and Security Monitoring in one; excellent developer experience.
-- [Elastic Security](https://www.elastic.co/security) — SIEM and analytics on the Elastic Stack; large rule library; supports Sigma rule import; strong for teams already invested in the Elastic ecosystem.
+- [Elastic Security](https://www.elastic.co/security) — SIEM and analytics on the Elastic Stack; large rule library; strong for teams already invested in the Elastic ecosystem (Sigma rules can be converted with pySigma backends).
+- [Google Security Operations](https://cloud.google.com/security/products/security-operations) — Cloud-native SIEM and SOAR (formerly Chronicle) with high-volume retention and curated detections.
+- [Microsoft Sentinel](https://azure.microsoft.com/products/microsoft-sentinel) — Cloud-native SIEM/SOAR on Azure; native connectors for Microsoft and multicloud sources and KQL-based detections.
 - [Splunk](https://www.splunk.com/) — Log analytics and SIEM at scale; mature SPL query language; extensive integration ecosystem; higher cost but industry-standard for large enterprises and regulated industries.
 
 ---

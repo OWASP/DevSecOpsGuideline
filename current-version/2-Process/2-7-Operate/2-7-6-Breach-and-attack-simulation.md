@@ -24,7 +24,7 @@ These are complementary: pentests find new weaknesses, BAS ensures the defenses 
 
 ## The ATT&CK matrix as a coverage map
 
-The MITRE ATT&CK framework organizes adversary behavior into 14 tactics (from Reconnaissance to Impact) and hundreds of techniques. Use it as a coverage map:
+The MITRE ATT&CK framework organizes adversary behavior into 14 tactics (from Reconnaissance to Impact) and hundreds of techniques and sub-techniques. Beyond the Enterprise matrix, use the Cloud, Containers, and Mobile matrices where relevant, and [MITRE ATLAS](https://atlas.mitre.org/) for AI-enabled systems. Use it as a coverage map:
 
 1. **Identify priority techniques** — based on threat intelligence relevant to your industry (e.g., financial services organizations face different TTPs than healthcare organizations). Threat reports from CISA, ENISA, and vendor intelligence teams identify which techniques are actively used against your sector.
 2. **Run BAS tests** against priority techniques and record: detected, prevented, or neither.
@@ -93,15 +93,17 @@ This collaborative model produces dramatically faster detection improvement than
 
 - [Atomic Red Team](https://github.com/redcanaryco/atomic-red-team) — Library of small, portable, peer-reviewed tests mapped to MITRE ATT&CK; easy to execute individually or automate at scale; the starting point for most BAS programs.
 - [Caldera](https://github.com/mitre/caldera) — MITRE's automated adversary emulation platform; supports chained, goal-oriented attack scenarios; C2-like agent for more realistic lateral movement simulation.
-- [Infection Monkey](https://github.com/guardicore/monkey) — Open-source breach and attack simulation tool focused on network traversal and lateral movement; good for testing network segmentation controls.
+- [Infection Monkey](https://github.com/guardicore/monkey) — Open-source (Akamai/Guardicore) breach and attack simulation tool focused on network traversal and lateral movement; good for testing network segmentation controls.
 - [Stratus Red Team](https://github.com/DataDog/stratus-red-team) — Cloud-specific BAS: atomic attack techniques for AWS, Azure, GCP, and Kubernetes; fills the gap left by endpoint-focused tools.
+- [VECTR](https://github.com/SecurityRiskAdvisors/VECTR) — Purple team tracking platform that records red-team test executions and blue-team detection/prevention outcomes, with ATT&CK coverage reporting over time; pairs well with Atomic Red Team and Caldera.
 
 ### Commercial
 
 - [AttackIQ](https://www.attackiq.com/) — Mature BAS platform with scenario library, ATT&CK coverage analytics, and integrations with major SIEM and EDR platforms; strong enterprise reporting.
 - [Cymulate](https://cymulate.com/) — Continuous security validation and BAS across multiple attack surfaces: email, web, endpoint, cloud, lateral movement; good for broad coverage programs.
-- [SafeBreach](https://www.safebreach.com/) — BAS across the full kill chain; scenario-based simulations aligned to threat intelligence feeds; strong for financial services and critical infrastructure.
 - [Picus Security](https://www.picussecurity.com/) — BAS with a focus on actionable detection and prevention gap analysis; provides ready-made Sigma rules and SIEM queries for detected gaps.
+- [SafeBreach](https://www.safebreach.com/) — BAS across the full kill chain; scenario-based simulations aligned to threat intelligence feeds; strong for financial services and critical infrastructure.
+- [SCYTHE](https://scythe.io/) — Adversary emulation platform for building and running custom, threat-intel-driven campaigns; popular for purple team exercises.
 
 ---
 

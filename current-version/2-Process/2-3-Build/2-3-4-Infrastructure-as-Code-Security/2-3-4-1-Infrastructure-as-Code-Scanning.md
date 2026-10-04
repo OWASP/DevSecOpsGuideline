@@ -4,9 +4,9 @@ Infrastructure is now defined in code — Terraform, CloudFormation, Kubernetes 
 
 ## The Capital One breach: IaC misconfiguration at scale
 
-In 2019, the Capital One breach exposed over 100 million customer records. The root cause was an overly permissive IAM role — a Server Side Request Forgery (SSRF) vulnerability allowed an attacker to query the EC2 metadata service, which returned temporary credentials for an IAM role with excessive S3 permissions. That IAM role configuration was defined in infrastructure code. Had IaC scanning with IAM privilege analysis been in place, the overpermissioned role would have been flagged before it was ever applied. The breach cost Capital One over $80 million in fines and settlement costs.
+In 2019, the Capital One breach exposed the personal data of over 100 million customers. An attacker exploited a misconfigured web application firewall to perform a Server Side Request Forgery (SSRF) attack against the EC2 metadata service, which returned temporary credentials for an IAM role with far broader S3 access than the workload needed. The misconfiguration was a cloud-configuration failure rather than a proven IaC defect, but it is exactly the class of issue — over-permissive IAM roles, exposed metadata service (IMDSv1), excessive data-store access — that IaC scanning and policy-as-code are designed to catch before anything is applied. The OCC fined Capital One $80 million, and the company later agreed to a $190 million class-action settlement.
 
-This is the canonical case for why IaC security cannot be treated as optional or post-deployment.
+This is the canonical case for why cloud configuration security cannot be treated as optional or post-deployment.
 
 ## What IaC scanning finds
 
@@ -20,6 +20,7 @@ This is the canonical case for why IaC security cannot be treated as optional or
 ## Misconfiguration examples by IaC type
 
 **Terraform (AWS):**
+
 ```hcl
 # BAD: S3 bucket publicly accessible
 resource "aws_s3_bucket_acl" "example" {
@@ -33,7 +34,7 @@ resource "aws_security_group_rule" "bad" {
   from_port   = 22
   to_port     = 22
   protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]     # flags CKV_AWS_25
+  cidr_blocks = ["0.0.0.0/0"]     # flags CKV_AWS_24
 }
 
 # GOOD: Restrict SSH to known CIDR
@@ -47,13 +48,14 @@ resource "aws_security_group_rule" "good" {
 ```
 
 **Kubernetes / Helm (running as root):**
+
 ```yaml
 # BAD: Pod running as root
 spec:
   containers:
   - name: app
     securityContext:
-      runAsRoot: true              # flags KSV001
+      runAsNonRoot: false          # flags KSV012 (runs as root); privileged: true would add KSV017
 
 # GOOD: Non-root, read-only filesystem
 spec:
@@ -67,11 +69,12 @@ spec:
 ```
 
 **CloudFormation (unrestricted ingress):**
+
 ```yaml
 # BAD
 SecurityGroupIngress:
   - IpProtocol: -1
-    CidrIp: 0.0.0.0/0            # flags W2902
+    CidrIp: 0.0.0.0/0            # flags cfn_nag W2 / W40 and Checkov CKV_AWS_24 (with SSH/RDP ports)
 
 # GOOD
 SecurityGroupIngress:
@@ -90,17 +93,16 @@ SecurityGroupIngress:
 ```yaml
 # Example: Checkov scan in GitHub Actions
 - name: Scan Terraform with Checkov
-  uses: bridgecrewio/checkov-action@master
+  uses: bridgecrewio/checkov-action@v12
   with:
     directory: ./infra/terraform
     framework: terraform
     output_format: sarif
     output_file_path: checkov-results.sarif
     soft_fail: false
-    check: CKV_AWS_*
 
 - name: Upload SARIF results
-  uses: github/codeql-action/upload-sarif@v3
+  uses: github/codeql-action/upload-sarif@v4
   with:
     sarif_file: checkov-results.sarif
 ```
@@ -137,6 +139,7 @@ Run with: `checkov -d ./infra --external-checks-dir ./custom_checks`
 ## Shift-left IaC: IDE integration
 
 IDE plugins bring IaC scanning to the point of authorship — the cheapest fix:
+
 - **VS Code Checkov extension** — real-time inline highlighting of misconfigurations as Terraform or Kubernetes YAML is written. No CLI required.
 - **Snyk IaC VS Code plugin** — live fix suggestions alongside detected issues.
 - **IntelliJ + Terraform plugin** — structural validation before any CI run.
@@ -147,12 +150,16 @@ For organization-specific policies beyond CIS benchmarks, use OPA/Conftest to ev
 
 ```rego
 # policies/terraform/no_public_s3.rego
+# Evaluates the JSON form of a Terraform plan (`terraform show -json`)
 package main
 
-deny[msg] {
-  resource := input.resource.aws_s3_bucket_acl[_]
-  resource.acl == "public-read"
-  msg := sprintf("S3 bucket ACL must not be public-read: %v", [resource])
+import rego.v1
+
+deny contains msg if {
+  some rc in input.resource_changes
+  rc.type == "aws_s3_bucket_acl"
+  rc.change.after.acl == "public-read"
+  msg := sprintf("S3 bucket ACL must not be public-read: %v", [rc.address])
 }
 ```
 
@@ -172,8 +179,9 @@ IaC scanning checks the *declared* state. Runtime configuration can drift from w
 Helm templates are rendered to Kubernetes manifests at deploy time. Scanning the raw templates misses values-substitution — a production `values.yaml` might override safe defaults with insecure ones. Always scan the rendered output:
 
 ```bash
-helm template myapp ./chart -f prod-values.yaml | trivy config -
-helm template myapp ./chart -f prod-values.yaml | checkov -f /dev/stdin --framework kubernetes
+helm template myapp ./chart -f prod-values.yaml --output-dir ./rendered
+trivy config ./rendered
+checkov -d ./rendered --framework kubernetes
 ```
 
 ## Common pitfalls and anti-patterns
@@ -187,7 +195,7 @@ helm template myapp ./chart -f prod-values.yaml | checkov -f /dev/stdin --framew
 
 ## Maturity progression
 
-**Starter** — Run Checkov or KICS in CI against all Terraform and Kubernetes manifests. Report findings. Establish a baseline of existing issues. Block the pipeline on new critical findings.
+**Starter** — Run Checkov, KICS, or Trivy in CI against all Terraform (or OpenTofu) and Kubernetes manifests. Report findings. Establish a baseline of existing issues. Block the pipeline on new critical findings.
 
 **Intermediate** — Integrate scanning into IDE (VS Code Checkov extension, Snyk IaC). Map findings to CIS benchmarks and compliance frameworks. Add Helm chart scanning (rendered output). Enforce policy-as-code rules for the top 10 organization-specific constraints.
 
@@ -211,10 +219,12 @@ helm template myapp ./chart -f prod-values.yaml | checkov -f /dev/stdin --framew
 ### Open-source
 
 - [Checkov](https://www.checkov.io/) — Static analysis for Terraform, CloudFormation, Kubernetes, Helm, Bicep, and ARM; 1000+ built-in policies; supports custom Python and OPA rules, SARIF output. Best breadth for multi-IaC environments.
-- [KICS](https://kics.io/) — Finds security vulnerabilities and misconfigurations in IaC; supports 24 IaC platforms; built-in compliance framework mappings. Strong for teams that need framework-aligned reporting (PCI, HIPAA).
+- [KICS](https://kics.io/) — Finds security vulnerabilities and misconfigurations in IaC; supports 20+ IaC platforms; built-in compliance framework mappings. Strong for teams that need framework-aligned reporting (PCI, HIPAA).
 - [Kubescape](https://github.com/kubescape/kubescape) — Kubernetes security scanning against NSA/CISA hardening guidance and MITRE ATT&CK; scans live clusters and IaC before apply. Best Kubernetes-specific coverage.
-- [Terrascan](https://github.com/tenable/terrascan) — Detects compliance and security violations across Terraform, Kubernetes, Helm, and Dockerfiles; integrates with Argo CD for GitOps security.
-- [Trivy](https://github.com/aquasecurity/trivy) — Scans IaC and configuration alongside CVE scanning; good choice for teams already using Trivy for container scanning who want one tool.
+- [OPA / Conftest](https://www.conftest.dev/) — Evaluates Terraform plans, Kubernetes manifests, and other structured config against custom Rego policies in CI; the usual choice for organization-specific rules.
+- [Trivy](https://github.com/aquasecurity/trivy) — Scans IaC and configuration alongside CVE scanning (it absorbed the former tfsec project); good choice for teams already using Trivy for container scanning who want one tool. Pin the binary and its GitHub Action to verified releases (see [Container Scanning](../2-3-3-Container-Security/2-3-3-1-Container-Scanning.md)).
+
+> **Retired tools:** Terrascan (Tenable) was archived in November 2025 and tfsec has been folded into Trivy; migrate existing pipelines to Checkov, KICS, or Trivy.
 
 ### Commercial
 

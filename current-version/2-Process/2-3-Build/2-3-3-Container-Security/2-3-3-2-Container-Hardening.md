@@ -11,7 +11,7 @@ Every package, binary, and layer you include is a potential attack surface. The 
 
   ```dockerfile
   # Build stage
-  FROM golang:1.22 AS builder
+  FROM golang:1.25 AS builder
   WORKDIR /app
   COPY . .
   RUN CGO_ENABLED=0 go build -o myapp ./cmd/server
@@ -64,7 +64,17 @@ A container that runs as root and has broad Linux capabilities is one kernel exp
     allowPrivilegeEscalation: false
   ```
 
+- **Seccomp profile** — apply the runtime's default syscall filter (or a tighter custom profile) instead of running unconfined; it is required by the `Restricted` Pod Security Standard:
+
+  ```yaml
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  ```
+
 - **No privileged containers** — avoid `--privileged` and host namespace sharing (`hostPID`, `hostNetwork`, `hostIPC`). These break container isolation entirely.
+- **Stronger isolation for untrusted workloads** — where a shared kernel is an unacceptable risk, add user namespaces, rootless runtimes, or sandboxed runtimes (gVisor, Kata Containers).
 - **Resource limits** — set CPU and memory limits to contain denial-of-service conditions and runaway workloads. An unconstrained container can starve co-located services.
 
 ## Verify against benchmarks
@@ -94,7 +104,7 @@ Hardened images should also be **signed and traceable**. Sign images with cosign
 
 **Intermediate** — Migrate to distroless or minimal base images. Enforce multi-stage builds. Add `readOnlyRootFilesystem: true` and drop all capabilities in Kubernetes manifests. Run kube-bench in CI for infrastructure pipelines.
 
-**Advanced** — Pin all base images to digests; automate weekly rebuilds. Sign images with Sigstore keyless signing and verify at admission with Kyverno or the Sigstore policy controller. Enforce `Restricted` pod security standards cluster-wide. Use Chainguard Images for critical base images; track CVE count and mean severity of base images as operational KPIs.
+**Advanced** — Pin all base images to digests; automate weekly rebuilds. Sign images with Sigstore keyless signing and verify at admission with Kyverno or the Sigstore policy controller. Enforce `Restricted` pod security standards cluster-wide. Use hardened base images (Chainguard Images, Docker Hardened Images) for critical workloads; track CVE count and mean severity of base images as operational KPIs.
 
 ## Metrics and KPIs
 
@@ -113,13 +123,14 @@ Hardened images should also be **signed and traceable**. Sign images with cosign
 ### Open-source
 
 - [Docker Bench for Security](https://github.com/docker/docker-bench-security) - Checks Docker hosts and containers against CIS benchmark recommendations; useful as a configuration audit step.
-- [Dockle](https://github.com/goodwithtech/dockle) - Dockerfile and image linter for security best practices; catches common misconfigurations before the image is built.
+- [Dockle](https://github.com/goodwithtech/dockle) - Dockerfile and image linter for security best practices; checks built images against CIS-aligned best practices and flags common misconfigurations before the image is pushed.
 - [hadolint](https://github.com/hadolint/hadolint) - Dockerfile linter enforcing best practices including multi-stage build patterns, pinned digests, and non-root USER; integrates with most CI systems and IDEs.
 - [kube-bench](https://github.com/aquasecurity/kube-bench) - Checks Kubernetes cluster configuration against the CIS Kubernetes Benchmark; runs as a job in the cluster or in CI for infrastructure pipelines.
 
 ### Commercial
 
-- [Chainguard Images](https://www.chainguard.dev/) - Continuously rebuilt, SLSA-signed minimal container base images with near-zero CVEs; eliminates base-image vulnerability debt by design.
+- [Chainguard Images](https://www.chainguard.dev/) - Continuously rebuilt, signed minimal container base images with SBOMs and near-zero CVEs; eliminates base-image vulnerability debt by design. A free tier is available; the full catalog and version pinning are commercial.
+- [Docker Hardened Images](https://www.docker.com/products/hardened-images/) - Minimal, SBOM-backed Debian and Alpine images with SLSA Build Level 3 provenance; the catalog has been free and open source (Apache 2.0) since December 2025, with paid tiers adding patch SLAs, FIPS/STIG variants, and extended lifecycle support.
 - [Sysdig Secure](https://sysdig.com/products/secure/) - Container hardening, drift detection, and runtime security for Kubernetes; detects when a running container deviates from its hardened image.
 
 ---

@@ -37,6 +37,7 @@ The same underlying vulnerability is routinely flagged by multiple tools. Withou
 Without ASPM: three separate tickets, three separate remediation requests, possible triple-counting in metrics.
 
 With ASPM deduplication:
+
 1. Normalize all three to CWE-89 (SQL Injection).
 2. Match by asset (`UserRepository.java`) and finding type (CWE-89).
 3. Merge into one finding with three source references.
@@ -62,12 +63,14 @@ ASPM and SIEM are complementary: ASPM feeds enriched application risk context to
 ## Risk score normalization across tools
 
 Different tools use different severity scales:
+
 - CVSS (0–10 numeric)
 - SAST tool-specific: Critical / High / Medium / Low
 - DAST tools: P1 / P2 / P3 / P4
 - Cloud scanners: Critical / High / Medium / Low / Informational
 
 ASPM normalizes these to a common scale using:
+
 1. **Base severity** — mapped to a common 4-level scale (Critical / High / Medium / Low).
 2. **EPSS enrichment** — the probability this specific CVE is exploited in the wild within 30 days (0–100%). High EPSS elevates priority.
 3. **CISA KEV** — if the CVE is on the Known Exploited Vulnerabilities catalog, it is treated as Critical regardless of CVSS.
@@ -95,6 +98,7 @@ A concrete example: a CVE with CVSS 9.8 in a logging library used only in a dev 
 ASPM is the primary data source for AppSec program reporting to leadership:
 
 **Executive dashboard (monthly):**
+
 - Risk trend: total critical/high findings, open vs closed, week-over-week delta.
 - Mean time to remediate (MTTR) by severity, by team, vs SLA target.
 - Escape rate: findings discovered post-merge vs pre-merge (measures shift-left effectiveness).
@@ -111,11 +115,13 @@ This is reportable in a single dashboard because ASPM aggregates from all source
 ## Buy vs build
 
 **Build considerations:**
+
 - Connecting 10+ scanner outputs with normalization, deduplication, and custom enrichment requires significant engineering — typically a 2–4 person-year initial investment.
 - Open-source tools (DefectDojo) can get 60% of the way there; the remaining 40% (reachability, EPSS integration, runtime correlation) requires custom development.
 - Best suited for organizations with a large AppSec engineering team and strong data engineering capability.
 
 **Buy considerations:**
+
 - Commercial ASPM platforms (Apiiro, ArmorCode, Cycode, Legit Security) offer pre-built integrations for 100+ scanners, reachability analysis, and executive dashboards out of the box.
 - Time-to-value is typically 4–8 weeks vs 6–18 months to build equivalent capability.
 - Best suited for organizations that want to focus engineering capacity on remediation, not tooling.
@@ -124,7 +130,7 @@ This is reportable in a single dashboard because ASPM aggregates from all source
 
 ## How ASPM processes findings
 
-```
+```text
 Scanner A (SAST)  ──┐
 Scanner B (SCA)   ──┤
 Scanner C (DAST)  ──┤──> Normalization ──> Deduplication ──> Enrichment ──> Prioritized Risk

@@ -1,6 +1,6 @@
 # Misconfiguration Check
 
-Security misconfiguration is one of the most common — and most preventable — causes of breaches. It is consistently in the [OWASP Top 10](https://owasp.org/Top10/A05_2021-Security_Misconfiguration/). Unlike code vulnerabilities, misconfigurations arise from *how systems are set up*: default credentials left in place, unnecessary features enabled, verbose errors, missing hardening, and overly permissive access. Misconfiguration checks systematically verify that applications, infrastructure, containers, and cloud resources are configured against secure baselines.
+Security misconfiguration is one of the most common — and most preventable — causes of breaches. It is consistently in the [OWASP Top 10](https://top10.owasp.org/2025/A02_2025-Security_Misconfiguration) (A05 in 2021, A02 in the 2025 edition). Unlike code vulnerabilities, misconfigurations arise from *how systems are set up*: default credentials left in place, unnecessary features enabled, verbose errors, missing hardening, and overly permissive access. Misconfiguration checks systematically verify that applications, infrastructure, containers, and cloud resources are configured against secure baselines.
 
 ## Why misconfigurations dominate breaches
 
@@ -9,6 +9,7 @@ Misconfigurations are exploitable with little skill — no custom exploit is nee
 ## Common misconfigurations by layer
 
 ### Application and web server
+
 - Missing security headers: `Content-Security-Policy`, `Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`, `Permissions-Policy`.
 - Insecure TLS: TLS 1.0/1.1 still enabled, weak cipher suites, missing HSTS, missing certificate pinning.
 - Verbose error messages leaking stack traces, internal paths, or framework versions.
@@ -16,6 +17,7 @@ Misconfigurations are exploitable with little skill — no custom exploit is nee
 - Default or sample accounts not removed.
 
 ### Infrastructure as Code
+
 - Open-to-internet security groups (`0.0.0.0/0` on port 22 or 3389).
 - Storage buckets with public read/write ACLs.
 - Unencrypted EBS volumes, RDS databases, or S3 buckets.
@@ -24,6 +26,7 @@ Misconfigurations are exploitable with little skill — no custom exploit is nee
 These are best caught before provisioning — see [IaC Scanning](../2-3-Build/2-3-4-Infrastructure-as-Code-Security/2-3-4-1-Infrastructure-as-Code-Scanning.md).
 
 ### Containers and Kubernetes
+
 - Containers running as root with no `runAsNonRoot: true` pod spec.
 - Privileged containers (`privileged: true`) or excessive capabilities (`CAP_SYS_ADMIN`).
 - Missing resource limits (CPU/memory) creating DoS risk.
@@ -32,6 +35,7 @@ These are best caught before provisioning — see [IaC Scanning](../2-3-Build/2-
 - Public-facing Kubernetes dashboard with weak or no authentication.
 
 ### Cloud (runtime posture)
+
 - IAM users with full `*:*` permissions or stale access keys (>90 days without rotation).
 - Root account MFA not enabled.
 - CloudTrail/audit logging disabled for critical APIs.
@@ -41,7 +45,7 @@ These are best caught before provisioning — see [IaC Scanning](../2-3-Build/2-
 ## How to check, across layers
 
 - **Application and web server** — verify headers, TLS configuration, error handling, and disabled debug features; often done via [DAST](2-4-2-Dynamic-Application-Security-Testing.md) or dedicated header-check tools in CI.
-- **Infrastructure as Code** — catch misconfigurations before provisioning with Trivy, Checkov, or tfsec (see [IaC Scanning](../2-3-Build/2-3-4-Infrastructure-as-Code-Security/2-3-4-1-Infrastructure-as-Code-Scanning.md)).
+- **Infrastructure as Code** — catch misconfigurations before provisioning with Trivy or Checkov (tfsec has been folded into Trivy; see [IaC Scanning](../2-3-Build/2-3-4-Infrastructure-as-Code-Security/2-3-4-1-Infrastructure-as-Code-Scanning.md)).
 - **Containers and Kubernetes** — check images and cluster configuration against [CIS Benchmarks](https://www.cisecurity.org/cis-benchmarks) and Pod Security Standards using kube-bench, Trivy, or Kubescape.
 - **Cloud resources at runtime** — Cloud Security Posture Management (CSPM) and Kubernetes Security Posture Management (KSPM) detect drift and misconfigurations in live environments continuously (see [Cloud-Native Security](../2-7-Operate/2-7-1-Cloud-Native-Security.md)).
 
@@ -50,7 +54,7 @@ These are best caught before provisioning — see [IaC Scanning](../2-3-Build/2-
 ```yaml
 # GitHub Actions — scan IaC and Kubernetes manifests
 - name: Trivy misconfiguration scan
-  uses: aquasecurity/trivy-action@master
+  uses: aquasecurity/trivy-action@v0.36.0   # pin a release tag, or better a full commit SHA; never @master
   with:
     scan-type: config
     scan-ref: .
@@ -60,14 +64,14 @@ These are best caught before provisioning — see [IaC Scanning](../2-3-Build/2-
     output: trivy-misconfig.sarif
 
 - name: Upload results to GitHub Security
-  uses: github/codeql-action/upload-sarif@v3
+  uses: github/codeql-action/upload-sarif@v4
   with:
     sarif_file: trivy-misconfig.sarif
 ```
 
 ## Make it continuous
 
-Configuration drifts over time, so a one-time check is insufficient. A configuration that passes today can be manually changed tomorrow, overridden by a Helm upgrade, or exposed by a new feature. Define secure baselines as [Policy as Code](../../3-Governance/3-1-Compliance-Auditing/3-1-2-Policy-as-code.md), enforce them in CI and at admission control (Kyverno, OPA/Gatekeeper), and continuously monitor running environments for drift with CSPM. Map checks to recognized benchmarks (CIS, NIST) so results are auditable and comparable over time.
+Configuration drifts over time, so a one-time check is insufficient. A configuration that passes today can be manually changed tomorrow, overridden by a Helm upgrade, or exposed by a new feature. Define secure baselines as [Policy as Code](../../3-Governance/3-1-Compliance-Auditing/3-1-2-Policy-as-code.md), enforce them in CI and at admission control (Kyverno, OPA/Gatekeeper, or Kubernetes' built-in ValidatingAdmissionPolicy, which uses CEL and needs no extra controller), and continuously monitor running environments for drift with CSPM. Map checks to recognized benchmarks (CIS, NIST) so results are auditable and comparable over time.
 
 ## Common pitfalls and anti-patterns
 
@@ -99,15 +103,20 @@ Configuration drifts over time, so a one-time check is insufficient. A configura
 
 ### Open-source
 
+- [Checkov](https://github.com/bridgecrewio/checkov) — Policy-as-code scanner for Terraform, CloudFormation, Kubernetes, Helm, Dockerfiles, and more; large built-in policy library with custom policies in Python or YAML.
+- [KICS](https://github.com/Checkmarx/kics) — Checkmarx's open-source IaC scanner covering Terraform, Kubernetes, Docker, Ansible, and cloud templates, with queries written in Rego.
 - [kube-bench](https://github.com/aquasecurity/kube-bench) — Checks Kubernetes nodes and control plane against the CIS Benchmark; run as a Job in-cluster for comprehensive coverage.
 - [Kubescape](https://github.com/kubescape/kubescape) — Kubernetes security posture tool covering NSA/CISA hardening guidance, MITRE ATT&CK, and CIS Benchmarks; developer-friendly CLI and CI integration.
 - [Lynis](https://github.com/CISOfy/lynis) — Security auditing and hardening tool for Unix/Linux systems; covers system configuration, package management, authentication, and more.
-- [Prowler](https://github.com/prowler-cloud/prowler) — Cloud security posture and misconfiguration assessment for AWS, Azure, and GCP; maps to CIS, SOC2, PCI-DSS, ISO 27001, and HIPAA.
+- [Prowler](https://github.com/prowler-cloud/prowler) — Cloud security posture and misconfiguration assessment for AWS, Azure, GCP, and Kubernetes; maps to CIS, SOC2, PCI-DSS, ISO 27001, and HIPAA.
+- [testssl.sh](https://github.com/testssl/testssl.sh) — Command-line checker for TLS/SSL protocols, ciphers, and known TLS flaws on any service port; useful for the web-server and TLS layer.
 - [Trivy](https://github.com/aquasecurity/trivy) — Misconfiguration scanning for IaC (Terraform, CloudFormation, Helm, Kubernetes manifests); also covers container images and dependencies in a single tool.
 
 ### Commercial
 
-- [Prisma Cloud](https://www.paloaltonetworks.com/prisma/cloud) — CNAPP with cloud posture management, IaC scanning, and runtime misconfiguration detection; strong cross-cloud coverage.
+- [Microsoft Defender for Cloud](https://learn.microsoft.com/azure/defender-for-cloud/) — Native CSPM and CWPP for Azure with multicloud connectors for AWS and GCP; good fit for Azure-centric estates.
+- [Orca Security](https://orca.security/) — Agentless CNAPP with side-scanning of cloud workloads and configurations; fast posture visibility across multiple clouds.
+- [Prisma Cloud](https://www.paloaltonetworks.com/prisma/cloud) — CNAPP with cloud posture management, IaC scanning (including Checkov), and runtime misconfiguration detection; strong cross-cloud coverage. Palo Alto Networks is consolidating it into Cortex Cloud.
 - [Wiz](https://www.wiz.io/) — Agentless cloud misconfiguration and posture management; fast deployment with graph-based risk prioritization that connects misconfigurations to their blast radius.
 
 ---

@@ -23,24 +23,30 @@ The hard part is not adding gates; it is designing gates that reduce risk **with
 | Deploy | Admission control: only signed, policy-compliant artifacts | Block workload from running in cluster |
 
 ```yaml
-# Example: GitHub Actions gate using Semgrep — blocks on new high findings
-- name: Semgrep SAST gate
-  uses: returntocorp/semgrep-action@v1
-  with:
-    config: >
-      p/owasp-top-ten
-      p/secrets
-    publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
-  env:
-    SEMGREP_BASELINE_REF: ${{ github.base_ref }}  # diff-aware: new findings only
+# Example: GitHub Actions gate using Semgrep — blocks on new findings only
+# (the returntocorp/semgrep-action wrapper is deprecated; run `semgrep ci` in the official image)
+semgrep:
+  runs-on: ubuntu-latest
+  container:
+    image: semgrep/semgrep   # pin to a version tag or digest in production
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0       # full history is needed to diff against the base branch
+    - name: Semgrep SAST gate
+      run: semgrep ci --config p/owasp-top-ten --config p/secrets
+      env:
+        SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        SEMGREP_BASELINE_REF: origin/${{ github.base_ref }}  # diff-aware: new findings only
 ```
+
 ## Normalizing multi-scanner output into a single gate decision
 
 Real pipelines rarely run a single scanner. A typical SCA stage, for example, might run both an application dependency scanner (e.g., OSV-Scanner) and a container/SBOM scanner (e.g., Trivy) to get broader vulnerability database coverage. Each tool produces its own result, its own exit code semantics, and its own idea of "severity". Without normalization, you end up with N independent pass/fail signals instead of one gate decision, and inconsistent exit code handling across tools becomes a silent source of false negatives.
 
 ### Standardize on SARIF as the common interface
 
-Most modern scanners can emit [SARIF](https://sarifweb.azurewebsites.net/) (Static Analysis Results Interchange Format). SARIF's `security-severity` property (under each rule's `properties`) is typically populated with a CVSS-like score, which gives you a single numeric field to gate on regardless of which tool produced the finding.
+Most modern scanners can emit [SARIF](https://sarifweb.azurewebsites.net/) (Static Analysis Results Interchange Format, an OASIS standard). SARIF's `security-severity` property (under each rule's `properties`) is typically populated with a CVSS-like score, which gives you a single numeric field to gate on regardless of which tool produced the finding.
 
 ```python
 # Read every SARIF file produced by the pipeline's scanners and
@@ -105,6 +111,8 @@ Treating "scanner crashed" as its own `ERROR` state, distinct from `FAILED`, mat
 Do not assume a non-zero exit code always means vulnerabilities were found, or that zero always means the scan is clean. Exit code semantics differ per tool and must be normalized individually. For example, OSV-Scanner uses exit code `1` to mean "scan completed, vulnerabilities were found," not a tool failure. Treating that as a pipeline error would incorrectly flag every scan with findings as broken, rather than letting the SARIF based gate decide pass, warn, or fail on its own terms:
 
 ```python
+import subprocess
+
 def run_osv_scanner(cmd: list[str]) -> int:
     exit_code = subprocess.run(cmd).returncode
     if exit_code == 1:
@@ -130,8 +138,8 @@ def enforce_pipeline_gate(status: str):
     if status in ("FAILED", "ERROR"):
         # Writing to stderr ensures CI systems prominently display the failure reason
         print(f"::error::Security gate {status}. Halting pipeline.", file=sys.stderr)
-        sys.exit(1) 
-    
+        sys.exit(1)
+
     print(f"Security gate {status}. Pipeline may proceed.")
     sys.exit(0)
 ```
@@ -157,7 +165,7 @@ The evolution of gate intelligence:
 | 1st | Raw count of findings above a severity threshold |
 | 2nd | New findings since baseline, filtered by severity |
 | 3rd | CVSS + EPSS + KEV — exploitability-weighted severity |
-| 4th | Reachability + runtime exposure + ASPM correlation |
+| 4th | Reachability + runtime exposure + ASPM correlation, with [VEX](2-3-2-Software-Composition-Analysis/2-3-2-1-Software-Composition-Analysis.md#vex-workflow) statements suppressing findings already assessed as not affected |
 
 ## Common pitfalls and anti-patterns
 
@@ -165,6 +173,7 @@ The evolution of gate intelligence:
 - **Gates configured but not enforced** — required CI status checks must be enabled in branch protection rules; otherwise developers merge without them.
 - **Exception process that requires security team approval for every finding** — creates a bottleneck and incentivizes teams to avoid scanning. Delegate tier-2 and tier-3 exception approvals to risk owners within the product team.
 - **No visibility into exception trends** — if the exception register is growing every sprint, that is a systemic problem. Track exception counts, ages, and owners as board-level metrics.
+- **Gating on a scanner you have not pinned** — a scanner or its CI action pulled by mutable tag is itself a supply-chain risk (the March 2026 compromise of the `trivy-action` tags is an example). Pin gate tooling to versions or digests, as described in [CI/CD Pipeline Security](2-3-6-Supply-Chain-Security/2-3-6-3-CICD-Pipeline-Security.md).
 - **Suppression via comments in source code** — `# nosec`, `// NOSONAR`, and `.semgrepignore` suppressions are invisible in most dashboards. Require that suppressions be tracked in the central exception register.
 
 ## Maturity progression
@@ -180,7 +189,7 @@ The evolution of gate intelligence:
 | Category | Examples |
 |---|---|
 | Vulnerability tracking & gate integration | DefectDojo (open source), Archery |
-| Policy-as-code gate enforcement | OPA/Conftest, Rego policies in CI, Kyverno (Kubernetes) |
+| Policy-as-code gate enforcement | OPA/Conftest, Rego policies in CI, Kyverno and OPA Gatekeeper (Kubernetes) |
 | CI/CD native gates | GitHub branch protection + required status checks, GitLab merge request approvals, Jenkins Quality Gates |
 | ASPM (correlated gate decisions) | Apiiro, Arnica, Ox Security, Cycode — see [ASPM](../../3-Governance/3-3-Reporting/3-3-3-ASPM.md) |
 | Exception / risk-acceptance tracking | Jira (security issue type), ServiceNow, DefectDojo risk acceptance workflow |
@@ -201,5 +210,6 @@ The evolution of gate intelligence:
 
 - [OWASP DSOMM — Test & Verification](https://dsomm.owasp.org/)
 - [OWASP Top 10 CI/CD Security Risks](https://owasp.org/www-project-top-10-ci-cd-security-risks/)
-- [NIST SSDF — PW & RV practices](https://csrc.nist.gov/Projects/ssdf)
-- [DefectDojo documentation](https://defectdojo.github.io/django-DefectDojo/)
+- [NIST SSDF (SP 800-218) — PW & RV practices](https://csrc.nist.gov/Projects/ssdf)
+- [DefectDojo documentation](https://docs.defectdojo.com/)
+- [SARIF specification (OASIS)](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)

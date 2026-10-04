@@ -7,7 +7,7 @@ A DevSecOps program is never "done" — it matures. Tracking maturity gives lead
 Use an established model so assessments are structured, repeatable, and comparable to industry:
 
 - **[OWASP SAMM](https://owaspsamm.org/)** — assesses maturity across five business functions (Governance, Design, Implementation, Verification, Operations) at three levels each. Each level is clearly defined with concrete activities and expected outputs, not vague descriptions. Strong for overall program strategy and executive reporting. SAMM assessments map to business risk, making them effective for communicating with leadership about where to invest.
-- **[OWASP DSOMM](https://dsomm.owasp.org/)** — focuses on concrete DevSecOps activities in the pipeline and maps them to maturity levels across dimensions like Static Depth, Dynamic Depth, and Infrastructure. Strong for engineering adoption: every practice is mapped to specific tools and implementation steps. Use DSOMM to track the pipeline and engineering-level maturity.
+- **[OWASP DSOMM](https://dsomm.owasp.org/)** — focuses on concrete DevSecOps activities in the pipeline and maps them to maturity levels (1–4) across dimensions such as Build and Deployment, Culture and Organization, Implementation, Information Gathering, and Test and Verification. Strong for engineering adoption: every practice is mapped to specific tools and implementation steps. Use DSOMM to track the pipeline and engineering-level maturity.
 - **[BSIMM](https://www.bsimm.com/)** — a descriptive model based on what real organizations (finance, healthcare, tech, ISV) actually do, derived from annual data from participating firms. Useful for benchmarking against industry peers: "we are at the median for our sector in code review but below average in attack models."
 
 **How to choose:** SAMM sets strategic direction; DSOMM drives day-to-day engineering adoption. Many programs use both: SAMM for the annual executive report, DSOMM for the engineering team's quarterly review. Add BSIMM when peer-benchmarking is a priority.
@@ -61,6 +61,7 @@ Complement maturity assessments with operational metrics that show whether the p
 - **Findings backlog age** — age distribution of open findings, by severity. A growing tail of old high-severity findings indicates SLA non-compliance and accumulating risk.
 - **False positive rate** — the percentage of flagged issues that are not real vulnerabilities. High rates drive developer fatigue and tool disabling. Track this per scanner and tune aggressively.
 - **Developer adoption** — training completion, security champions per team, threat models completed per new feature. Adoption metrics reveal culture, not just tooling.
+- **Vulnerability SLA compliance** — percentage of findings closed within the SLA for their severity (and for CISA KEV entries, the shortest SLA you define). Complements MTTR by showing how many findings miss the target rather than the average.
 - **ATT&CK coverage** — detection coverage validated by [Breach and Attack Simulation](../../2-Process/2-7-Operate/2-7-6-Breach-and-attack-simulation.md). Shows what percentage of adversary techniques your detection layer would catch.
 
 ## Reporting cadence

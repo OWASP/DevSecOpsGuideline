@@ -6,7 +6,7 @@ Static Application Security Testing analyzes an application's **source code, byt
 
 SAST tools use one or more of these techniques depending on their depth and language support:
 
-- **Pattern matching / AST analysis** — the simplest and fastest approach. The tool parses source code into an Abstract Syntax Tree (AST) and matches against known-vulnerable patterns (e.g., "string concatenation used as SQL query argument"). Semgrep and Bandit use this approach. Fast, low false-positive rate, but misses vulnerabilities that span multiple functions.
+- **Pattern matching / AST analysis** — the simplest and fastest approach. The tool parses source code into an Abstract Syntax Tree (AST) and matches against known-vulnerable patterns (e.g., "string concatenation used as SQL query argument"). Semgrep and Bandit use this approach. Fast, low false-positive rate, but largely misses vulnerabilities that span multiple functions or files (Semgrep's taint mode narrows this gap).
 - **Dataflow / taint analysis** — the most powerful technique. The tool tracks how untrusted input (a *source*, such as `request.getParameter()`) flows through the application until it reaches a dangerous operation (a *sink*, such as `executeQuery()`). If tainted data reaches a sink without sanitization, it is flagged. CodeQL and Checkmarx use this approach. More thorough, higher false-positive rate, slower.
 - **Control flow analysis** — maps all possible execution paths through a function or module to find paths that lead to dangerous states (e.g., null dereference, unhandled exception disclosing information).
 - **Semantic analysis** — understands language idioms and framework conventions rather than just syntax, reducing false positives for framework-specific patterns.
@@ -53,14 +53,15 @@ A SAST program that is not actively tuned will degrade. Teams learn to ignore al
 
 ```yaml
 # Example GitHub Actions SAST step using CodeQL
+# Requires `security-events: write` (and `contents: read`) job permissions.
 - name: Initialize CodeQL
-  uses: github/codeql-action/init@v3
+  uses: github/codeql-action/init@v4
   with:
     languages: javascript, python
     queries: security-extended
 
 - name: Perform CodeQL Analysis
-  uses: github/codeql-action/analyze@v3
+  uses: github/codeql-action/analyze@v4
   with:
     category: "/language:javascript"
 ```
@@ -95,7 +96,7 @@ Custom rules are the primary mechanism for catching organization-specific securi
 SAST is not only for application code. The same principles apply to infrastructure:
 
 - **Terraform / Bicep / CloudFormation** — see [IaC Scanning](../2-3-4-Infrastructure-as-Code-Security/2-3-4-1-Infrastructure-as-Code-Scanning.md) for dedicated tooling.
-- **GitHub Actions / GitLab CI / CircleCI** — pipeline definitions can contain command injection, secret exposure, and unsafe permission grants. Tools like `zizmor` (GitHub Actions) and `checkov` analyze CI pipeline files statically.
+- **GitHub Actions / GitLab CI / CircleCI** — pipeline definitions can contain command injection, secret exposure, and unsafe permission grants. Tools like `zizmor` (GitHub Actions) and `checkov` analyze CI pipeline files statically; see [CI/CD Pipeline Security](../2-3-6-Supply-Chain-Security/2-3-6-3-CICD-Pipeline-Security.md).
 - **Dockerfiles** — running as root, `ADD` instead of `COPY`, pinning base images to digests.
 
 Covering infrastructure-as-code alongside application code gives a complete static security picture.
@@ -147,10 +148,11 @@ This prevents each tool's dashboard from becoming a siloed, ignored alert queue.
 
 - [Bandit](https://github.com/PyCQA/bandit) — Security-focused static analysis for Python. Best for Python-only codebases; fast, easy to extend with custom plugins. Limited to pattern matching; no dataflow.
 - [Brakeman](https://github.com/presidentbeef/brakeman) — Static analysis scanner for Ruby on Rails. Deep Rails-specific knowledge makes it highly accurate for that stack; not applicable outside Rails.
-- [CodeQL](https://github.com/github/codeql) — Semantic code analysis engine treating code as data for cross-codebase vulnerability queries. Strong for Java, C/C++, JavaScript, Python; integrated free in GitHub Advanced Security. Deep dataflow; slower but thorough.
+- [CodeQL](https://github.com/github/codeql) — Semantic code analysis engine treating code as data for cross-codebase vulnerability queries. Strong for Java, C/C++, C#, Go, JavaScript/TypeScript, Python, and more; free for open-source repositories, and for private repositories via GitHub Code Security (formerly GitHub Advanced Security). Deep dataflow; slower but thorough.
 - [gosec](https://github.com/securego/gosec) — Security analyzer for Go source code; maps findings to CWE and G-codes; ideal for Go microservices.
-- [Semgrep](https://semgrep.dev/) — Fast, multi-language pattern-based static analysis with a large community rule registry. Low barrier to writing custom rules; best-in-class for IDE integration and speed. No native dataflow analysis (available in Semgrep Pro).
-- [SonarQube Community](https://www.sonarsource.com/products/sonarqube/) — Web-based static analysis across 20+ languages with quality gate integration; broad language coverage for polyglot teams.
+- [Opengrep](https://github.com/opengrep/opengrep) — Community-governed, LGPL-licensed fork of Semgrep OSS (created in 2025) that keeps advanced analysis features open; compatible with Semgrep-style rules. Good fit for teams that need a fully open-source engine.
+- [Semgrep](https://semgrep.dev/) — Fast, multi-language pattern-based static analysis with a large community rule registry. Low barrier to writing custom rules; best-in-class for IDE integration and speed. The open-source engine offers intra-file taint tracking; cross-file dataflow analysis requires the commercial Semgrep AppSec Platform. Note that the community rule registry is under the Semgrep Rules License, not an OSI license.
+- [SonarQube Community Build](https://www.sonarsource.com/products/sonarqube/) — Web-based static analysis across 20+ languages with quality gate integration; broad language coverage for polyglot teams.
 
 ### Commercial
 

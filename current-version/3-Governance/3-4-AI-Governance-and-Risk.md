@@ -12,6 +12,7 @@ The use of AI coding assistants (GitHub Copilot, Cursor, Amazon Q, Claude) and A
 - **Hallucinated dependencies (slopsquatting)** — LLMs invent package names that do not exist, creating supply-chain risk if a malicious actor registers those names.
 - **Data leakage to third-party models** — developers submitting proprietary code, PII, or credentials to external AI services may violate data protection obligations.
 - **Prompt injection via code context** — malicious content in a codebase (e.g., a file deliberately crafted to manipulate an AI agent's actions) can redirect AI behavior in unexpected ways.
+- **Untrusted tools and MCP servers** — agents extend themselves with plugins, skills, and Model Context Protocol (MCP) servers. A malicious or compromised server can exfiltrate data, poison tool descriptions, or execute code with the developer's privileges. Treat them like third-party dependencies: approve, pin, review, and run them with least privilege.
 
 See [IDE and AI-Assisted Development Security](../2-Process/2-2-Develop/2-2-2-IDE-and-AI-assisted-development.md) for controls.
 
@@ -20,19 +21,23 @@ See [IDE and AI-Assisted Development Security](../2-Process/2-2-Develop/2-2-2-ID
 Securing LLM- and ML-powered features you build and operate:
 
 - **Prompt injection** — malicious user input or content retrieved from external sources manipulates the model's behavior, causing it to bypass safety guardrails or take unauthorized actions.
-- **Insecure output handling** — LLM output fed into downstream systems (code execution, SQL, shell commands) without sanitization becomes an injection vector.
+- **Improper output handling** — LLM output fed into downstream systems (code execution, SQL, shell commands) without sanitization becomes an injection vector.
 - **Training-data poisoning** — adversarially crafted data introduced into training sets can cause models to behave incorrectly in specific, hard-to-detect ways.
-- **Sensitive-information disclosure** — models can memorize and regurgitate training data, including PII or proprietary content.
+- **Sensitive-information disclosure and system-prompt leakage** — models can memorize and regurgitate training data, including PII or proprietary content, and can be coaxed into revealing system prompts. Never put secrets in prompts.
 - **Excessive agency** — AI agents granted broad permissions can cause significant harm when manipulated or malfunctioning. An agent with access to production databases and email should raise the same alarm as a human with the same access.
 - **Model theft / inversion** — adversaries can extract model behavior or training data through repeated querying.
+- **Vector and embedding weaknesses** — RAG stores can leak data across tenants or be poisoned. Enforce access control at retrieval time and validate ingested documents.
+- **Unbounded consumption** — unrestricted inference requests enable denial of service, runaway cost ("denial of wallet"), and model extraction. Apply quotas, rate limits, and budgets.
+- **Misinformation and overreliance** — models produce confident but wrong output; require grounding and human review for consequential decisions.
 
 ## Key risk frameworks
 
-- **[OWASP Top 10 for LLM Applications](https://genai.owasp.org/)** — the canonical risks for LLM-based systems: prompt injection, insecure output handling, training-data poisoning, model denial of service, sensitive-information disclosure, excessive agency, and more. Map every LLM-powered feature against this list at design time.
+- **[OWASP Top 10 for LLM Applications](https://genai.owasp.org/)** — the canonical risks for LLM-based systems. The 2025 edition covers prompt injection, sensitive-information disclosure, supply chain, data and model poisoning, improper output handling, excessive agency, system-prompt leakage, vector and embedding weaknesses, misinformation, and unbounded consumption (a 2026 edition has since been published; use the latest). Map every LLM-powered feature against this list at design time.
+- **[OWASP Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/)** — risks specific to autonomous agents (published December 2025): agent goal hijack, tool misuse, identity and privilege abuse, agentic supply chain compromise, unexpected code execution, memory and context poisoning, insecure inter-agent communication, cascading failures, human-agent trust exploitation, and rogue agents.
 - **[OWASP Machine Learning Security Top 10](https://owasp.org/www-project-machine-learning-security-top-10/)** — risks specific to ML systems: input manipulation (evasion), data poisoning, model inversion, membership inference, and model theft.
-- **[NIST AI Risk Management Framework (AI RMF)](https://www.nist.gov/itl/ai-risk-management-framework)** — a structured approach to governing AI risk across four functions: Govern, Map, Measure, Manage. Aligns AI risk management with organizational risk appetite.
-- **[ISO/IEC 42001](https://www.iso.org/standard/81230.html)** — AI management system standard, analogous to ISO 27001 for information security. Provides a framework for responsible AI development and deployment.
-- **[EU AI Act](https://artificialintelligenceact.eu/)** — risk-based regulation classifying AI systems from minimal to unacceptable risk, with mandatory requirements (transparency, conformity assessment, human oversight) for high-risk systems.
+- **[NIST AI Risk Management Framework (AI RMF)](https://www.nist.gov/itl/ai-risk-management-framework)** — a structured approach to governing AI risk across four functions: Govern, Map, Measure, Manage. Aligns AI risk management with organizational risk appetite. Use the Generative AI Profile (NIST AI 600-1) for LLM-specific risks and SP 800-218A for secure development of generative AI models; NIST is revising AI RMF 1.0, so check for updates.
+- **[ISO/IEC 42001](https://www.iso.org/standard/81230.html)** — AI management system standard, analogous to ISO 27001 for information security. Provides a framework for responsible AI development and deployment, and is certifiable by accredited bodies (ISO/IEC 42001:2023). Pair it with ISO/IEC 23894 for AI risk guidance.
+- **[EU AI Act](https://artificialintelligenceact.eu/)** — risk-based regulation classifying AI systems from minimal to unacceptable risk, with mandatory requirements (transparency, conformity assessment, human oversight) for high-risk systems. Phased application: prohibited practices and AI-literacy duties since February 2025; general-purpose AI model obligations since August 2025; transparency duties (Article 50) from August 2026; high-risk obligations delayed by the 2026 AI Omnibus to December 2027 (stand-alone Annex III systems) and August 2028 (AI embedded in regulated products). Penalties reach up to EUR 35 million or 7% of worldwide turnover for prohibited practices.
 
 ## Securing the ML pipeline (MLSecOps)
 
@@ -40,10 +45,10 @@ Extend DevSecOps discipline to the model lifecycle — models and datasets are s
 
 - **Data and model provenance** — track where training data and pre-trained models come from. Record the source, version, and license. Use a model registry with immutable versioned artifacts, analogous to a container registry.
 - **AI-BOM** — extend the [SBOM](../2-Process/2-3-Build/2-3-6-Supply-Chain-Security/2-3-6-1-SBOM.md) concept to inventory models, datasets, fine-tuning data, and their dependencies. CycloneDX supports AI/ML bill of materials extensions.
-- **Scan model artifacts** — serialized model files (pickle, safetensors, ONNX) can carry malicious code that executes on deserialization. Scan all externally sourced model files before loading. Prefer safetensors format over pickle; avoid `torch.load` with untrusted sources.
+- **Scan model artifacts** — serialized model files (pickle, safetensors, ONNX) can carry malicious code that executes on deserialization. Scan all externally sourced model files before loading. Prefer safetensors format over pickle; avoid `torch.load` on untrusted files (if unavoidable, use `weights_only=True` in a sandbox). Verify hashes and signatures of downloaded models (for example with OpenSSF Model Signing) and pin revisions rather than pulling `main`.
 - **Protect the inference path** — validate and sanitize all inputs before they reach the model. Rate-limit model endpoints. Log inputs and outputs for abuse monitoring and forensics.
 - **Guardrails** — apply prompt-injection defenses (input filtering, output validation, instruction hierarchy), output filtering (content policy enforcement, PII redaction), and least-privilege for any agent that can take actions.
-- **Adversarial testing** — red-team LLM-powered features specifically for prompt injection, jailbreaks, and misuse before launch and after model updates. Use tools like Garak for automated probing.
+- **Adversarial testing** — red-team LLM-powered features specifically for prompt injection, jailbreaks, and misuse before launch and after model updates. Use tools like Garak or PyRIT for automated probing.
 
 ## Governing AI use
 
@@ -78,7 +83,7 @@ Constrain autonomous agents to the minimum permissions and actions required:
 
 ### Transparency and oversight
 
-- Disclose to users when they are interacting with an AI system where legally required (EU AI Act, FTC guidance).
+- Disclose to users when they are interacting with an AI system where legally required (for example EU AI Act Article 50 and US state laws and FTC guidance).
 - Monitor model behavior in production for drift, misuse, and unexpected outputs. Anomalies in output patterns are early warning signs of prompt injection attacks or model degradation.
 - Review AI-generated content policies and guardrails regularly as adversarial techniques evolve.
 
@@ -117,12 +122,12 @@ Constrain autonomous agents to the minimum permissions and actions required:
 - [Garak](https://github.com/NVIDIA/garak) — LLM vulnerability scanner. Probes LLM-powered applications for prompt injection, jailbreaks, data leakage, and more using hundreds of built-in attack probes. Use in CI for LLM-powered features.
 - [ModelScan](https://github.com/protectai/modelscan) — scans ML model files (pickle, HDF5, Keras, PyTorch, TensorFlow SavedModel) for unsafe code that executes on deserialization. Run on all externally sourced model artifacts.
 - [NeMo Guardrails](https://github.com/NVIDIA/NeMo-Guardrails) — toolkit for adding programmable guardrails to LLM applications: topic restrictions, output filtering, and dialog flow control. Supports multiple LLM backends.
-- [PyRIT](https://github.com/Azure/PyRIT) — Python Risk Identification Toolkit for generative AI (by Microsoft). Automates red-teaming of LLM applications at scale.
+- [PyRIT](https://github.com/microsoft/PyRIT) — Python Risk Identification Toolkit for generative AI (by Microsoft). Automates red-teaming of LLM applications at scale.
 
 ### Commercial
 
 - [HiddenLayer](https://hiddenlayer.com/) — security platform for AI/ML models: model scanning, adversarial attack detection at inference time, and model behavior monitoring.
-- [Protect AI](https://protectai.com/) — security and governance for the AI/ML lifecycle. Covers model scanning (via ModelScan), supply chain security, and LLM guardrails.
+- [Protect AI](https://protectai.com/) — security and governance for the AI/ML lifecycle (acquired by Palo Alto Networks in 2025 and now part of its Prisma AIRS platform). Covers model scanning (via ModelScan), supply chain security, and LLM guardrails.
 
 ---
 

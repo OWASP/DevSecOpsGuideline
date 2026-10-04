@@ -1,6 +1,6 @@
 # Secure Design and Requirements
 
-Threat modeling asks "what can go wrong?"; **secure design and requirements** answer "what must be true for this to be safe?" — *before* implementation begins. Security requirements that are written down become testable, and design decisions made early are far cheaper than retrofits. A whole class of vulnerabilities — the [OWASP Top 10's "Insecure Design"](https://owasp.org/Top10/A04_2021-Insecure_Design/) category — exists precisely because security was never a design input.
+Threat modeling asks "what can go wrong?"; **secure design and requirements** answer "what must be true for this to be safe?" — *before* implementation begins. Security requirements that are written down become testable, and design decisions made early are far cheaper than retrofits. A whole class of vulnerabilities — the [OWASP Top 10's "Insecure Design"](https://top10.owasp.org/2025/A06_2025-Insecure_Design/) category (A06:2025) — exists precisely because security was never a design input.
 
 ## Secure-by-design principles
 
@@ -8,7 +8,7 @@ These principles are not checklists to be stamped once and forgotten — they ar
 
 - **Least privilege** — every component, service, and identity gets only the access it needs, for only the duration it needs it. An overprivileged service that gets compromised becomes a high-blast-radius incident.
 - **Defense in depth** — never rely on a single control; assume any one layer can fail. A WAF is not a substitute for input validation; encryption at rest is not a substitute for access control.
-- **Fail securely** — errors and edge cases must default to denying access, not granting it. An unhandled exception that returns a `200 OK` with empty data is less dangerous than one that returns a `500` with a stack trace — but both are worse than returning a clean `403`.
+- **Fail securely** — errors and edge cases must default to denying access, not granting it. An unhandled exception that returns `200 OK` with empty data silently treats a failed check as success, and one that returns a `500` with a stack trace leaks internals — both are worse than a clean `403` or a generic error with details logged server-side.
 - **Minimize attack surface** — fewer features, ports, endpoints, and dependencies mean fewer ways in. Disable or remove anything not required. Every "just in case" API endpoint is a liability.
 - **Secure defaults** — the out-of-the-box configuration should be the safe one; security should not require opt-in. Encryption, authentication, and safe error handling should be on by default.
 - **Complete mediation** — check authorization on every access to every resource, not just the first request in a session. Cached authorization decisions become stale; privileged routes must validate on every call.
@@ -21,11 +21,11 @@ Principles are not enough — they must be translated into concrete, verifiable 
 
 ### Using OWASP ASVS
 
-The [OWASP Application Security Verification Standard (ASVS)](https://owasp.org/www-project-application-security-verification-standard/) provides a catalog of hundreds of security requirements organized by category (authentication, session management, cryptography, API, etc.) at three levels:
+The [OWASP Application Security Verification Standard (ASVS)](https://owasp.org/www-project-application-security-verification-standard/) provides a catalog of roughly 350 security requirements (ASVS 5.0, May 2025) organized into 17 chapters (authentication, session management, cryptography, API, etc.) at three levels:
 
 - **Level 1** — opportunistic; suitable for all applications. Covers basic security hygiene.
 - **Level 2** — standard; suitable for applications handling sensitive data. The target for most business applications.
-- **Level 3** — advanced; for critical applications (financial, healthcare, infrastructure). Requires formal verification of controls.
+- **Level 3** — advanced; for critical applications (financial, healthcare, infrastructure). Requires in-depth verification of design and controls.
 
 Select your ASVS level based on the application's risk classification, then import the relevant requirements into your backlog at project kick-off.
 
@@ -43,7 +43,7 @@ For every significant user story, write a corresponding abuse case that describe
 
 Add a security acceptance criteria section to your story template alongside functional acceptance criteria. This makes security testable by QA and automated tests, not optional.
 
-```
+```markdown
 ## Security Acceptance Criteria
 - [ ] Input is validated server-side (type, length, allowlist where applicable)
 - [ ] Output is encoded for the rendering context
@@ -84,7 +84,7 @@ Run this at the end of every design phase before implementation begins:
 
 ## Industry direction
 
-Regulators and vendors are converging on secure-by-design as a baseline expectation. [CISA's Secure by Design](https://www.cisa.gov/securebydesign) initiative asks software producers to take ownership of customer security outcomes and design products that are secure out of the box. The EU Cyber Resilience Act takes this further by making security-by-design a legal obligation for products with digital elements sold in the EU.
+Regulators and vendors are converging on secure-by-design as a baseline expectation. [CISA's Secure by Design](https://www.cisa.gov/securebydesign) initiative (including its voluntary Secure by Design Pledge) asks software producers to take ownership of customer security outcomes and design products that are secure out of the box. The EU Cyber Resilience Act takes this further by making security-by-design a legal obligation for products with digital elements sold in the EU, with the essential requirements applying from December 2027.
 
 ## Maturity progression
 
@@ -92,17 +92,18 @@ Regulators and vendors are converging on secure-by-design as a baseline expectat
 |---|---|
 | Starting | Security principles referenced in design reviews; ASVS Level 1 requirements added to high-risk stories |
 | Developing | Abuse cases written for all significant features; ASVS level selected per application; security acceptance criteria in story template |
-| Defined | Paved road with golden templates and shared libraries; ADRs document security decisions; ASVS requirements tracked in backlog |
+| Maturing | Paved road with golden templates and shared libraries; ADRs document security decisions; ASVS requirements tracked in backlog |
 | Advanced | Automated ASVS requirement generation from threat model output; design reviews gated on completion of abuse cases and security criteria |
 
 ## Tools
 
 | Category | Examples |
 |---|---|
-| Security requirements management | SD Elements (generates tasks from questionnaire), Jira (with security issue types and templates), OWASP ASVS spreadsheet |
-| ASVS tooling | OWASP ASVS project (PDF/spreadsheet), OWASP SKF (Security Knowledge Framework — maps ASVS to code examples) |
+| Security requirements management | Jira (with security issue types and templates), OWASP ASVS (CSV/JSON exports), SD Elements (generates tasks from questionnaire) |
+| ASVS tooling | OWASP ASVS project (PDF/CSV/JSON), OWASP SKF (Security Knowledge Framework — maps ASVS to code examples) |
 | Threat modeling (link with design) | OWASP Threat Dragon, Threagile, IriusRisk — see [Threat Modeling](2-1-1-Threat-modeling.md) |
 | Architecture diagramming | draw.io (supports DFDs), Mermaid (version-controllable diagrams as code), PlantUML, Structurizr |
+| Architecture decision records | adr-tools, Log4brains, MADR templates (plain Markdown in the repo) |
 | Secure design patterns reference | OWASP Cheat Sheet Series, OWASP Proactive Controls, OWASP ASVS |
 
 ---
@@ -110,8 +111,8 @@ Regulators and vendors are converging on secure-by-design as a baseline expectat
 ## Further reading
 
 - [OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/)
-- [OWASP Top 10 — A04 Insecure Design](https://owasp.org/Top10/A04_2021-Insecure_Design/)
+- [OWASP Top 10 — A06 Insecure Design](https://top10.owasp.org/2025/A06_2025-Insecure_Design/)
 - [OWASP Proactive Controls](https://owasp.org/www-project-proactive-controls/)
-- [OWASP Security Knowledge Framework (SKF)](https://owasp.org/www-project-security-knowledge-framework/)
+- [OWASP Security Knowledge Framework (SKF)](https://www.securityknowledgeframework.org/)
 - [CISA Secure by Design](https://www.cisa.gov/securebydesign)
 - [EU Cyber Resilience Act](https://digital-strategy.ec.europa.eu/en/policies/cyber-resilience-act)

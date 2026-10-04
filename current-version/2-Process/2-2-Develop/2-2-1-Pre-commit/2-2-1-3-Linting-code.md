@@ -25,20 +25,20 @@ Enable security rule sets in language-specific linters. Do not run only style ru
 
 | Language | Linter | Security rules |
 |---|---|---|
-| Python | Bandit, Semgrep, Ruff | B-prefix rules (Bandit); `p/python` rule set (Semgrep) |
+| Python | Bandit, Semgrep, Ruff | B-prefix rules (Bandit); `S` rules (Ruff, flake8-bandit port); `p/python` rule set (Semgrep) |
 | JavaScript / TypeScript | ESLint + `eslint-plugin-security`, Semgrep | `no-eval`, `no-new-func`, XSS patterns, `detect-non-literal-regexp` |
-| Go | golangci-lint (includes gosec) | gosec rules: G101–G601 |
+| Go | golangci-lint (includes gosec) | gosec rules (G1xx–G7xx, see the [gosec rule list](https://github.com/securego/gosec/blob/master/RULES.md)) |
 | Java | SpotBugs + find-sec-bugs, Semgrep | `find-sec-bugs` plugin detects SQL injection, XXE, SSRF |
 | Ruby | Brakeman | Full Rails-aware security analysis |
-| PHP | PHPCS + Security Audit, Psalm | `security-audit` sniffs |
-| Kotlin / Android | Detekt + detekt-rules-security | Android-specific security rules |
+| PHP | Psalm, Semgrep | Psalm taint analysis (`--taint-analysis`); `p/php` rule set (Semgrep) |
+| Kotlin / Android | Android Lint, Detekt, Semgrep, SpotBugs + find-sec-bugs | Android Lint security checks; Semgrep Kotlin/Android rule sets; find-sec-bugs works on Kotlin bytecode |
 
 ### Infrastructure as code
 
 Lint IaC files for misconfiguration:
 
 - **Dockerfile** — `hadolint` enforces best practices: no `latest` tag, `USER` instruction set, shell injection in `RUN` commands.
-- **Terraform** — `tflint` and `tfsec` / `Trivy` catch misconfigurations before `terraform apply`.
+- **Terraform** — `tflint` for correctness and provider-specific errors, and `Trivy` (`trivy config`) for security misconfigurations before `terraform apply`. `tfsec` has been folded into Trivy and is no longer actively developed.
 - **Kubernetes manifests** — `kube-linter` checks for privilege escalation, missing resource limits, host network access.
 - **Helm charts** — `helm lint` + `kube-linter` on rendered templates.
 
@@ -51,7 +51,7 @@ Validate YAML/JSON/TOML in CI to prevent malformed or unsafe config from reachin
 ```yaml
 # .pre-commit-config.yaml entry
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v5.0.0
+  rev: v6.0.0
   hooks:
     - id: check-yaml
     - id: check-json
@@ -87,14 +87,14 @@ semgrep --config semgrep-rules/ --error --json > semgrep-results.json
 New projects inherit years of existing lint violations. Blocking on all of them at once is counterproductive. Manage this with baselines:
 
 - **Semgrep baseline** — `semgrep --baseline-commit <sha>` reports only findings introduced after the baseline commit, not the historical backlog.
-- **ESLint** — use `eslint --report-unused-disable-directives` and dedicate a sprint to clearing violations incrementally.
+- **ESLint** — use bulk suppressions (`eslint --suppress-all`, ESLint v9.24+) to record existing violations in `eslint-suppressions.json`, then fail only on new ones and clear the backlog incrementally. `--report-unused-disable-directives` helps keep inline suppressions honest.
 - **detect-secrets baseline** — generate a baseline file with `detect-secrets scan > .secrets.baseline` and commit it. New secrets are flagged against the baseline.
 
 Treat clearing lint debt as technical debt: schedule it, track it, and do not let it grow by blocking new violations.
 
 ## Common pitfalls
 
-- **Security rules disabled** — style linting without security rules enabled misses the most valuable signal. Audit your `.eslintrc` / `pyproject.toml` to confirm security plugins are active.
+- **Security rules disabled** — style linting without security rules enabled misses the most valuable signal. Audit your `eslint.config.js` (or legacy `.eslintrc`) / `pyproject.toml` to confirm security plugins are active.
 - **Noisy rules driving suppression** — if developers add `# noqa`, `// eslint-disable`, or `// nosec` comments routinely, the rules are misconfigured. Tune or replace noisy rules instead of suppressing them everywhere.
 - **Only running in CI, not at pre-commit** — slow feedback loops mean developers context-switch after forgetting what the code was doing.
 - **Linting only changed files in CI** — fine for speed, but run full-repo linting on a schedule (weekly) to catch violations in unchanged files.
@@ -127,12 +127,17 @@ Treat clearing lint debt as technical debt: schedule it, track it, and do not le
 - [ESLint](https://eslint.org/) — Pluggable JavaScript/TypeScript linter. Add `eslint-plugin-security` and `eslint-plugin-no-unsanitized` for security rules covering `eval`, regular expression injection, and unsafe HTML insertion.
 - [golangci-lint](https://golangci-lint.run/) — Fast aggregator of Go linters. Includes `gosec` for security analysis (hardcoded credentials, SQL injection, weak crypto, file permissions).
 - [hadolint](https://github.com/hadolint/hadolint) — Dockerfile linter that enforces best practices: avoid `latest` tags, set non-root `USER`, avoid shell injection in `RUN`.
-- [Semgrep](https://semgrep.dev/) — Fast, multi-language static analysis using readable YAML pattern rules. Community registry contains thousands of security rules. Supports custom rules for project-specific patterns.
+- [kube-linter](https://github.com/stackrox/kube-linter) — Static checks for Kubernetes manifests and Helm charts: privileged containers, missing resource limits, host namespace access, and more.
+- [Opengrep](https://github.com/opengrep/opengrep) — Community fork of Semgrep CE (LGPL 2.1, backed by a consortium of AppSec vendors) that remains compatible with Semgrep rules. Consider it if you need open-source features, such as intrafile taint analysis, that Semgrep keeps in its commercial tier.
+- [Ruff](https://docs.astral.sh/ruff/) — Very fast Python linter and formatter. Its `S` rules reimplement many Bandit checks, so one tool can cover style and basic security at pre-commit speed.
+- [Semgrep](https://semgrep.dev/) — Fast, multi-language static analysis using readable YAML pattern rules. Community registry contains thousands of security rules. Supports custom rules for project-specific patterns. The Community Edition engine is open source; some cross-file analysis and the managed rule packs require the commercial platform.
+- [ShellCheck](https://www.shellcheck.net/) — Static analysis for shell scripts: unquoted variables, command injection patterns, and portability bugs. Useful for CI scripts and Dockerfile `RUN` helpers.
 - [SpotBugs + find-sec-bugs](https://find-sec-bugs.github.io/) — SpotBugs is a Java bytecode analyzer; find-sec-bugs adds 130+ security bug patterns covering OWASP Top 10 for Java/Kotlin.
+- [TFLint](https://github.com/terraform-linters/tflint) — Terraform linter that catches invalid provider arguments, deprecated syntax, and module issues. Pair it with Trivy for security checks.
 
 ### Commercial
 
-- [SonarQube / SonarCloud](https://www.sonarsource.com/products/sonarqube/) — Code quality and security analysis across 30+ languages. Community edition is free; commercial editions add security hotspot management, portfolio reporting, and branch analysis.
+- [SonarQube Server / SonarQube Cloud](https://www.sonarsource.com/products/sonarqube/) — Code quality and security analysis across 30+ languages (formerly SonarQube and SonarCloud). The open-source Community Build is free; commercial editions add deeper security analysis, security hotspot management, portfolio reporting, and branch analysis.
 
 ---
 

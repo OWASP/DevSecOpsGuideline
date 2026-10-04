@@ -8,7 +8,7 @@ Unprotected branches are the most common repository vulnerability. Every commit 
 
 **GitHub branch protection settings to enable:**
 
-```
+```text
 Branch protection rule for: main, master, release/*
   [x] Require a pull request before merging
        [x] Require approvals: 2
@@ -25,9 +25,11 @@ Branch protection rule for: main, master, release/*
   [x] Allow deletions: NO
 ```
 
+On GitHub, prefer **repository or organization rulesets** over classic branch protection rules where possible: rulesets can be layered, apply to many repositories at once, support an "evaluate" (dry-run) mode, and make bypass permissions explicit and auditable. GitLab offers equivalent protected branches, push rules, and merge request approval policies.
+
 **CODEOWNERS** ensures that changes to high-risk paths require review from the team that owns them:
 
-```
+```text
 # .github/CODEOWNERS
 # Auth and crypto: require security team review
 /src/auth/           @org/security-team
@@ -84,11 +86,13 @@ Require signed commits in branch protection so unsigned commits are rejected ser
 Tags feed the release pipeline. An attacker who can move or delete a tag can make a different commit ship as a release.
 
 ```bash
-# GitHub: protect release tags
-# Settings > Tags > Add rule: v* → enable tag protection
+# GitHub: protect release tags with a tag ruleset (classic tag protection rules are deprecated)
+# Settings > Rules > Rulesets > New tag ruleset: target v*, restrict updates and deletions
 ```
 
+Where your platform supports it, also enable **immutable releases** so that published release assets and their tags cannot be modified or replaced after publication. Note that a tag alone is still mutable unless a ruleset blocks updates.
 Sign release tags:
+
 ```bash
 git tag -s v1.2.3 -m "Release v1.2.3"
 git push origin v1.2.3
@@ -128,20 +132,32 @@ Mutable tags (`@v3`, `@main`) can be silently updated to contain malicious code.
 - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 ```
 
+GitHub can enforce this centrally: in the organization or repository **Actions > General** settings, enable *Require actions to be pinned to a full-length commit SHA* so unpinned workflows fail. Pinning protects against tag-hijacking incidents such as the 2025 `tj-actions/changed-files` compromise and the 2026 Trivy actions compromise.
+
 Use [Dependabot for Actions](https://docs.github.com/en/code-security/supply-chain-security/keeping-your-dependencies-updated-automatically/keeping-your-actions-up-to-date-with-dependabot) to keep digests current without manual tracking.
 
 ### Control fork pull request permissions
 
-By default, workflows from forked PRs cannot access secrets, but they can run code in your CI environment. Set explicit policies:
+By default, workflows triggered by the `pull_request` event from forks run with a read-only token and no access to secrets, but they still execute code in your CI environment. Set explicit policies:
+
+- In **Settings > Actions > General**, require approval before workflows run for all outside collaborators (or at least first-time contributors).
+- Keep fork-triggered workflows on `pull_request`, and split any privileged follow-up (commenting, labeling, publishing) into a separate `workflow_run` workflow that never checks out or executes untrusted code.
+- Disable sending write tokens and secrets to fork pull requests unless there is a documented need.
 
 ```yaml
-# Only allow fork PRs from approved contributors to trigger full CI
+# Dangerous: runs with secrets and a write token in the base repo context
 on:
   pull_request_target:
     types: [opened, synchronize]
+jobs:
+  test:
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}   # checks out untrusted code - do not do this
 ```
 
-Avoid `pull_request_target` with checkout of untrusted code — it is a known attack vector for secret exfiltration.
+Avoid `pull_request_target` combined with a checkout of untrusted PR code — it is a known attack vector for secret exfiltration and was the entry point of several real-world GitHub Actions compromises. Scan workflows with a tool such as [zizmor](https://github.com/zizmorcore/zizmor) to catch this pattern automatically.
 
 ## Platform security features
 
@@ -149,19 +165,20 @@ Enable the full suite of built-in platform protections:
 
 | Feature | Platform | Purpose |
 |---|---|---|
-| Secret scanning + push protection | GitHub Advanced Security, GitLab | Block and alert on committed secrets |
+| Secret scanning + push protection | GitHub Secret Protection (free on public repos), GitLab | Block and alert on committed secrets |
 | Dependabot / Dependency review | GitHub | Alert on and auto-PR vulnerable dependencies |
-| Code scanning (CodeQL) | GitHub Advanced Security | SAST integrated into PR workflow |
+| Code scanning (CodeQL) | GitHub Code Security (free on public repos) | SAST integrated into PR workflow |
+| Rulesets / protected branches | GitHub / GitLab | Central, auditable enforcement of branch, tag, and merge rules |
 | Audit log | GitHub / GitLab | Track org-level events (member changes, settings changes) for incident investigation |
 | Compliance frameworks | GitLab Ultimate | Enforce org-wide branch protection and merge request policies |
 
 ## Measuring your posture
 
-[OpenSSF Scorecard](https://github.com/ossf/scorecard) automatically evaluates a repository against 20+ security practices and produces a 0–10 score. Run it in CI and track the score over time:
+[OpenSSF Scorecard](https://github.com/ossf/scorecard) automatically evaluates a repository against around 20 security checks and produces a 0–10 score. Run it in CI and track the score over time:
 
 ```yaml
 - name: OpenSSF Scorecard
-  uses: ossf/scorecard-action@main
+  uses: ossf/scorecard-action@v2.4.4   # pin to a commit SHA in production; do not use @main
   with:
     results_file: results.sarif
     results_format: sarif
@@ -190,7 +207,7 @@ Target Scorecard categories include: Branch-Protection, Code-Review, Signed-Rele
 
 | Level | Practice |
 |---|---|
-| Starting | Default branch protected (require PR + 1 review); MFA enforced at org level; secret scanning enabled |
+| Starting | Default branch protected via branch protection or rulesets (require PR + 1 review); MFA enforced at org level; secret scanning enabled |
 | Developing | CODEOWNERS for sensitive paths; status checks required; Dependabot enabled; Actions pinned to digests |
 | Defined | Commit signing required; OIDC for CI/CD; Scorecard running in CI; admin bypass disabled; quarterly access review |
 | Advanced | Org-wide policy enforced via Allstar or OPA; full audit log retention and alerting on policy violations; provenance tied to signed commits |
@@ -203,12 +220,12 @@ Target Scorecard categories include: Branch-Protection, Code-Review, Signed-Rele
 
 - [Allstar](https://github.com/ossf/allstar) — OpenSSF GitHub App that continuously enforces security policies (branch protection, MFA, binary artifacts) across an organization's repositories and files issues when violations are detected.
 - [gitsign](https://github.com/sigstore/gitsign) — Keyless git commit signing via Sigstore. Signs commits using OIDC identity (GitHub, Google, Microsoft) — no local GPG key management required.
-- [OpenSSF Scorecard](https://github.com/ossf/scorecard) — Automated assessment of repository security best practices across 20+ checks. Integrates with GitHub Actions and publishes results to the OpenSSF API.
+- [OpenSSF Scorecard](https://github.com/ossf/scorecard) — Automated assessment of repository security best practices across roughly 20 checks. Integrates with GitHub Actions and publishes results to the OpenSSF API.
 - [Renovate](https://github.com/renovatebot/renovate) — Automated dependency update tool; keeps Actions digests and dependency versions current. Alternative to Dependabot with more configuration flexibility.
 
 ### Commercial
 
-- [GitHub Advanced Security](https://github.com/security/advanced-security) — Secret scanning with push protection, CodeQL code scanning, and dependency review integrated into the GitHub PR workflow.
+- [GitHub Advanced Security](https://github.com/security/advanced-security) — Offered as GitHub Secret Protection (secret scanning with push protection) and GitHub Code Security (CodeQL code scanning, Copilot Autofix, dependency review) integrated into the GitHub PR workflow.
 - [GitLab Ultimate](https://about.gitlab.com/pricing/) — Compliance frameworks, protected branches, security policies, and merge request approvals enforced at the group level.
 
 ---

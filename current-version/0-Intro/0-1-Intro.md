@@ -10,9 +10,9 @@ DevSecOps is about embedding security *into* DevOps. To keep up with the pace of
 
 ## Why DevSecOps — the cost of waiting
 
-The earlier a vulnerability is found, the cheaper it is to fix. IBM's Systems Science Institute research consistently shows that a defect found in the design phase costs roughly 6× less to fix than one found in implementation, and 100× less than one found in production. These ratios are not exact — they depend on the defect type and system — but the directional truth holds across the industry: late discovery is expensive.
+The earlier a vulnerability is found, the cheaper it is to fix. Widely quoted figures (often attributed to an "IBM Systems Science Institute" study, whose original source cannot be verified) claim a defect costs roughly 6× more to fix in implementation and up to 100× more in production than in design. Treat those exact ratios with caution: the better-documented work by Boehm and Basili (2001) found that fixing a problem after delivery is often about 100× more expensive on large projects, but closer to 5:1 on small, non-critical ones. The ratio depends on the defect type and the system, but the directional truth holds across the industry: late discovery is expensive.
 
-But there is a second, harder cost that the numbers do not fully capture: a vulnerability in production that is *exploited* does not just carry a remediation cost — it carries breach costs, regulatory penalties, reputational damage, customer harm, and executive accountability. The 2020 SolarWinds supply-chain attack, the 2021 Log4Shell disclosure affecting millions of systems, and the 2019 Capital One breach (via a misconfigured WAF/SSRF) all share a common thread: the exploit path existed because security was not a continuous concern throughout delivery.
+But there is a second, harder cost that the numbers do not fully capture: a vulnerability in production that is *exploited* does not just carry a remediation cost — it carries breach costs, regulatory penalties, reputational damage, customer harm, and executive accountability. The 2020 SolarWinds supply-chain attack, the 2021 Log4Shell disclosure affecting millions of systems, and the 2019 Capital One breach (via an SSRF flaw in a misconfigured WAF) all share a common thread: the exploit path existed because security was not a continuous concern throughout delivery.
 
 Traditional security — a penetration test weeks before release, a security team that reviews code on request — cannot keep up with teams that ship multiple times a day. DevSecOps resolves this by automating what can be automated, making security feedback immediate, and building shared ownership so risk decisions happen at the right level.
 
@@ -48,7 +48,7 @@ Understanding the common misconceptions is as important as knowing the definitio
 
 ## A note on the pipeline itself
 
-CI/CD is a powerful entry point for security automation, but the build and automation tooling is also part of your attack surface. Compromised pipelines, leaked tokens, and poisoned dependencies are now among the most damaging attack vectors — the SolarWinds, Codecov, and XZ Utils incidents all illustrate how the build and supply chain can be abused to reach production at scale. This guideline therefore treats **securing the pipeline** as a first-class concern alongside securing the application.
+CI/CD is a powerful entry point for security automation, but the build and automation tooling is also part of your attack surface. Compromised pipelines, leaked tokens, and poisoned dependencies are now among the most damaging attack vectors — the SolarWinds, Codecov, XZ Utils, `tj-actions/changed-files` (2025), and Trivy GitHub Actions (2026) incidents all illustrate how the build and supply chain can be abused to reach production, and to steal CI secrets, at scale. This guideline therefore treats **securing the pipeline** as a first-class concern alongside securing the application.
 
 ## How to use this guideline
 
