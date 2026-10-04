@@ -304,13 +304,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Docker image names must be lowercase; `github.repository` keeps the
+      # owner/repo casing, so use a fixed local tag for the build-and-scan step.
       - name: Build Container Image
-        run: docker build -t ${{ github.repository }}:${{ github.sha }} .
+        run: docker build -t app-under-test:${{ github.sha }} .
 
       - name: Run Trivy Container Scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: '${{ github.repository }}:${{ github.sha }}'
+          image-ref: 'app-under-test:${{ github.sha }}'
           format: 'json'
           output: 'trivy-container-results.json'
           severity: 'CRITICAL,HIGH,MEDIUM'
@@ -347,7 +349,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run Checkov IaC Scan
-        uses: bridgecrewio/checkov-action@v12.1347.0
+        uses: bridgecrewio/checkov-action@v12.3128.0
         with:
           directory: .
           framework: terraform,kubernetes,dockerfile
@@ -477,6 +479,8 @@ build-image:
 secrets-scan:
   stage: security-scan
   extends: .gate-rules
+  variables:
+    GIT_DEPTH: 0   # full history: a shallow clone would hide secrets in older commits
   image:
     name: trufflesecurity/trufflehog:latest
     entrypoint: [""]   # the image's entrypoint is the CLI itself; clear it so the runner's shell works
@@ -511,6 +515,34 @@ sast-scan:
     paths:
       - semgrep-report.json
 
+# SCA Gate — dependency vulnerabilities in lockfiles/manifests
+sca-scan:
+  stage: security-scan
+  extends: .gate-rules
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - trivy fs --scanners vuln --format json --output trivy-sca-report.json .
+  artifacts:
+    paths:
+      - trivy-sca-report.json
+
+# IaC Gate — Terraform / Kubernetes / Dockerfile misconfigurations
+iac-scan:
+  stage: security-scan
+  extends: .gate-rules
+  image:
+    name: bridgecrew/checkov:latest
+    entrypoint: [""]
+  script:
+    # --soft-fail defers pass/fail to the evaluator; --output-file-path is a
+    # directory and Checkov writes results_json.json inside it.
+    - checkov -d . --framework terraform,kubernetes,dockerfile -o json --output-file-path checkov-results --soft-fail
+  artifacts:
+    paths:
+      - checkov-results/results_json.json
+
 # Container Scanning Gate
 container-scan:
   stage: security-scan
@@ -537,6 +569,8 @@ security-gate:
   needs:
     - secrets-scan
     - sast-scan
+    - sca-scan
+    - iac-scan
     - container-scan
   before_script:
     - apk add --no-cache jq
@@ -545,7 +579,7 @@ security-gate:
       echo "Evaluating Security Gates..."
 
       # Fail closed: missing reports mean a scanner did not run.
-      for f in semgrep-report.json trivy-report.json; do
+      for f in semgrep-report.json trivy-sca-report.json checkov-results/results_json.json trivy-report.json; do
         if [ ! -f "$f" ]; then echo "Gate ERROR: $f missing"; exit 1; fi
       done
 
@@ -553,6 +587,21 @@ security-gate:
       SAST_CRITICAL=$(jq '[.results[]? | select(.extra.severity == "ERROR")] | length' semgrep-report.json)
       if [ "$SAST_CRITICAL" -gt "$SECURITY_GATE_CRITICAL_THRESHOLD" ]; then
         echo "SAST Gate Failed: $SAST_CRITICAL high/critical issues found"
+        exit 1
+      fi
+
+      # SCA: same Trivy JSON shape as the container report
+      SCA_CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-sca-report.json)
+      SCA_HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-sca-report.json)
+      if [ "$SCA_CRITICAL" -gt "$SECURITY_GATE_CRITICAL_THRESHOLD" ] || [ "$SCA_HIGH" -gt "$SECURITY_GATE_HIGH_THRESHOLD" ]; then
+        echo "SCA Gate Failed: $SCA_CRITICAL critical, $SCA_HIGH high dependency vulnerabilities"
+        exit 1
+      fi
+
+      # IaC: OSS Checkov has no severity field — gate on failed checks (array or object report)
+      IAC_FAILED=$(jq '[.. | objects | select(has("failed_checks")) | .failed_checks[]?] | length' checkov-results/results_json.json)
+      if [ "$IAC_FAILED" -gt 0 ]; then
+        echo "IaC Gate Failed: $IAC_FAILED policy violations"
         exit 1
       fi
 
@@ -721,6 +770,7 @@ exceptions:
   - id: "CVE-2023-12345"
     reason: "False positive - not applicable to our usage"
     approved_by: "security-team"
+    jira_ticket: "SEC-118"
     expires: "2024-06-01"
 
   - id: "semgrep-rule-xyz"
