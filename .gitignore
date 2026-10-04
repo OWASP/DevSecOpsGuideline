@@ -3,3 +3,9 @@
 ._.DS_Store
 **/.DS_Store
 **/._.DS_Store
+
+# MkDocs build output
+_site/
+site/
+.venv
+**/__pycache__/

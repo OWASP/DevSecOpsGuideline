@@ -10,34 +10,34 @@ The guideline is organized around the three core pillars of DevSecOps:
 
 Under **Process**, the product development lifecycle is divided into seven stages: **Design, Develop, Build, Test, Release, Deploy, Operate** — with security controls mapped to each.
 
-![DevSecOps Pillars](/current-version/assets/images/devsecops-pillars.png)
+![DevSecOps Pillars](assets/images/devsecops-pillars.png)
 
 This revision refreshes every topic for 2025/2026 and adds coverage of modern concerns: software supply-chain security (SBOM, signing/provenance, CI/CD pipeline security), AI-assisted development and AI governance, Application Security Posture Management (ASPM), and explicit alignment with frameworks such as NIST SSDF, OWASP SAMM, OWASP DSOMM, and SLSA.
 
-If you need earlier editions, see the [old-versions](../old-versions/) directory.
+If you need earlier editions, see the [old-versions](https://github.com/OWASP/DevSecOpsGuideline/tree/master/old-versions) directory.
 
 ## Table of Contents
 
-- [0-Intro](0-Intro)
+- 0-Intro
   - [0-1-Intro](0-Intro/0-1-Intro.md)
   - [0-2-Overview](0-Intro/0-2-Overview.md)
   - [0-3-Frameworks-and-Standards](0-Intro/0-3-Frameworks-and-Standards.md)
   - [0-4-Regulatory-Mapping-CRA-NIS2-SSDF](0-Intro/0-4-Regulatory-Mapping-CRA-NIS2-SSDF.md)
-- [1-People](1-People)
-  - [1-1-Shape-the-team](1-People/1-1-Shape-the-team)
+- 1-People
+  - 1-1-Shape-the-team
     - [1-1-1-Security-champions](1-People/1-1-Shape-the-team/1-1-1-Security-champions.md)
     - [1-1-2-Roles-and-Responsibilities](1-People/1-1-Shape-the-team/1-1-2-Roles-and-Responsibilities.md)
     - [1-1-3-Security-champions-playbook-templates](1-People/1-1-Shape-the-team/1-1-3-Security-champions-playbook-templates.md)
-  - [1-2-Training](1-People/1-2-Training)
+  - 1-2-Training
     - [1-2-1-Secure-coding](1-People/1-2-Training/1-2-1-Secure-coding.md)
     - [1-2-2-Security-CICD](1-People/1-2-Training/1-2-2-Security-CICD.md)
     - [1-2-3-Security-culture-and-awareness](1-People/1-2-Training/1-2-3-Security-culture-and-awareness.md)
-- [2-Process](2-Process)
-  - [2-1-Design](2-Process/2-1-Design)
+- 2-Process
+  - 2-1-Design
     - [2-1-1-Threat-modeling](2-Process/2-1-Design/2-1-1-Threat-modeling.md)
     - [2-1-2-Secure-design-and-requirements](2-Process/2-1-Design/2-1-2-Secure-design-and-requirements.md)
-  - [2-2-Develop](2-Process/2-2-Develop)
-    - [2-2-1-Pre-commit](2-Process/2-2-Develop/2-2-1-Pre-commit)
+  - 2-2-Develop
+    - 2-2-1-Pre-commit
       - [2-2-1-1-Pre-commit](2-Process/2-2-Develop/2-2-1-Pre-commit/2-2-1-1-Pre-commit.md)
       - [2-2-1-2-Secrets-Management](2-Process/2-2-Develop/2-2-1-Pre-commit/2-2-1-2-Secrets-Management.md)
       - [2-2-1-3-Linting-code](2-Process/2-2-Develop/2-2-1-Pre-commit/2-2-1-3-Linting-code.md)
@@ -46,35 +46,35 @@ If you need earlier editions, see the [old-versions](../old-versions/) directory
     - [2-2-3-Secure-Code-Review](2-Process/2-2-Develop/2-2-3-Secure-Code-Review.md)
     - [2-2-4-Developer-Workstation-and-Dev-Container-Security](2-Process/2-2-Develop/2-2-4-Developer-Workstation-and-Dev-Container-Security.md)
     - [2-2-5-AI-Agent-and-MCP-Security](2-Process/2-2-Develop/2-2-5-AI-Agent-and-MCP-Security.md)
-  - [2-3-Build](2-Process/2-3-Build)
-    - [2-3-1-Static-Analysis](2-Process/2-3-Build/2-3-1-Static-Analysis)
+  - 2-3-Build
+    - 2-3-1-Static-Analysis
       - [2-3-1-1-Static-Application-Security-Testing](2-Process/2-3-Build/2-3-1-Static-Analysis/2-3-1-1-Static-Application-Security-Testing.md)
-    - [2-3-2-Software-Composition-Analysis](2-Process/2-3-Build/2-3-2-Software-Composition-Analysis)
+    - 2-3-2-Software-Composition-Analysis
       - [2-3-2-1-Software-Composition-Analysis](2-Process/2-3-Build/2-3-2-Software-Composition-Analysis/2-3-2-1-Software-Composition-Analysis.md)
       - [2-3-2-2-Dependency-Management-and-Cooldown-Policies](2-Process/2-3-Build/2-3-2-Software-Composition-Analysis/2-3-2-2-Dependency-Management-and-Cooldown-Policies.md)
-    - [2-3-3-Container-Security](2-Process/2-3-Build/2-3-3-Container-Security)
+    - 2-3-3-Container-Security
       - [2-3-3-1-Container-Scanning](2-Process/2-3-Build/2-3-3-Container-Security/2-3-3-1-Container-Scanning.md)
       - [2-3-3-2-Container-Hardening](2-Process/2-3-Build/2-3-3-Container-Security/2-3-3-2-Container-Hardening.md)
-    - [2-3-4-Infrastructure-as-Code-Security](2-Process/2-3-Build/2-3-4-Infrastructure-as-Code-Security)
+    - 2-3-4-Infrastructure-as-Code-Security
       - [2-3-4-1-Infrastructure-as-Code-Scanning](2-Process/2-3-Build/2-3-4-Infrastructure-as-Code-Security/2-3-4-1-Infrastructure-as-Code-Scanning.md)
     - [2-3-5-Security-Gates](2-Process/2-3-Build/2-3-5-Security-Gates.md)
-    - [2-3-6-Supply-Chain-Security](2-Process/2-3-Build/2-3-6-Supply-Chain-Security)
+    - 2-3-6-Supply-Chain-Security
       - [2-3-6-1-SBOM](2-Process/2-3-Build/2-3-6-Supply-Chain-Security/2-3-6-1-SBOM.md)
       - [2-3-6-2-Artifact-Signing-and-Provenance](2-Process/2-3-Build/2-3-6-Supply-Chain-Security/2-3-6-2-Artifact-Signing-and-Provenance.md)
       - [2-3-6-3-CICD-Pipeline-Security](2-Process/2-3-Build/2-3-6-Supply-Chain-Security/2-3-6-3-CICD-Pipeline-Security.md)
-  - [2-4-Test](2-Process/2-4-Test)
+  - 2-4-Test
     - [2-4-1-Interactive-Application-Security-Testing](2-Process/2-4-Test/2-4-1-Interactive-Application-Security-Testing.md)
     - [2-4-2-Dynamic-Application-Security-Testing](2-Process/2-4-Test/2-4-2-Dynamic-Application-Security-Testing.md)
     - [2-4-3-Mobile-Application-Security-Test](2-Process/2-4-Test/2-4-3-Mobile-Application-Security-Test.md)
     - [2-4-4-API-Security](2-Process/2-4-Test/2-4-4-API-Security.md)
     - [2-4-5-Misconfiguration-Check](2-Process/2-4-Test/2-4-5-Misconfiguration-Check.md)
     - [2-4-6-AI-LLM-Application-Security-Testing](2-Process/2-4-Test/2-4-6-AI-LLM-Application-Security-Testing.md)
-  - [2-5-Release](2-Process/2-5-Release)
+  - 2-5-Release
     - [2-5-1-Release](2-Process/2-5-Release/2-5-1-Release.md)
-  - [2-6-Deploy](2-Process/2-6-Deploy)
+  - 2-6-Deploy
     - [2-6-1-Deploy](2-Process/2-6-Deploy/2-6-1-Deploy.md)
     - [2-6-2-Secrets-in-Kubernetes-and-GitOps](2-Process/2-6-Deploy/2-6-2-Secrets-in-Kubernetes-and-GitOps.md)
-  - [2-7-Operate](2-Process/2-7-Operate)
+  - 2-7-Operate
     - [2-7-1-Cloud-Native-Security](2-Process/2-7-Operate/2-7-1-Cloud-Native-Security.md)
     - [2-7-2-Logging-and-Monitoring](2-Process/2-7-Operate/2-7-2-Logging-and-Monitoring.md)
     - [2-7-3-Pentest](2-Process/2-7-Operate/2-7-3-Pentest.md)
@@ -85,13 +85,13 @@ If you need earlier editions, see the [old-versions](../old-versions/) directory
     - [2-7-8-WAF-WAAP-and-RASP](2-Process/2-7-Operate/2-7-8-WAF-WAAP-and-RASP.md)
     - [2-7-9-Serverless-and-PaaS-Runtime-Security](2-Process/2-7-Operate/2-7-9-Serverless-and-PaaS-Runtime-Security.md)
     - [2-7-10-Incident-Response-and-Detection-Engineering](2-Process/2-7-Operate/2-7-10-Incident-Response-and-Detection-Engineering.md)
-- [3-Governance](3-Governance)
-  - [3-1-Compliance-Auditing](3-Governance/3-1-Compliance-Auditing)
+- 3-Governance
+  - 3-1-Compliance-Auditing
     - [3-1-1-Compliance-Auditing](3-Governance/3-1-Compliance-Auditing/3-1-1-Compliance-Auditing.md)
     - [3-1-2-Policy-as-code](3-Governance/3-1-Compliance-Auditing/3-1-2-Policy-as-code.md)
     - [3-1-3-Security-benchmarking](3-Governance/3-1-Compliance-Auditing/3-1-3-Security-benchmarking.md)
   - [3-2-Data-protection](3-Governance/3-2-Data-protection.md)
-  - [3-3-Reporting](3-Governance/3-3-Reporting)
+  - 3-3-Reporting
     - [3-3-1-Tracking-maturities](3-Governance/3-3-Reporting/3-3-1-Tracking-maturities.md)
     - [3-3-2-Central-vulnerability-management-dashboard](3-Governance/3-3-Reporting/3-3-2-Central-vulnerability-management-dashboard.md)
     - [3-3-3-ASPM](3-Governance/3-3-Reporting/3-3-3-ASPM.md)
