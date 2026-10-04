@@ -471,10 +471,21 @@ secrets-scan:
     name: trufflesecurity/trufflehog:latest
     entrypoint: [""]   # the image's entrypoint is the CLI itself; clear it so the runner's shell works
   script:
-    # --fail exits non-zero when verified secrets are found. Do NOT dump the JSON
-    # output: it contains the raw credential values and would leak them into job
-    # logs and artifacts. The default (non-JSON) output is redacted.
-    - trufflehog git file://. --only-verified --fail
+    # --fail exits 183 when verified secrets are found. TruffleHog prints the raw
+    # credential value in BOTH its JSON and plain-text output, so never let result
+    # stdout reach the job log. Capture it outside the workspace (not an artifact)
+    # and surface only safe metadata (count + detector names).
+    - |
+      RC=0
+      trufflehog git file://. --only-verified --fail --json > /tmp/trufflehog.jsonl || RC=$?
+      case "$RC" in
+        0)   echo "Secrets Gate PASSED" ;;
+        183) echo "Secrets Gate FAILED: $(wc -l < /tmp/trufflehog.jsonl) verified secret(s) found"
+             echo "Detectors: $(grep -o '"DetectorName":"[^"]*"' /tmp/trufflehog.jsonl | cut -d'"' -f4 | sort -u | tr '\n' ' ')"
+             echo "Values withheld from logs. Run 'trufflehog git file://. --only-verified' locally for locations."
+             exit 1 ;;
+        *)   echo "Secrets Gate ERROR: trufflehog exited $RC"; exit 1 ;;
+      esac
 
 # SAST Gate
 sast-scan:
@@ -728,8 +739,10 @@ deploy-production-bypass:
     name: production
     deployment_tier: production
   rules:
-    # Manual, and only when a tracking ticket is supplied
-    - if: $SECURITY_BYPASS == "true" && $BYPASS_TICKET =~ /^SEC-[0-9]+$/
+    # Same pipeline condition as .gate-rules (so build-image is guaranteed to exist),
+    # restricted to the default branch — production is never deployed from an MR
+    # pipeline — and only when a tracking ticket is supplied. Manual play only.
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $SECURITY_BYPASS == "true" && $BYPASS_TICKET =~ /^SEC-[0-9]+$/
       when: manual
       allow_failure: false
   script:
