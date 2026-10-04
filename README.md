@@ -148,7 +148,7 @@ Contributions are welcome: fix a typo, add a tool, or propose a new topic by ope
 CI runs [pre-commit](https://pre-commit.com/) (Markdown lint, trailing whitespace, end-of-file newline, YAML/JSON validity) on every pull request. Running the same hooks locally before you push avoids a red CI run:
 
 ```bash
-pip install pre-commit
+python3.13 -m pip install pre-commit
 pre-commit install          # run the hooks automatically on every commit
 pre-commit run --all-files  # or run them once across the whole repository
 ```
