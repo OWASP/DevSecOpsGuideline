@@ -7,7 +7,5 @@
 # MkDocs build output
 _site/
 site/
-
 .venv
-
 **/__pycache__/
