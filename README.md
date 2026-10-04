@@ -143,6 +143,18 @@ However, when using CI/CD tools to provide automation, keep in mind that the too
 
 Contributions are welcome: fix a typo, add a tool, or propose a new topic by opening an issue or pull request. Please keep tool lists vendor-neutral and alphabetically ordered, and update the Table of Contents when adding or renaming files (see [doc-utilities](doc-utilities/README.md) for the TOC generator).
 
+### Running the checks locally
+
+CI runs [pre-commit](https://pre-commit.com/) (Markdown lint, trailing whitespace, end-of-file newline, YAML/JSON validity) on every pull request. Running the same hooks locally before you push avoids a red CI run:
+
+```bash
+python3.13 -m pip install pre-commit
+pre-commit install          # run the hooks automatically on every commit
+pre-commit run --all-files  # or run them once across the whole repository
+```
+
+On pull requests CI only checks the files you changed; pushes to `master` check the whole repository.
+
 ## Previous versions
 
 Earlier editions are kept in [old-versions](old-versions/) (V0.1, V0.2, V0.3).

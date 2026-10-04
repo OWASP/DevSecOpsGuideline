@@ -1,10 +1,12 @@
 ---
-# pre-commit install --allow-missing-config &&  pre-commit autoupdate && pre-commit run --all-files --color auto
+# Local setup: pip install pre-commit && pre-commit install
+# Run everything:  pre-commit run --all-files
 exclude: |
   (?x)^(
     old-versions/.*
   )
-fail_fast: true
+# Report every failing hook in one run instead of stopping at the first one.
+fail_fast: false
 default_stages:
   - pre-commit
 default_language_version:
