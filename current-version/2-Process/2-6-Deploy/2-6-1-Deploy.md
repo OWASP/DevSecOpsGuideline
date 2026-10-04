@@ -10,7 +10,7 @@ The deploy stage is where signing and provenance pay off. Do not allow an artifa
 - Only artifacts with acceptable **provenance** (SLSA level, build workflow, source repository) run in production.
 - Images that fail policy — unsigned, from untrusted registries, or containing unresolved critical CVEs — are **blocked at admission**, not merely flagged in a dashboard.
 
-Kubernetes admission controllers (Kyverno, OPA/Gatekeeper, Sigstore policy-controller) enforce these rules as code, consistently and automatically.
+Kubernetes admission controllers (Kyverno, OPA/Gatekeeper with Ratify, Sigstore policy-controller) enforce these rules as code, consistently and automatically. Kubernetes' built-in ValidatingAdmissionPolicy (CEL, GA since v1.30) covers simple non-image rules without an extra controller. Signatures from both cosign and Notation can be verified at admission.
 
 ```yaml
 # Kyverno policy: require all images to be signed with cosign
@@ -19,7 +19,7 @@ kind: ClusterPolicy
 metadata:
   name: require-image-signature
 spec:
-  validationFailureAction: Enforce
+  validationFailureAction: Enforce   # newer Kyverno releases move this to a per-rule failureAction
   rules:
     - name: check-image-signature
       match:
@@ -44,6 +44,7 @@ GitOps makes the desired state of an environment a version-controlled, auditable
 - Rollback is a `git revert` — fast, auditable, and not dependent on tribal knowledge.
 
 Use **image digest pinning** in deployment manifests rather than mutable tags:
+
 ```yaml
 # Prefer this (immutable):
 image: myregistry.io/myapp@sha256:a1b2c3d4...
@@ -65,9 +66,10 @@ Roll out changes gradually so a bad release — whether a bug, a security regres
 ### Deploy identity
 
 The service account or role used by the deployment pipeline should have:
+
 - Write access only to the target environment (not all environments).
 - Permission to update the specific workloads it manages, not cluster-admin.
-- Time-limited credentials: use OIDC workload identity (GitHub Actions → AWS IRSA, GCP Workload Identity) rather than long-lived access keys.
+- Time-limited credentials: use OIDC federation (GitHub Actions or GitLab CI OIDC → AWS IAM role, GCP Workload Identity Federation, Azure federated credentials) rather than long-lived access keys.
 
 ### Secrets injection
 
@@ -75,7 +77,8 @@ Never bake secrets into images or deployment manifests. Inject them at runtime f
 
 - **Vault agent sidecar** — a secrets management sidecar injects secrets into the pod filesystem or environment at startup and rotates them without restart.
 - **Kubernetes External Secrets Operator** — syncs secrets from AWS Secrets Manager, HashiCorp Vault, or GCP Secret Manager into Kubernetes Secrets automatically.
-- **Cloud-native workload identity** — services authenticate to cloud APIs using instance identity (IRSA, Workload Identity Federation) with no stored credential at all.
+- **Secrets Store CSI Driver** — mounts secrets from Vault, AWS Secrets Manager, Azure Key Vault, or GCP Secret Manager directly as files in the pod, optionally without creating Kubernetes Secret objects.
+- **Cloud-native workload identity** — services authenticate to cloud APIs using platform identity (EKS Pod Identity or IRSA, GKE Workload Identity Federation, Azure Workload Identity) with no stored credential at all.
 
 See [Secrets Management](../2-2-Develop/2-2-1-Pre-commit/2-2-1-2-Secrets-Management.md).
 
@@ -90,7 +93,7 @@ See [Secrets Management](../2-2-Develop/2-2-1-Pre-commit/2-2-1-2-Secrets-Managem
 - **Manual deployments with shared credentials** — no audit trail, broad permissions, and credentials that are never rotated. Replace with automated pipelines and workload identity.
 - **`latest` tags in production** — a mutable tag means any registry push can change what runs in production. Use digest-pinned references.
 - **Admission control in audit-only mode forever** — many teams set admission controllers to warn but never enforce, defeating the purpose. Set a deadline to switch to enforcement.
-- **Secrets in environment variables at build time** — environment variables leak into logs, crash dumps, and `/proc` on Linux. Use mounted secret files or vault agent injection instead.
+- **Secrets in environment variables or build arguments** — environment variables leak into logs, crash dumps, and `/proc` on Linux. Use mounted secret files or vault agent injection instead.
 - **No rollback plan** — deployment without a tested rollback plan is high-risk. Verify rollback in staging before every major production deploy.
 
 ## Maturity progression
@@ -117,10 +120,14 @@ See [Secrets Management](../2-2-Develop/2-2-1-Pre-commit/2-2-1-2-Secrets-Managem
 
 - [Argo CD](https://argo-cd.readthedocs.io/) — Declarative GitOps continuous delivery for Kubernetes; provides a UI dashboard for deployment status, drift detection, and rollback.
 - [Argo Rollouts](https://argoproj.github.io/rollouts/) — Progressive delivery controller for Kubernetes: canary, blue-green, and automated analysis-based promotion.
+- [External Secrets Operator](https://external-secrets.io/) — Syncs secrets from external vaults (AWS, GCP, Azure, Vault) into Kubernetes Secrets; avoids storing secrets in git.
+- [Flagger](https://flagger.app/) — Progressive delivery operator (Flux project) automating canary, A/B, and blue-green releases with Istio, Linkerd, Cilium, or ingress controllers and metric-based rollback.
 - [Flux](https://fluxcd.io/) — GitOps toolkit for keeping clusters in sync; lightweight and composable; strong multi-tenancy and multi-cluster support.
 - [Kyverno](https://kyverno.io/) — Kubernetes admission policy engine including image signature verification, resource validation, and mutation; no Rego required.
+- [OPA Gatekeeper](https://open-policy-agent.github.io/gatekeeper/) — Rego-based Kubernetes admission controller built on Open Policy Agent; constraint templates enforce organization-wide policy.
+- [Ratify](https://ratify.dev/) — Verification engine that plugs into Gatekeeper to check cosign and Notation signatures, SBOMs, and other artifact attestations before admission.
+- [Secrets Store CSI Driver](https://secrets-store-csi-driver.sigs.k8s.io/) — Kubernetes SIG driver that mounts secrets from external stores into pods as volumes using provider plugins.
 - [Sigstore policy-controller](https://github.com/sigstore/policy-controller) — Enforces cosign image signature and attestation policies at Kubernetes admission; integrates with Fulcio and Rekor.
-- [External Secrets Operator](https://external-secrets.io/) — Syncs secrets from external vaults (AWS, GCP, Azure, Vault) into Kubernetes Secrets; avoids storing secrets in git.
 
 ### Commercial
 

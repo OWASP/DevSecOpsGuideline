@@ -12,7 +12,7 @@ Developers are the primary consumers of shift-left tooling and the first line of
 - Run pre-commit hooks and IDE security plugins; fix findings on their own code before opening a PR.
 - Participate in threat modeling sessions and secure code review for their features.
 - Write security acceptance criteria alongside functional acceptance criteria.
-- Review AI-generated code with the same scrutiny as hand-written code.
+- Review AI-generated code with the same scrutiny as hand-written code, and stay accountable for what coding agents commit on their behalf.
 
 ### Security Champions
 
@@ -100,6 +100,7 @@ As AI moves into the SDLC, a new specialization is appearing: **DevSecOps for AI
 - Model provenance and AI-BOMs — tracking what model, what weights, what training data.
 - Securing the inference path — input validation, output filtering, prompt injection defenses.
 - Scanning AI-generated code and the supply chain of models and datasets.
+- Governing agentic tooling — least-privilege access for coding agents and MCP servers, and audit trails of what they did.
 
 See [AI Governance and Risk](../../3-Governance/3-4-AI-Governance-and-Risk.md) for the full treatment.
 

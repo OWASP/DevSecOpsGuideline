@@ -14,7 +14,7 @@ Policy as Code (PaC) expresses security, compliance, and operational rules as **
 ## Where policy as code is applied
 
 - **CI/CD gates** — block merges or builds that violate policy (e.g., "no critical vulnerabilities", "SBOM required", "image must be signed"). Conftest tests structured config files (Kubernetes manifests, Terraform plans, Helm values) against Rego policies before they are applied.
-- **Admission control** — Kubernetes admission controllers (OPA Gatekeeper, Kyverno) reject non-compliant or unsigned workloads at the point of deploy (see [Deploy](../../2-Process/2-6-Deploy/2-6-1-Deploy.md)).
+- **Admission control** — Kubernetes admission controllers (OPA Gatekeeper, Kyverno, or the built-in CEL-based `ValidatingAdmissionPolicy`, GA since Kubernetes 1.30) reject non-compliant or unsigned workloads at the point of deploy (see [Deploy](../../2-Process/2-6-Deploy/2-6-1-Deploy.md)).
 - **Infrastructure as Code** — enforce guardrails on Terraform/Kubernetes before provisioning (see [IaC Scanning](../../2-Process/2-3-Build/2-3-4-Infrastructure-as-Code-Security/2-3-4-1-Infrastructure-as-Code-Scanning.md)).
 - **Cloud guardrails** — preventive controls (Service Control Policies in AWS, Azure Policy, GCP Organization Policy) prevent forbidden actions from being performed at all.
 - **API authorization** — OPA is commonly used as an external authorization engine to evaluate fine-grained access-control policies separately from application code.
@@ -27,9 +27,11 @@ Policy as Code (PaC) expresses security, compliance, and operational rules as **
 # deny_latest_tag.rego
 package main
 
-deny[msg] {
+import rego.v1
+
+deny contains msg if {
   input.kind == "Deployment"
-  container := input.spec.template.spec.containers[_]
+  some container in input.spec.template.spec.containers
   endswith(container.image, ":latest")
   msg := sprintf("Container '%v' must not use the :latest tag — pin to a digest or versioned tag", [container.name])
 }
@@ -41,31 +43,35 @@ deny[msg] {
 # require_non_root.rego
 package main
 
-deny[msg] {
+import rego.v1
+
+deny contains msg if {
   input.kind == "Deployment"
-  container := input.spec.template.spec.containers[_]
+  some container in input.spec.template.spec.containers
   not container.securityContext.runAsNonRoot
   msg := sprintf("Container '%v' must set securityContext.runAsNonRoot: true", [container.name])
 }
 ```
 
-### Require required labels
+### Require labels
 
 ```rego
 # require_labels.rego
 package main
 
+import rego.v1
+
 required_labels := {"app", "team", "env"}
 
-deny[msg] {
+deny contains msg if {
   input.kind == "Deployment"
-  label := required_labels[_]
+  some label in required_labels
   not input.metadata.labels[label]
   msg := sprintf("Deployment is missing required label: '%v'", [label])
 }
 ```
 
-### Block no-root enforcement missing from securityContext (Kyverno YAML alternative)
+### Require `runAsNonRoot` (Kyverno YAML alternative)
 
 ```yaml
 # kyverno-require-non-root.yaml
@@ -74,7 +80,7 @@ kind: ClusterPolicy
 metadata:
   name: require-run-as-non-root
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce   # use Audit first; newer Kyverno versions also support per-rule validate.failureAction
   rules:
     - name: check-runAsNonRoot
       match:
@@ -91,14 +97,17 @@ spec:
 
 ## OPA integration in CI — step by step
 
-1. **Install Conftest** in your CI image or as a binary download step:
+1. **Install Conftest** in your CI image or as a binary download step (pin the version and verify the checksum published with the release):
+
    ```bash
-   wget https://github.com/open-policy-agent/conftest/releases/download/v0.50.0/conftest_0.50.0_Linux_x86_64.tar.gz
-   tar xzf conftest_*.tar.gz && mv conftest /usr/local/bin/
+   CONFTEST_VERSION=<pinned-version>   # see github.com/open-policy-agent/conftest/releases
+   wget https://github.com/open-policy-agent/conftest/releases/download/v${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz
+   tar xzf conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz && mv conftest /usr/local/bin/
    ```
 
 2. **Store policies** in a `policy/` directory in your repo (or reference a shared OCI bundle):
-   ```
+
+   ```text
    policy/
      deny_latest_tag.rego
      require_non_root.rego
@@ -106,6 +115,7 @@ spec:
    ```
 
 3. **Run in CI** against generated Kubernetes manifests before applying:
+
    ```bash
    helm template my-app ./chart > rendered.yaml
    conftest test rendered.yaml --policy ./policy/
@@ -113,7 +123,7 @@ spec:
 
 4. **Interpret results** — conftest exits non-zero if any `deny` rule fires. CI blocks the job and surfaces the message to the developer.
 
-5. **Promote to enforcement** — once the policy has been running in warn mode for two sprints without significant false positives, remove the `--no-fail` flag so violations block the pipeline.
+5. **Promote to enforcement** — roll out first in non-blocking mode (`conftest test --no-fail`, or use `warn` rules instead of `deny`). Once the policy has run for two sprints without significant false positives, remove `--no-fail` (or promote `warn` rules to `deny`) so violations block the pipeline.
 
 ## Testing policies
 
@@ -123,14 +133,16 @@ A policy that is not tested is a policy that may silently fail. Use OPA's built-
 # deny_latest_tag_test.rego
 package main
 
-test_deny_latest {
+import rego.v1
+
+test_deny_latest if {
   deny["Container 'app' must not use the :latest tag — pin to a digest or versioned tag"] with input as {
     "kind": "Deployment",
     "spec": {"template": {"spec": {"containers": [{"name": "app", "image": "myrepo/myimage:latest"}]}}}
   }
 }
 
-test_allow_pinned {
+test_allow_pinned if {
   count(deny) == 0 with input as {
     "kind": "Deployment",
     "spec": {"template": {"spec": {"containers": [{"name": "app", "image": "myrepo/myimage:sha256-abc123"}]}}}
@@ -140,7 +152,9 @@ test_allow_pinned {
 
 Run with: `opa test ./policy/`
 
-Require 100% test coverage for all `deny` rules before promoting to enforcement mode.
+Require 100% test coverage for all `deny` rules before promoting to enforcement mode (`opa test --coverage ./policy/` reports it). Lint policies with [Regal](https://github.com/StyraInc/regal) in CI.
+
+> **Rego syntax note:** since OPA 1.0 (and recent Conftest/Gatekeeper releases built on it), the v1 syntax is the default and requires the `if` and `contains` keywords, as used above (the `import rego.v1` line keeps the files valid on both old and new versions). Older `deny[msg] { ... }` rules need `import rego.v1` or migration (`opa fmt --v0-v1`) to work on current versions.
 
 ## Policy library management
 
@@ -166,7 +180,7 @@ At scale, individual teams should consume policies — not author them. A platfo
 
 **Intermediate** — a centrally maintained policy library distributed to all pipelines. Kubernetes admission control enforced via Gatekeeper or Kyverno. Policies are version-controlled, reviewed, and unit-tested. Warn vs. enforce distinction managed deliberately.
 
-**Advanced** — full policy lifecycle management via a platform like Styra DAS or a custom OPA bundle server. Every compliance control from [Compliance Auditing](3-1-1-Compliance-Auditing.md) has a corresponding policy check. Policy decisions are logged to SIEM for audit evidence. SLO on policy coverage: 100% of production workloads governed by at least one admission policy.
+**Advanced** — full policy lifecycle management via OPA bundles served from an OCI registry or a custom bundle server (the commercial Styra DAS management plane has reportedly been discontinued; see Tools). Every compliance control from [Compliance Auditing](3-1-1-Compliance-Auditing.md) has a corresponding policy check. Policy decisions are logged to SIEM for audit evidence. SLO on policy coverage: 100% of production workloads governed by at least one admission policy.
 
 ## Common pitfalls
 
@@ -200,7 +214,7 @@ At scale, individual teams should consume policies — not author them. A platfo
 
 ### Commercial
 
-- [Styra DAS](https://www.styra.com/) — management plane for OPA policies at scale. Provides centralized authoring, testing, distribution, and decision logging for OPA across hundreds of services and clusters.
+- No single dominant vendor-neutral commercial option. Styra DAS (the commercial OPA management plane) was reportedly discontinued after Styra's OPA maintainers joined Apple in 2025; its former components were slated for community maintenance. Teams needing centralized policy governance typically build it on OPA bundles and a CI/CD-driven policy repository, or use the policy modules of CNAPP and cloud-governance platforms.
 
 ---
 

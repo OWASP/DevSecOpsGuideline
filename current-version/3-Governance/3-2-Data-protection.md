@@ -21,13 +21,14 @@ Steps to operationalize classification:
 
 ### Encryption
 
-- **Encryption in transit** — enforce TLS 1.2+ everywhere, including service-to-service traffic inside the cluster. Use mutual TLS (mTLS) for service mesh environments (Istio, Linkerd). Reject or redirect plaintext connections.
+- **Encryption in transit** — enforce TLS 1.2+ everywhere (prefer TLS 1.3), including service-to-service traffic inside the cluster. Use mutual TLS (mTLS) for service mesh environments (Istio, Linkerd). Reject or redirect plaintext connections.
 - **Encryption at rest** — encrypt databases, object storage (S3/GCS/Azure Blob), backups, and persistent volumes. Use platform-managed encryption as a baseline; for highest-sensitivity data, add application-layer or client-side encryption so the cloud provider cannot decrypt data at rest.
 - **End-to-end encryption** — for data that must remain private even from your own infrastructure (e.g. health or financial records), consider E2E encryption where keys remain entirely with the data owner.
+- **Cryptographic agility** — inventory the algorithms and key sizes in use and keep them swappable. Long-lived confidential data is exposed to "harvest now, decrypt later" attacks; plan the migration to post-quantum algorithms (NIST FIPS 203/204/205) starting with key exchange.
 
 ### Key management
 
-- Manage keys in a dedicated KMS/HSM (AWS KMS, Azure Key Vault, GCP Cloud KMS, HashiCorp Vault) with automatic rotation, access control, and audit logging.
+- Manage keys in a dedicated KMS/HSM (AWS KMS, Azure Key Vault, GCP Cloud KMS, HashiCorp Vault, OpenBao) with automatic rotation, access control, and audit logging.
 - Never hardcode keys or secrets in source code (see [Secrets Management](../2-Process/2-2-Develop/2-2-1-Pre-commit/2-2-1-2-Secrets-Management.md)).
 - Separate keys by environment (dev/staging/prod); a compromised dev key must not decrypt production data.
 - Enforce key expiry and rotation policies. For regulated data, document the key lifecycle.
@@ -52,7 +53,9 @@ Privacy should be designed in, not bolted on — integrating data protection pri
 - **Data minimization** — collect and retain only what you need, for only as long as you need it. Every additional data field collected is a liability.
 - **Purpose limitation** — use data only for the purposes disclosed at collection. Building a secondary analytics use case on data collected for operations requires a separate legal basis.
 - **Privacy threat modeling** — apply [LINDDUN](https://www.linddun.org/) during design to systematically identify privacy threats (Linkability, Identifiability, Non-repudiation, Detectability, Disclosure, Unawareness, Non-compliance) across data flows and trust boundaries. See [Threat Modeling](../2-Process/2-1-Design/2-1-1-Threat-modeling.md).
-- **Privacy regulations** — meet obligations such as GDPR (EU), PIPEDA (Canada), LGPD (Brazil), CCPA (California), and HIPAA (US healthcare), including data-subject rights (access, erasure, portability), lawful basis documentation, and **data residency/sovereignty** requirements — some jurisdictions prohibit transferring personal data outside their borders.
+- **Privacy regulations** — meet obligations such as GDPR (EU), PIPEDA (Canada), LGPD (Brazil), CCPA/CPRA (California), and HIPAA (US healthcare), including data-subject rights (access, erasure, portability), lawful basis documentation, and **data residency/sovereignty** requirements — some jurisdictions prohibit transferring personal data outside their borders. Cross-border transfers out of the EU need a valid mechanism (adequacy decision such as the EU-US Data Privacy Framework, or Standard Contractual Clauses with a transfer impact assessment).
+- **Accountability artifacts** — keep a record of processing activities (RoPA) and run a Data Protection Impact Assessment (DPIA) for high-risk processing (GDPR Art. 30 and 35). Generate them from the data inventory and threat models rather than by hand, and review them when features change.
+- **Breach notification** — GDPR requires notifying the supervisory authority within 72 hours of becoming aware of a personal-data breach (Art. 33); HIPAA and many US state laws have their own clocks. Make sure incident-response runbooks and logging can establish scope quickly.
 
 ## Protect data across environments
 
@@ -73,7 +76,7 @@ Privacy should be designed in, not bolted on — integrating data protection pri
 ## Common pitfalls
 
 - **Encrypting everything but managing keys poorly** — encryption is only as strong as key access control. If every service has the decryption key, encryption adds little.
-- **Using production data in dev** — one breach of a dev environment that contains real PII is a reportable incident under GDPR and HIPAA.
+- **Using production data in dev** — one breach of a dev environment that contains real PII can be a reportable incident under GDPR and HIPAA.
 - **Logging sensitive data "just in case"** — logs are often less protected than primary data stores and retained for long periods. Sensitive data in logs is a recurring breach vector.
 - **Forgetting backup data** — backups frequently have weaker access controls, older encryption standards, and longer retention than primary data. They are a high-value, low-visibility target.
 - **No data residency enforcement** — data residency requirements are easy to violate when using global cloud services without explicit region constraints.
@@ -96,14 +99,16 @@ Privacy should be designed in, not bolted on — integrating data protection pri
 ### Open-source
 
 - [Amundsen](https://www.amundsen.io/) — data discovery and metadata catalog to locate and classify sensitive data across a data lake or warehouse. Useful for building an inventory of where sensitive data lives.
+- [OpenBao](https://openbao.org/) — open-source (MPL-2.0, Linux Foundation) fork of HashiCorp Vault for secrets management, encryption-as-a-service, and dynamic credentials. Choose it when a fully open-source license is required.
+- [OpenMetadata](https://open-metadata.org/) — open metadata platform with data discovery, lineage, and auto-classification of sensitive columns (PII tagging). Active alternative to Amundsen for building a classified data inventory.
 - [Presidio](https://github.com/microsoft/presidio) — detects and anonymizes PII (names, credit cards, passport numbers, SSNs, etc.) in text, images, and structured data. Use in data pipelines to scrub PII before loading into non-production environments.
-- [Vault](https://www.vaultproject.io/) — secrets management, encryption-as-a-service, and dynamic credentials. Provides a central key management layer across cloud and on-premises infrastructure.
 
 ### Commercial
 
 - [BigID](https://bigid.com/) — data discovery, classification, and privacy management across structured and unstructured data. Strong regulatory coverage (GDPR, CCPA, HIPAA) and automated risk scoring.
 - [Cyera](https://www.cyera.com/) — data security posture management (DSPM) for cloud environments. Continuously discovers and classifies data, identifies misconfigurations, and prioritizes data exposure risk.
-- [Macie (AWS)](https://aws.amazon.com/macie/) — managed ML-based service for discovering and classifying sensitive data in S3. Native integration with AWS security services for alerting and remediation.
+- [HashiCorp Vault](https://www.vaultproject.io/) — secrets management, encryption-as-a-service, and dynamic credentials with a central key management layer. Source-available (BSL) since 2023; offered commercially as HCP Vault and Vault Enterprise.
+- [Macie (AWS)](https://aws.amazon.com/macie/) — managed service for discovering and classifying sensitive data in S3. Native integration with AWS security services for alerting and remediation.
 
 ---
 

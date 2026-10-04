@@ -18,11 +18,11 @@ Block secrets before they enter history. This is the cheapest catch because no p
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.21.2
+    rev: v8.30.1
     hooks:
       - id: gitleaks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: detect-private-key
 ```
@@ -36,7 +36,7 @@ Mirror the same detection server-side so it cannot be bypassed with `--no-verify
 ```yaml
 # GitHub Actions example
 - name: Secret scan (TruffleHog)
-  uses: trufflesecurity/trufflehog@main
+  uses: trufflesecurity/trufflehog@v3.97.9   # pin to a release tag or full commit SHA, not @main
   with:
     path: ./
     base: ${{ github.event.repository.default_branch }}
@@ -46,7 +46,7 @@ Mirror the same detection server-side so it cannot be bypassed with `--no-verify
 
 ### Layer 3: Push protection
 
-Platform-level push protection (GitHub Secret Scanning push protection, GitLab secret detection) rejects pushes that contain recognized secret patterns server-side, before the commit is accepted. Enable for all repositories — this is a free, high-signal defense.
+Platform-level push protection (GitHub Secret Scanning push protection, GitLab secret detection) rejects pushes that contain recognized secret patterns server-side, before the commit is accepted. Enable it for all repositories — it is free on public repositories and, for private ones, available through GitHub Secret Protection (formerly part of GitHub Advanced Security); GitLab offers secret push protection on its paid tiers. It is a high-signal defense that catches secrets before they ever land in history.
 
 ### Layer 4: Historical scanning
 
@@ -54,7 +54,7 @@ New commits are not the only risk. Periodically scan full git history to catch s
 
 ```bash
 # Full-history scan with TruffleHog
-trufflehog git file://. --since-commit HEAD~500 --only-verified --fail
+trufflehog git file://. --only-verified --fail
 ```
 
 ### Layer 5: Public exposure monitoring
@@ -81,6 +81,7 @@ Applications and pipelines legitimately need credentials. The question is how to
 - Bake secrets into container images at build time.
 - Pass secrets as plain-text environment variables in CI job definitions.
 - Share secrets in Slack, email, or Confluence pages.
+- Hand long-lived credentials to AI coding agents or paste them into prompts; give agents scoped, short-lived credentials instead.
 
 ### Use centralized secret vaults
 
@@ -106,7 +107,7 @@ path "database/creds/my-role" {
 }
 ```
 
-HashiCorp Vault, AWS Secrets Manager, and similar platforms can generate database credentials, cloud IAM credentials, and TLS certificates on demand with a short TTL.
+HashiCorp Vault (or its open-source fork OpenBao), AWS Secrets Manager, and similar platforms can generate database credentials, cloud IAM credentials, and TLS certificates on demand with a short TTL.
 
 ### Use workload identity / OIDC for CI/CD
 
@@ -119,7 +120,7 @@ permissions:
   contents: read
 
 steps:
-  - uses: aws-actions/configure-aws-credentials@v4
+  - uses: aws-actions/configure-aws-credentials@v6   # pin to a commit SHA in production
     with:
       role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
       aws-region: us-east-1
@@ -131,8 +132,8 @@ This eliminates AWS access keys from GitHub secrets entirely. Apply the same pat
 
 Automate rotation so credentials change on a schedule and after any potential exposure:
 
-- Cloud secret managers (AWS Secrets Manager, Azure Key Vault, GCP Secret Manager) support automatic rotation with Lambda/Function hooks.
-- Vault supports lease renewal and automatic rotation for supported secret engines.
+- Cloud secret managers (AWS Secrets Manager, Azure Key Vault, GCP Secret Manager) support automatic rotation, often through Lambda or Function hooks.
+- Vault and OpenBao support lease renewal and automatic rotation for supported secret engines.
 - Track rotation cadence per secret type; critical credentials (production database passwords) should rotate more frequently than low-risk ones.
 
 ### Least privilege and scoping
@@ -155,7 +156,7 @@ Every secret should grant the minimum access needed, for the minimum time:
 
 | Level | Practice |
 |---|---|
-| Starting | Gitleaks or TruffleHog as a pre-commit hook; `.env` files in `.gitignore`; basic secret rotation on request |
+| Starting | Gitleaks as a pre-commit hook, or TruffleHog in CI; `.env` files in `.gitignore`; basic secret rotation on request |
 | Developing | CI pipeline scanning on all PRs; push protection enabled; secrets stored in a vault; no static cloud keys in CI |
 | Defined | Dynamic secrets for databases and cloud; OIDC for all CI/CD cloud access; automated rotation with audit logging |
 | Advanced | Zero static credentials in production; secrets access tied to workload identity and attested pipeline provenance; anomaly detection on secret access patterns |
@@ -167,8 +168,11 @@ Every secret should grant the minimum access needed, for the minimum time:
 ### Open-source
 
 - [detect-secrets](https://github.com/Yelp/detect-secrets) — Yelp's enterprise-grade secret detector. Maintains a baseline file of accepted findings so teams can manage existing issues without noisy blocking.
+- [External Secrets Operator](https://external-secrets.io/) — Kubernetes operator that syncs secrets from external managers (AWS, Azure, GCP, Vault, and others) into native Kubernetes Secrets so manifests never contain secret values.
 - [Gitleaks](https://github.com/gitleaks/gitleaks) — Fast, widely adopted secret scanner for git repos, history, and CI pipelines. Configurable rule sets and pre-commit hook support.
-- [HashiCorp Vault](https://www.vaultproject.io/) — Full-featured secrets management platform. Supports dynamic secrets, leasing, rotation, PKI, and multiple auth methods. Open-source and enterprise editions.
+- [Infisical](https://github.com/Infisical/infisical) — Open-source (MIT core) secrets management platform with a developer-friendly UI, CLI, and Kubernetes operator. Some advanced features such as dynamic secrets and rotation are in paid tiers.
+- [OpenBao](https://openbao.org/) — Community-driven, MPL-2.0 fork of Vault maintained under the Linux Foundation (OpenSSF). API-compatible with Vault for dynamic secrets, PKI, and multiple auth methods; self-hosted only.
+- [SOPS](https://github.com/getsops/sops) — Encrypts values inside YAML, JSON, and ENV files using KMS, age, or PGP keys, so encrypted secrets can live in git (commonly used with GitOps). Keys must still be managed and rotated.
 - [TruffleHog](https://github.com/trufflesecurity/trufflehog) — Finds and actively *verifies* leaked credentials (confirms the credential is still valid) across git history, S3, Jira, Slack, and more.
 
 ### Commercial / managed
@@ -177,8 +181,11 @@ Every secret should grant the minimum access needed, for the minimum time:
 - [Akeyless](https://www.akeyless.io/) — SaaS zero-knowledge platform for secrets, certificates, and key management with a free tier.
 - [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) — Managed secret storage with native rotation for RDS, Redshift, and custom Lambda rotators.
 - [Azure Key Vault](https://azure.microsoft.com/en-us/products/key-vault/) — Managed key and secret storage for Azure workloads.
+- [CyberArk Secrets Manager](https://www.cyberark.com/) — Enterprise secrets management for applications, containers, and CI/CD pipelines.
 - [Doppler](https://www.doppler.com/) — SecretOps platform that syncs secrets across environments and injects them at runtime. Good developer UX for teams without a dedicated Vault deployment.
 - [GCP Secret Manager](https://cloud.google.com/secret-manager) — Google Cloud's managed secret storage with IAM-based access control and audit logging.
+- [GitGuardian](https://www.gitguardian.com/) — Secrets detection across repos, CI, and developer machines (including the `ggshield` CLI), with incident workflow and remediation tracking. Free for individual developers and small teams.
+- [HashiCorp Vault](https://developer.hashicorp.com/vault) — Full-featured secrets management platform. Supports dynamic secrets, leasing, rotation, PKI, and multiple auth methods. Source-available under the Business Source License since August 2023 (previously open source); enterprise and managed (HCP) editions are available.
 
 ---
 

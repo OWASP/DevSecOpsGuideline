@@ -7,13 +7,15 @@ Compliance auditing demonstrates — to regulators, customers, and leadership �
 Most organizations map their controls to one or more of:
 
 - **SOC 2** — trust services criteria, common for SaaS. Requires evidence of access control, availability, and monitoring over a defined audit period (typically 12 months for Type II).
-- **ISO/IEC 27001** — information security management system standard. Requires a risk-based approach and documented controls with ongoing review.
-- **PCI DSS v4** — for handling payment card data. Highly prescriptive; now emphasizes continuous monitoring and customized implementation paths.
-- **NIST SSDF (SP 800-218)** — secure software development practices; increasingly required for vendors selling to US federal agencies (per OMB M-23-16).
+- **ISO/IEC 27001** — information security management system standard. Requires a risk-based approach and documented controls with ongoing review. The 2022 edition (Annex A reorganized into 93 controls, including new ones for secure coding, configuration management, and monitoring activities) is the current certifiable version; the transition from the 2013 edition ended in October 2025.
+- **PCI DSS v4.0.1** — for handling payment card data. Highly prescriptive; emphasizes continuous monitoring and customized implementation paths. v3.2.1 is retired, and the v4.0 future-dated requirements (for example, script management on payment pages under 6.4.3 and 11.6.1) have been mandatory since 31 March 2025.
+- **NIST SSDF (SP 800-218)** — secure software development practices, widely used as a baseline by vendors selling to US federal agencies. The government-wide self-attestation requirement (OMB M-22-18 / M-23-16) was rescinded by OMB M-26-05 in January 2026, so attestation is now an agency-level, risk-based decision; SSDF v1.2 (SP 800-218 Rev. 1) is in draft and SP 800-218A adds a profile for generative AI. Verify current contract requirements.
 - **NIST 800-53** — comprehensive control catalog for federal and high-assurance environments.
 - **HIPAA** — healthcare data; focuses on PHI safeguards, breach notification, and business associate agreements.
 - **GDPR / PIPEDA / LGPD** — privacy-first regulations governing personal data of EU, Canadian, and Brazilian residents (see [Data Protection](../3-2-Data-protection.md)).
-- **EU Cyber Resilience Act (CRA)** — security requirements for products with digital elements, including SBOMs and vulnerability disclosure obligations by 2027.
+- **EU Cyber Resilience Act (CRA)** — security requirements for products with digital elements, including SBOMs and vulnerability handling. Manufacturer reporting of actively exploited vulnerabilities and severe incidents (24-hour early warning, 72-hour notification) has applied since 11 September 2026 via ENISA's Single Reporting Platform; the main security requirements apply from 11 December 2027.
+- **NIS2 and DORA** — EU cybersecurity risk-management and incident-reporting obligations: NIS2 for essential and important entities (including supply-chain security and vulnerability handling), DORA (applicable since 17 January 2025) for financial entities and their ICT third-party providers, including resilience testing.
+- **EU AI Act** — risk-based AI regulation with phased obligations (see [AI Governance and Risk](../3-4-AI-Governance-and-Risk.md)).
 - **FedRAMP** — US federal cloud authorization, based on NIST 800-53 with strict continuous monitoring requirements.
 
 ## Continuous compliance vs. point-in-time audit
@@ -38,7 +40,7 @@ The modern approach automates the audit lifecycle end-to-end:
 - **Continuous Control Monitoring (CCM)** — verify controls on every commit, deploy, or configuration change rather than at quarterly audit time. Drift is caught and reported immediately.
 - **Automated evidence collection** — pipelines emit logs, scan results, approvals, signed provenance, and attestations automatically. Store them in a tamper-resistant evidence vault for the audit period.
 - **Policy as code** — encode compliance rules in machine-readable form and enforce them in CI and at admission (see [Policy as Code](3-1-2-Policy-as-code.md)).
-- **Cross-framework mapping** — a single automated check often satisfies multiple frameworks simultaneously. Platforms like Drata and Vanta maintain pre-built control mappings so a passing SAST gate can satisfy both SOC 2 CC7.1 and NIST 800-53 SA-11 at once.
+- **Cross-framework mapping** — a single automated check often satisfies multiple frameworks simultaneously. Platforms like Drata and Vanta maintain pre-built control mappings so a passing SAST gate can satisfy both SOC 2 CC7.1 and NIST 800-53 SA-11 at once. Machine-readable control catalogs such as NIST OSCAL let you express controls, assessment plans, and results as data rather than documents.
 
 ## What auditors actually look for
 
@@ -62,9 +64,9 @@ SOC 2 Trust Services Criteria (CC) map naturally to DevSecOps practices:
 | SOC 2 criterion | DevSecOps practice | Evidence |
 |---|---|---|
 | CC6.1 — logical access controls | Branch protection, RBAC in CI/CD, MFA enforced | IAM config, branch protection settings |
-| CC6.6 — restrict access to change management | Required reviewer rules; protected branches | GitHub/GitLab audit log of merges |
-| CC7.1 — detect and monitor security events | SIEM with defined detection rules | SIEM alert log, detection-as-code policy files |
-| CC7.2 — monitor system components | Continuous vulnerability scanning | Scan results per pipeline run, registry re-scan cadence |
+| CC6.8 — prevent or detect unauthorized or malicious software | Protected branches, required reviews, signed artifacts, admission control | Branch protection settings, signature verification logs |
+| CC7.1 — detect configuration changes and newly introduced vulnerabilities | Continuous vulnerability and configuration scanning | Scan results per pipeline run, registry re-scan cadence |
+| CC7.2 — monitor system components for anomalies | SIEM with defined detection rules | SIEM alert log, detection-as-code policy files |
 | CC8.1 — manage changes | GitOps pull-request workflow with approvals | PR merge history, change management ticket links |
 | A1.2 — availability risk mitigations | Capacity monitoring, health checks, progressive delivery | Monitoring dashboards, runbooks, deployment config |
 
@@ -113,14 +115,14 @@ Treat compliance as continuous, not annual. Tooling can map a single control to 
 ### Open-source
 
 - [Cloud Custodian](https://cloudcustodian.io/) — rules engine for cloud governance; write YAML policies to detect and auto-remediate non-compliant cloud resources. Best for teams already living in cloud config.
-- [OpenSCAP](https://www.open-scap.org/) — compliance scanning against SCAP/XCCDF baselines including CIS and DISA STIGs. Strong for OS-level compliance in regulated environments.
 - [Open Policy Agent](https://www.openpolicyagent.org/) — general-purpose policy engine for codifying compliance rules in Rego. Use to gate CI, Kubernetes admission, and API authorization.
+- [OpenSCAP](https://www.open-scap.org/) — compliance scanning against SCAP/XCCDF baselines including CIS and DISA STIGs. Strong for OS-level compliance in regulated environments.
 
 ### Commercial
 
 - [Drata](https://drata.com/) — continuous compliance automation for SOC 2, ISO 27001, HIPAA, PCI DSS, and more. Integrates with cloud providers, code platforms, and HR systems to auto-collect evidence.
-- [Vanta](https://www.vanta.com/) — automated compliance and trust management; strong on cross-framework coverage and vendor risk management.
 - [Secureframe](https://secureframe.com/) — compliance automation with built-in security training, risk management, and vendor questionnaire management.
+- [Vanta](https://www.vanta.com/) — automated compliance and trust management; strong on cross-framework coverage and vendor risk management.
 
 ---
 

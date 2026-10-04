@@ -7,11 +7,13 @@ The pipeline that builds and ships your software is itself a high-value target. 
 The [OWASP Top 10 CI/CD Security Risks](https://owasp.org/www-project-top-10-ci-cd-security-risks/) is the canonical reference. Key risks include:
 
 - **Insufficient flow control mechanisms (CICD-SEC-1)** — the ability to push code or artifacts to production without adequate review or gates. Anyone who can merge to main can deploy to production.
-- **Poisoned Pipeline Execution / PPE (CICD-SEC-3)** — injecting malicious commands into the build by manipulating pipeline configuration or scripts. Example: a PR modifies a GitHub Actions workflow file to exfiltrate secrets to an external URL. Defense: require reviews for workflow file changes; use `pull_request_target` carefully.
-- **Dependency-chain abuse (CICD-SEC-6)** — dependency confusion, typosquatting, and malicious packages pulled during the build. The pipeline's package manager runs with the same trust as CI secrets.
-- **Insufficient credential hygiene (CICD-SEC-4)** — long-lived, over-privileged secrets exposed to pipeline steps; secrets printed to logs; secrets shared across environments.
+- **Inadequate identity and access management (CICD-SEC-2)** — stale, shared, or over-privileged human and machine identities across the SCM, CI, and artifact systems; no MFA on accounts that can change pipelines.
+- **Dependency-chain abuse (CICD-SEC-3)** — dependency confusion, typosquatting, and malicious packages pulled during the build. The pipeline's package manager runs with the same trust as CI secrets.
+- **Poisoned Pipeline Execution / PPE (CICD-SEC-4)** — injecting malicious commands into the build by manipulating pipeline configuration or scripts. Example: a PR modifies a GitHub Actions workflow file to exfiltrate secrets to an external URL. Defense: require reviews for workflow file changes; use `pull_request_target` carefully; never interpolate untrusted values (`github.event.pull_request.title`, branch names, issue bodies) directly into `run:` scripts — pass them through environment variables instead.
+- **Insufficient PBAC / pipeline-based access controls (CICD-SEC-5)** — runners and jobs with far more access than they need; secrets available to all jobs in a repository.
+- **Insufficient credential hygiene (CICD-SEC-6)** — long-lived, over-privileged secrets exposed to pipeline steps; secrets printed to logs; secrets shared across environments.
 - **Ungoverned usage of third-party services (CICD-SEC-8)** — unvetted GitHub Actions, Jenkins plugins, and integrations running with access to the pipeline and its credentials.
-- **Insufficient PBAC / pipeline-based access controls (CICD-SEC-2)** — runners and jobs with far more access than they need; secrets available to all jobs in a repository.
+- **Improper artifact integrity validation (CICD-SEC-9)** — artifacts or code that can be injected into the pipeline without verification; addressed by signing and verification (see [Artifact Signing and Provenance](2-3-6-2-Artifact-Signing-and-Provenance.md)).
 
 ## Hardening the pipeline
 
@@ -45,7 +47,7 @@ The OIDC token is valid for minutes and cannot be reused; a leaked token expires
 
 ### Pin third-party Actions to immutable commit SHAs
 
-Tags like `@v3` are mutable — they can be silently redirected to malicious code. Pin to the commit digest:
+Tags like `@v3` are mutable — they can be silently redirected to malicious code. This has happened repeatedly: the March 2025 `tj-actions/changed-files` compromise and the March 2026 hijacking of nearly all `aquasecurity/trivy-action` tags both exfiltrated CI secrets from workflows that referenced mutable tags. Pin to the commit digest:
 
 ```yaml
 # Mutable tag — do not use this in production
@@ -55,12 +57,12 @@ Tags like `@v3` are mutable — they can be silently redirected to malicious cod
 - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 ```
 
-Use tools like Dependabot or Renovate to automate SHA pin updates as new versions are released.
+Use tools like Dependabot, Renovate, or pinact to automate SHA pin updates as new versions are released. GitHub also lets organizations enforce SHA pinning through Actions policy, and supports immutable releases that prevent tags from being moved after publication. The examples in this guideline use version tags for readability; pin them in real workflows.
 
 ### Harden runners
 
 - **Ephemeral, isolated runners** — use ephemeral GitHub-hosted or self-hosted runners that start clean and are destroyed after each job. Persistent runners accumulate state that attackers can abuse.
-- **Network egress control** — restrict what external hosts runners can reach during a build. A build that only needs npm and GitHub should not be able to reach arbitrary cloud APIs. Use StepSecurity Harden-Runner for GitHub Actions:
+- **Network egress control** — start in `audit` mode to learn the build's normal destinations, then move to `block`. Restrict what external hosts runners can reach during a build. A build that only needs npm and GitHub should not be able to reach arbitrary cloud APIs. Use StepSecurity Harden-Runner for GitHub Actions:
 
   ```yaml
   - uses: step-security/harden-runner@v2
@@ -77,8 +79,9 @@ Use tools like Dependabot or Renovate to automate SHA pin updates as new version
 
 Pull requests from forks are a common PPE vector. Apply these controls:
 
-- Require approval before running CI on first-time contributor PRs (`pull_request` trigger does not have access to secrets; `pull_request_target` does and must be used carefully).
-- Never expose secrets to untrusted PRs.
+- Require approval before running CI on first-time contributor PRs (`pull_request` workflows from forks do not receive secrets; `pull_request_target` does and must be used carefully).
+- Never expose secrets to untrusted PRs, and never check out and execute fork code in a `pull_request_target` or `workflow_run` job that has secrets or a write token.
+- Use `persist-credentials: false` on `actions/checkout` so the token is not left in `.git/config` for later steps.
 - Protect workflow files with CODEOWNERS so any change to `.github/workflows/` requires security team review.
 
 ### Pipeline configuration as a security perimeter
@@ -87,7 +90,7 @@ The pipeline definition (`.github/workflows/`, `Jenkinsfile`, `.gitlab-ci.yml`) 
 
 - Require pull request reviews for workflow file changes.
 - Use `CODEOWNERS` to route changes to security-aware reviewers.
-- Scan workflow files with zizmor or semgrep-rules for CI to catch common vulnerabilities (script injection, unsafe `pull_request_target` usage).
+- Scan workflow files with zizmor or Semgrep CI rules to catch common vulnerabilities (script injection, unsafe `pull_request_target` usage).
 
 ## Measure and enforce continuously
 
@@ -98,6 +101,10 @@ OpenSSF Scorecard provides a free, automated security score for open-source repo
 ```bash
 scorecard --repo=github.com/myorg/myrepo --format json | jq .checks
 ```
+
+### Other CI platforms
+
+The same principles apply beyond GitHub Actions: in GitLab CI use protected branches and variables, `id_tokens` for OIDC instead of stored cloud keys, and pinned `include:` references and component versions; in Jenkins restrict Script Security approvals, pin and audit plugins, and run builds on ephemeral agents rather than the controller; in all systems, separate build and deploy identities and keep production credentials out of untrusted-code jobs.
 
 ## Common pitfalls and anti-patterns
 
@@ -135,8 +142,9 @@ scorecard --repo=github.com/myorg/myrepo --format json | jq .checks
 
 - [Allstar](https://github.com/ossf/allstar) - Enforces security policies across GitHub organizations (branch protection, binary artifacts, SECURITY.md, outside collaborators); alerts or opens issues on violations.
 - [OpenSSF Scorecard](https://github.com/ossf/scorecard) - Scores repositories on supply-chain security best practices across 20+ checks; integrates as a GitHub Actions workflow with badge support.
+- [pinact](https://github.com/suzuki-shunsuke/pinact) - Pins GitHub Actions and reusable workflows to commit SHAs (keeping the version as a comment) and can verify existing pins in CI.
 - [StepSecurity Harden-Runner](https://github.com/step-security/harden-runner) - Egress filtering and runtime security for GitHub Actions runners; monitors and optionally blocks unauthorized outbound connections.
-- [zizmor](https://github.com/woodruffw/zizmor) - Static analysis tool for GitHub Actions workflow security vulnerabilities (script injection, PPE patterns, dangerous triggers).
+- [zizmor](https://github.com/zizmorcore/zizmor) - Static analysis tool for GitHub Actions workflow security vulnerabilities (script injection, PPE patterns, dangerous triggers).
 
 ### Commercial
 

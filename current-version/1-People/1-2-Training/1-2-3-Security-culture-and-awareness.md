@@ -16,7 +16,7 @@ Culture is also the hardest thing to fix after the fact. Technical controls can 
 
 - **Reduce alert fatigue** — tune scanners, deduplicate findings, and prioritize by real risk so developers trust the signal. A developer who sees fifty medium-severity false positives every PR learns to ignore all findings. Noise is the fastest way to kill a security program.
 - **Threat model as a team** — collaborative threat-modeling sessions spread security thinking far better than documents. The process of discussing "what can go wrong?" shapes how engineers think about future designs.
-- **Blameless post-mortems after incidents** — the Goggle SRE blameless postmortem model, applied to security incidents, builds trust and generates actionable systemic improvements rather than scapegoating.
+- **Blameless post-mortems after incidents** — the Google SRE blameless postmortem model, applied to security incidents, builds trust and generates actionable systemic improvements rather than scapegoating.
 - **Awareness training for all staff** — phishing simulations and general awareness training for everyone, since social engineering targets people, not code. A developer's personal account compromise can become a business compromise.
 - **Gamify and recognize** — capture-the-flag (CTF) events, bug-bash days, leaderboards, and shout-outs build engagement. Recognition in front of peers is often more motivating than financial incentives.
 - **Embed in developer experience** — surface security feedback in the IDE and pull request, in the developer's language, at the moment it is actionable. Findings surfaced in the right place at the right time feel like help, not criticism.
@@ -90,11 +90,11 @@ Watch these over time and treat sustained friction as a signal to fix the system
 
 | Category | Examples |
 |---|---|
-| Phishing simulation | KnowBe4, Proofpoint Security Awareness Training, Hoxhunt, Gophish (open source — self-hosted) |
-| Awareness training platforms | KnowBe4, SANS Security Awareness, Proofpoint, Infosec IQ |
-| CTF platforms | Hack The Box (Enterprise), TryHackMe (Enterprise), PicoCTF, CTFd (open source, self-hosted) |
-| Developer security training | Secure Code Warrior, Snyk Learn, SecureFlag, OWASP WebGoat, OWASP Juice Shop |
-| Champions program management | Confluence/Jira (program tracking), OWASP Security Champions Playbook (framework) |
+| Phishing simulation | Gophish (open source — self-hosted), Hoxhunt, KnowBe4, Proofpoint Security Awareness Training |
+| Awareness training platforms | Infosec IQ, KnowBe4, Proofpoint, SANS Security Awareness |
+| CTF platforms | CTFd (open source, self-hosted), Hack The Box (Enterprise), PicoCTF, TryHackMe (Enterprise) |
+| Developer security training | OWASP Juice Shop, OWASP WebGoat, Secure Code Warrior, SecureFlag, Snyk Learn |
+| Champions program management | Confluence/Jira (program tracking), OWASP Security Champions Guide (framework) |
 | Blameless postmortem tooling | Jira (incident templates), Confluence, GitHub incident retrospective templates |
 
 ---
@@ -103,6 +103,6 @@ Watch these over time and treat sustained friction as a signal to fix the system
 
 - [OWASP SAMM — Education & Guidance](https://owaspsamm.org/model/governance/education-and-guidance/)
 - [OWASP Security Culture project](https://owasp.org/www-project-security-culture/)
-- [OWASP Security Champions Playbook](https://github.com/c0rdis/security-champions-playbook)
+- [OWASP Security Champions Guide](https://securitychampions.owasp.org/)
 - [Google — Building Secure and Reliable Systems (culture chapters)](https://sre.google/books/building-secure-reliable-systems/)
 - [Etsy — Blameless PostMortems and a Just Culture](https://www.etsy.com/codeascraft/blameless-postmortems/)

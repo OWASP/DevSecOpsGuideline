@@ -6,7 +6,7 @@ Containers package an application together with its operating-system libraries a
 
 Understanding when and how vulnerabilities enter images is essential for an effective scanning strategy:
 
-```
+```text
 1. Base image published (debian:12, ubuntu:22.04, python:3.11-slim)
         │
         ▼
@@ -53,7 +53,10 @@ Scan at multiple points so nothing slips through:
   run: docker build -t myapp:${{ github.sha }} .
 
 - name: Scan image with Trivy
-  uses: aquasecurity/trivy-action@master
+  # Pin to a reviewed release and, ideally, its full commit SHA. In March 2026 attackers
+  # force-pushed most trivy-action version tags to credential-stealing code; mutable
+  # tags and `@master` are not safe references for security tooling.
+  uses: aquasecurity/trivy-action@0.35.0 # replace with the commit SHA of the release you reviewed
   with:
     image-ref: myapp:${{ github.sha }}
     format: sarif
@@ -62,7 +65,8 @@ Scan at multiple points so nothing slips through:
     exit-code: '1'
 
 - name: Upload Trivy SARIF
-  uses: github/codeql-action/upload-sarif@v3
+  if: always()
+  uses: github/codeql-action/upload-sarif@v4
   with:
     sarif_file: trivy-results.sarif
 ```
@@ -80,8 +84,11 @@ cosign attest --predicate sbom.json \
   --type cyclonedx \
   myregistry/myapp@$(crane digest myregistry/myapp:latest)
 
-# Later: verify and retrieve the SBOM
-cosign verify-attestation --type cyclonedx myregistry/myapp:latest | \
+# Later: verify and retrieve the SBOM (keyless attestations require the expected signer identity)
+cosign verify-attestation --type cyclonedx \
+  --certificate-identity-regexp "https://github.com/myorg/myrepo/" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  myregistry/myapp@sha256:<digest> | \
   jq '.payload | @base64d | fromjson | .predicate'
 ```
 
@@ -105,24 +112,24 @@ CI pipelines that build multi-arch images must scan each variant — a vulnerabi
 
 ## Reducing inherited risk: distroless and minimal images
 
-The most effective way to cut container vulnerabilities is to start from a minimal base. The numbers are stark:
+The most effective way to cut container vulnerabilities is to start from a minimal base. The illustrative figures below vary widely by scanner, date, and severity filter — measure your own images:
 
 | Base image | Approximate CVE count | Shell available |
 |---|---|---|
-| `ubuntu:22.04` | 30–80 CVEs (varies) | Yes |
+| `ubuntu:24.04` | 10–60 CVEs (varies) | Yes |
 | `debian:12-slim` | 15–40 CVEs (varies) | Yes |
 | `python:3.11-slim` | 20–50 CVEs (varies) | Yes (via debian-slim) |
 | `gcr.io/distroless/python3` | 0–5 CVEs | No |
 | `gcr.io/distroless/static` | 0–2 CVEs | No |
 | `scratch` | 0 | No |
 
-**Distroless images** (Google's `gcr.io/distroless/*`) ship no shell, no package manager, and no unnecessary OS tools. An attacker who achieves code execution in a distroless container has almost no utilities to work with — no `curl`, no `wget`, no `bash`, no `apt`. This dramatically reduces the blast radius of any container escape.
+**Distroless images** (Google's `gcr.io/distroless/*`; also available from Chainguard and Docker Hardened Images, see [Container Hardening](2-3-3-2-Container-Hardening.md)) ship no shell, no package manager, and no unnecessary OS tools. An attacker who achieves code execution in a distroless container has almost no utilities to work with — no `curl`, no `wget`, no `bash`, no `apt`. This dramatically reduces the blast radius of any container escape.
 
 **Multi-stage builds** achieve the same result for compiled languages:
 
 ```dockerfile
 # Stage 1: build (full toolchain)
-FROM golang:1.22 AS builder
+FROM golang:1.25 AS builder
 WORKDIR /app
 COPY . .
 RUN go build -o /bin/myapp ./cmd/myapp
@@ -157,6 +164,7 @@ Combine digest pinning with a weekly automated rebuild (Dependabot, Renovate, or
 - **Using `:latest` tags for base images** — always pin to digests in production Dockerfiles; mutable tags break reproducibility and scanning consistency.
 - **Secrets committed in an earlier layer** — adding a secret in one layer and removing it in the next does not remove it from the image history. Use `--secret` at build time or pass secrets at runtime via the orchestrator.
 - **Alert fatigue from base-image noise** — a base image upgrade can introduce dozens of new OS-level CVEs. Filter by severity and prioritize those with public exploits or runtime reachability context.
+- **Treating scanner and action references as trusted** — scanners run with registry and CI credentials; reference them by version or digest, not `@master`/`latest`.
 - **Not scanning multi-arch variants** — vulnerabilities in the `arm64` variant do not appear in an `amd64` scan.
 
 ## Maturity progression
@@ -188,7 +196,8 @@ Combine digest pinning with a weekly automated rebuild (Dependabot, Renovate, or
 - [Dockle](https://github.com/goodwithtech/dockle) — Container image linter focused on Dockerfile best practices and CIS benchmark alignment; complements vulnerability scanners rather than replacing them.
 - [Grype](https://github.com/anchore/grype) — Fast vulnerability scanner for container images and filesystems; pairs naturally with Syft for SBOM-driven scanning. Best for CI pipelines needing a lightweight, scriptable CLI.
 - [Syft](https://github.com/anchore/syft) — SBOM generator for container images and filesystems; produces SPDX and CycloneDX; the standard pairing for Grype.
-- [Trivy](https://github.com/aquasecurity/trivy) — Comprehensive scanner for images, filesystems, IaC, and SBOMs; single binary, easy CI integration, broad vulnerability database. Best all-in-one option for most teams.
+- [Trivy](https://github.com/aquasecurity/trivy) — Comprehensive scanner for images, filesystems, IaC, and SBOMs; single binary, easy CI integration, broad vulnerability database. Best all-in-one option for most teams. Because it runs with access to CI secrets, pin the binary and its GitHub Actions to verified releases (see the March 2026 `trivy-action` compromise, [GHSA-69fq-xp46-6x23](https://github.com/aquasecurity/trivy/security/advisories/GHSA-69fq-xp46-6x23)).
+- [Trivy Operator](https://github.com/aquasecurity/trivy-operator) — Kubernetes operator that continuously scans running workloads and publishes vulnerability and misconfiguration reports as cluster resources.
 
 ### Commercial
 

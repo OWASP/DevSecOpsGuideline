@@ -10,7 +10,7 @@ The widely adopted [pre-commit](https://pre-commit.com/) framework solves this. 
 
 ```bash
 # One-time setup per developer
-pip install pre-commit
+pip install pre-commit        # or: pipx install pre-commit / brew install pre-commit
 pre-commit install          # installs the git hook
 pre-commit install --hook-type pre-push   # optional: also run on push
 ```
@@ -22,13 +22,13 @@ pre-commit install --hook-type pre-push   # optional: also run on push
 repos:
   # Secret scanning — highest priority, runs first
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.21.2
+    rev: v8.30.1
     hooks:
       - id: gitleaks
 
   # General file hygiene
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -43,21 +43,21 @@ repos:
 
   # Python SAST
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.9
+    rev: 1.9.4
     hooks:
       - id: bandit
         args: ['-c', 'pyproject.toml']
         files: '\.py$'
 
   # Semgrep for polyglot SAST (fast subset of rules)
-  - repo: https://github.com/returntocorp/semgrep
-    rev: v1.x.x
+  - repo: https://github.com/semgrep/pre-commit
+    rev: 'v1.172.0'   # example; pin to the latest release
     hooks:
       - id: semgrep
-        args: ['--config', 'p/default', '--error']
+        args: ['--config', 'p/default', '--error', '--skip-unknown-extensions']
 ```
 
-Pin `rev` values to exact tags or SHAs, not `latest`, to make hook execution reproducible and to avoid supply-chain attacks via mutable tags.
+Pin `rev` values to exact tags or SHAs (the versions above are examples — run `pre-commit autoupdate` to get current ones) to make hook execution reproducible and to avoid supply-chain attacks via mutable tags.
 
 ## What to run at pre-commit
 
@@ -82,12 +82,15 @@ Client-side hooks improve developer experience but are **not a security control 
 ```yaml
 # GitHub Actions example — mirrors pre-commit checks
 - name: Run pre-commit hooks
-  uses: pre-commit/action@v3.0.1
+  run: pipx run pre-commit run --all-files --show-diff-on-failure
   env:
     SKIP: no-commit-to-branch   # skip branch-protection hooks in CI context
 ```
 
+The `pre-commit/action` GitHub Action is in maintenance-only mode; running `pre-commit` directly (as above) or using [pre-commit.ci](https://pre-commit.ci/) are the maintained alternatives.
+
 This creates a two-layer model:
+
 - **Pre-commit (local):** fast feedback for the developer, zero round-trip time.
 - **CI (server-side):** authoritative, un-bypassable enforcement.
 
@@ -133,8 +136,9 @@ git commit -am "chore: update pre-commit hook versions"
 
 - [Husky](https://typicode.github.io/husky/) — Git hooks manager popular in JavaScript/Node projects. Hooks are defined in `package.json` or `.husky/`. Works well with lint-staged for running checks only on staged files.
 - [Lefthook](https://github.com/evilmartians/lefthook) — Fast, polyglot Git hooks manager written in Go. Supports parallel hook execution and per-file filtering. Good alternative to `pre-commit` for multi-language monorepos.
-- [pre-commit](https://pre-commit.com/) — The most widely adopted multi-language framework for managing pre-commit hooks. Declarative YAML config, plugin ecosystem, CI integration, autoupdate support.
 - [lint-staged](https://github.com/lint-staged/lint-staged) — Runs linters only on git-staged files. Often paired with Husky to keep pre-commit fast by scoping checks to changed files only.
+- [pre-commit](https://pre-commit.com/) — The most widely adopted multi-language framework for managing pre-commit hooks. Declarative YAML config, plugin ecosystem, CI integration, autoupdate support.
+- [prek](https://github.com/j178/prek) — A single-binary, Rust reimplementation of pre-commit that reads existing `.pre-commit-config.yaml` files. Faster installs and runs, no Python runtime required; still a relatively young project.
 
 ---
 

@@ -1,10 +1,10 @@
 # API Security
 
-APIs are the connective tissue of modern applications — and the dominant attack surface. As architectures shift to microservices, mobile backends, and third-party integrations, most business logic and data is exposed through APIs. Attackers have followed, making API security a first-class testing concern rather than a subset of web testing. The 2023 Verizon DBIR and OWASP data consistently show API-related vulnerabilities in the top causes of breaches.
+APIs are the connective tissue of modern applications — and the dominant attack surface. As architectures shift to microservices, mobile backends, and third-party integrations, most business logic and data is exposed through APIs. Attackers have followed, making API security a first-class testing concern rather than a subset of web testing. OWASP publishes a dedicated API Security Top 10 precisely because API flaws are distinct from classic web flaws.
 
 ## The OWASP API Security Top 10
 
-The [OWASP API Security Top 10 (2023)](https://owasp.org/API-Security/) frames the most critical API risks:
+The [OWASP API Security Top 10 (2023)](https://owasp.org/API-Security/) (the current edition, which replaced the 2019 list) frames the most critical API risks:
 
 | Risk | Description | Why it is hard to catch |
 |---|---|---|
@@ -14,10 +14,10 @@ The [OWASP API Security Top 10 (2023)](https://owasp.org/API-Security/) frames t
 | **Unrestricted Resource Consumption** (API4) | Missing rate limiting enabling abuse and DoS | Requires scripted load testing, not passive scanning |
 | **Broken Function Level AuthZ** (API5) | Accessing admin/privileged functions without checks | Requires role-based test cases across all permission levels |
 | **Unrestricted Access to Sensitive Business Flows** (API6) | Automating flows not intended for automation (e.g., bulk purchase, account takeover) | Logic-specific; tooling alone cannot detect |
-| **SSRF** (API7) | Server-side request forgery via API parameters | Requires active payload injection and out-of-band detection |
+| **Server Side Request Forgery** (API7) | Server-side request forgery via API parameters | Requires active payload injection and out-of-band detection |
 | **Security Misconfiguration** (API8) | Default credentials, unnecessary endpoints, verbose error messages | Schema drift, debug flags, CORS wildcards |
 | **Improper Inventory Management** (API9) | Shadow APIs, deprecated/zombie endpoints still live | Requires ongoing discovery, not point-in-time testing |
-| **Unsafe API Consumption** (API10) | Trusting third-party API responses without validation | Requires review of every external integration |
+| **Unsafe Consumption of APIs** (API10) | Trusting third-party API responses without validation | Requires review of every external integration |
 
 ## Testing and protecting APIs
 
@@ -44,6 +44,14 @@ The spec is a security contract. Test that the implementation matches it:
 
 Schemathesis auto-generates test cases from your OpenAPI/GraphQL spec and can run in CI as a gate.
 
+### GraphQL, gRPC, and event-driven APIs
+
+Not every API is REST. GraphQL needs its own checks: disable introspection and field suggestions in production, enforce query depth/complexity limits and batching limits (otherwise a single request can exhaust resources or brute-force credentials), and apply authorization at the resolver/field level. For gRPC, test using reflection or the `.proto` definitions; for event-driven interfaces (WebSocket, Kafka, MQTT), use AsyncAPI specs and test authorization on every channel.
+
+### Authentication and token testing
+
+Validate how tokens are issued and checked: JWT signature, `alg`, `aud`/`iss`, and expiry validation; OAuth 2.0/OIDC flow misconfigurations (redirect URI validation, PKCE, scope enforcement); API key leakage in URLs, logs, and client code; and token revocation after logout or password change. Include credential stuffing and enumeration checks on login and password-reset endpoints (API2).
+
 ### Authorization testing (BOLA/IDOR)
 
 This is the #1 API risk and requires explicit test cases because scanners cannot derive valid object IDs:
@@ -68,7 +76,7 @@ Send malformed and boundary-value inputs to surface crashes and unexpected behav
 Standard web DAST crawlers do not understand REST or GraphQL semantics. Feed the scanner your API spec:
 
 ```bash
-# OWASP ZAP API scan from OpenAPI spec
+# ZAP API scan from OpenAPI spec
 docker run -v $(pwd):/zap/wrk/:rw \
   ghcr.io/zaproxy/zaproxy:stable \
   zap-api-scan.py -t api-spec.yaml -f openapi \
@@ -93,7 +101,7 @@ Testing catches issues before release; runtime protection catches exploitation i
 
 ## Maturity progression
 
-**Starter** — Maintain an OpenAPI spec for every API. Run OWASP ZAP API scan in CI against each build. Create BOLA test cases for the two most critical resources.
+**Starter** — Maintain an OpenAPI spec for every API. Run a ZAP API scan in CI against each build. Create BOLA test cases for the two most critical resources.
 
 **Intermediate** — Add Schemathesis schema-validation testing in CI. Automate BOLA/IDOR test cases for all resource types. Deploy API gateway with rate limiting and schema enforcement. Run passive traffic discovery in staging.
 
@@ -114,16 +122,17 @@ Testing catches issues before release; runtime protection catches exploitation i
 ### Open-source
 
 - [Akto](https://github.com/akto-api-security/akto) — API discovery from network traffic and security testing; good for finding shadow APIs in staging environments.
-- [OWASP ZAP](https://www.zaproxy.org/) — Supports API scanning from OpenAPI/SOAP/GraphQL definitions via `zap-api-scan.py`; strong CI integration.
-- [Schemathesis](https://github.com/schemathesis/schemathesis) — Property-based API testing from OpenAPI/GraphQL spec; excellent for finding schema-validation bypass and server crashes.
 - [RESTler](https://github.com/microsoft/restler-fuzzer) — Stateful REST API fuzzer from Microsoft Research; generates and executes sequences of API calls to find logic and resource-management flaws.
+- [Schemathesis](https://github.com/schemathesis/schemathesis) — Property-based API testing from OpenAPI/GraphQL spec; excellent for finding schema-validation bypass and server crashes.
+- [ZAP](https://www.zaproxy.org/) — Formerly OWASP ZAP; supports API scanning from OpenAPI/SOAP/GraphQL definitions via `zap-api-scan.py`; strong CI integration.
 
 ### Commercial
 
-- [Escape](https://escape.tech/) — API discovery and dynamic security testing; strong GraphQL support and CI-native with developer-friendly findings.
-- [Noname Security (Akamai API Security)](https://www.akamai.com/products/api-security) — API discovery, posture management, and runtime protection; strong on detecting anomalous access patterns in production traffic.
-- [Salt Security](https://salt.security/) — API security platform for discovery and runtime defense; uses ML-based behavioral analysis to detect API-targeted attacks.
 - [42Crunch](https://42crunch.com/) — API security audit from OpenAPI spec and runtime protection; integrates directly into the development workflow with IDE plugins.
+- [Akamai API Security](https://www.akamai.com/products/api-security) — Formerly Noname Security (acquired by Akamai in 2024); API discovery, posture management, and runtime protection; strong on detecting anomalous access patterns in production traffic.
+- [Escape](https://escape.tech/) — API discovery and dynamic security testing; strong GraphQL support and CI-native with developer-friendly findings.
+- [Salt Security](https://salt.security/) — API security platform for discovery and runtime defense; uses ML-based behavioral analysis to detect API-targeted attacks.
+- [Wallarm](https://www.wallarm.com/) — API discovery, testing, and real-time protection (WAAP) with an open-source-based filtering node; covers REST, GraphQL, and gRPC.
 
 ---
 

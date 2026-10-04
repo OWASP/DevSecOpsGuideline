@@ -12,7 +12,7 @@ The difference is not just where security happens, but *who owns it*: DevSecOps 
 
 A reasonable progression of controls to introduce:
 
-- **Secrets scanning** — find credentials before they are committed or merged. Tools like TruffleHog and Gitleaks run in pre-commit hooks or CI with near-zero false-positive rates on high-entropy strings and known secret formats. A single leaked cloud credential can compromise an entire environment within minutes of appearing in a public repo.
+- **Secrets scanning** — find credentials before they are committed or merged. Tools like TruffleHog (which can verify whether a detected credential is still live) and Gitleaks run in pre-commit hooks or CI and keep false positives low on known secret formats. A single leaked cloud credential can compromise an entire environment within minutes of appearing in a public repo.
 - **SCA (Software Composition Analysis)** — detect vulnerable and malicious open-source dependencies. SCA tools map your dependency tree against CVE databases and increasingly flag malicious packages (typosquatting, dependency confusion) and license issues. Log4Shell (2021) demonstrated what a critical CVE in a transitive dependency can do at scale: hundreds of millions of systems affected by a library most of their developers had never heard of.
 - **SAST (Static Application Security Testing)** — analyze first-party source code for flaws. Effective SAST runs in the pull request and reports only *new* findings against the base branch so developers see only what they introduced.
 - **IaC scanning** — find misconfigurations in Terraform, Helm, Kubernetes manifests, Ansible, etc. These flaws — overly permissive IAM, unencrypted storage, open network rules — are frequently the easiest path into cloud environments. The Capital One breach (2019) exploited a misconfigured WAF combined with excessive IAM permissions to exfiltrate over 100 million records.
@@ -23,6 +23,7 @@ A reasonable progression of controls to introduce:
 - **CNAPP / cloud-native security** — protect cloud and Kubernetes workloads at runtime. CNAPP platforms (CSPM + CWPP + CIEM + KSPM) give a unified view of misconfigurations, vulnerable workloads, excessive permissions, and runtime threats.
 - **Continuous monitoring and vulnerability management** — aggregate, prioritize, and remediate findings over time. A vulnerability management process with defined SLAs (e.g., critical CVEs within 7 days, high within 30) closes the loop between detection and fix.
 - **Compliance checks** — continuously verify controls against policy and regulation using policy-as-code tools so compliance state is always known, not discovered at audit time.
+- **AI-assisted development guardrails** — apply the same scanning gates to AI-generated code, restrict what coding agents and MCP servers can access, and verify suggested dependencies. See [IDE and AI-Assisted Development Security](../2-Process/2-2-Develop/2-2-2-IDE-and-AI-assisted-development.md).
 
 ## A recommended introduction order
 
@@ -42,7 +43,7 @@ Start with controls 1–3. They provide the highest risk reduction per implement
 
 To understand how the pieces connect, follow a typical SAST finding from discovery to closure:
 
-1. **Developer writes code** with a SQL string built by concatenation (potential injection). The IDE plugin (e.g., Semgrep LSP, Snyk IDE) flags it inline — the developer sees it before a single commit.
+1. **Developer writes code** with a SQL string built by concatenation (potential injection). The IDE plugin (e.g., Semgrep IDE extension, Snyk IDE plugin) flags it inline — the developer sees it before a single commit.
 2. **Pre-commit hook** runs a fast Semgrep scan on staged files. If the developer ignored the IDE warning, the hook catches it before the commit lands.
 3. **Pull request CI** runs a full SAST scan against the base branch. A PR comment is posted automatically with the finding, the file, the line, the CWE reference, and a remediation suggestion. The PR is blocked from merge until the finding is addressed.
 4. **Developer fixes** the injection by using a parameterized query. They push an updated commit; the SAST re-runs and the gate passes.
@@ -66,7 +67,7 @@ Tools in a DevSecOps pipeline connect through a few standard integration pattern
 The goal is not to block every build on every finding — that destroys developer trust and creates alert fatigue. Instead:
 
 - Gate on **risk** (severity, exploitability, reachability), not raw counts.
-- Baseline existing issues so teams are accountable only for *new* risk they introduce. Many SAST tools support a `--baseline` flag or new-findings-only mode.
+- Baseline existing issues so teams are accountable only for *new* risk they introduce. Many SAST tools support a baseline or new-findings-only mode (for example, Semgrep's `--baseline-commit`).
 - Give developers actionable, in-context results in the tools they already use (IDE plugin, PR comment, Slack message) — not just a CI log they have to go digging for.
 - Support a documented exception process for the rare cases where a finding cannot be remediated immediately, so teams do not disable gates as a workaround.
 
@@ -75,7 +76,7 @@ The goal is not to block every build on every finding — that destroys develope
 CI/CD tooling expands your attack surface. Build runners, package registries, third-party Actions/plugins, and long-lived tokens are all attractive targets. Concrete hardening steps include:
 
 - Use **OIDC workload identity** (GitHub OIDC → AWS/GCP/Azure) instead of long-lived cloud credentials stored as secrets.
-- **Pin** third-party Actions and container images to immutable SHA digests, not mutable tags.
+- **Pin** third-party Actions and container images to immutable SHA digests, not mutable tags (GitHub can enforce full-SHA pinning through the Actions allowed-actions policy).
 - **Restrict `permissions:`** blocks in GitHub Actions to the minimum required per job.
 - Run jobs in **ephemeral, isolated runners** and restrict network egress to only what the build needs.
 - Audit third-party plugin and Action updates; treat them as supply-chain risk.

@@ -1,6 +1,6 @@
 # Security in CI/CD Training
 
-Secure coding protects the application; this training protects the **pipeline that builds and ships it**. CI/CD systems hold powerful credentials, run untrusted code, and pull in third-party dependencies and plugins — which makes them a prime target. High-profile breaches (e.g. SolarWinds, Codecov, and numerous compromised GitHub Actions) all abused the build and delivery pipeline rather than the application itself.
+Secure coding protects the application; this training protects the **pipeline that builds and ships it**. CI/CD systems hold powerful credentials, run untrusted code, and pull in third-party dependencies and plugins — which makes them a prime target. High-profile breaches (e.g. SolarWinds, Codecov, and numerous compromised GitHub Actions such as `tj-actions/changed-files` in 2025 and the Trivy actions in 2026) all abused the build and delivery pipeline rather than the application itself.
 
 Everyone who writes pipeline configuration — developers, platform engineers, SREs — needs to understand how these systems are attacked and how to harden them.
 
@@ -29,7 +29,7 @@ The single most common and damaging pipeline security failure is credential expo
 
   ```yaml
   # GitHub Actions: OIDC to AWS — no long-lived key required
-  - uses: aws-actions/configure-aws-credentials@v4
+  - uses: aws-actions/configure-aws-credentials@v6  # pin to a commit SHA in production
     with:
       role-to-assume: arn:aws:iam::123456789012:role/github-actions-role
       aws-region: us-east-1
@@ -51,6 +51,7 @@ permissions:
 ```
 
 Teach developers to:
+
 - Always declare an explicit `permissions:` block; never rely on the workflow-level default which may be overly broad.
 - Audit what each job actually needs and remove anything it does not use.
 - Treat pipeline tokens like production credentials — they often have equivalent or greater blast radius.
@@ -65,7 +66,7 @@ Teach developers to:
 - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 ```
 
-Teach developers that mutable tags on third-party Actions and container images are a supply-chain attack surface. A tag can be updated without warning to point to a malicious commit.
+Teach developers that mutable tags on third-party Actions and container images are a supply-chain attack surface. A tag can be updated without warning to point to a malicious commit — as happened in the 2025 `tj-actions/changed-files` compromise and the 2026 Trivy action compromise, where existing version tags were repointed to credential-stealing code. GitHub organizations can now enforce SHA pinning through the allowed-actions policy.
 
 ### Runner hardening
 
@@ -112,14 +113,14 @@ Not all developers arrive with the ability to interpret SAST, SCA, and IaC scann
 
 ### Open-source
 
-- [OpenSSF Scorecard](https://github.com/ossf/scorecard) — Automated checks for security best practices on a repository: dependency pinning, branch protection, code review, vulnerability disclosure. Useful as a teaching baseline and a continuous metric.
-- [StepSecurity Harden-Runner](https://github.com/step-security/harden-runner) — Network egress monitoring and runtime security for GitHub Actions runners. Generates an allowlist of outbound connections observed during the build, making unexpected calls visible.
-- [zizmor](https://github.com/woodruffw/zizmor) — Static analysis for GitHub Actions workflow files. Detects PPE risks, overly broad permissions, unpinned Actions, and other configuration vulnerabilities.
 - [actionlint](https://github.com/rhysd/actionlint) — A linter for GitHub Actions workflow files that catches syntax and logical errors before they hit CI.
+- [OpenSSF Scorecard](https://github.com/ossf/scorecard) — Automated checks for security best practices on a repository: dependency pinning, branch protection, code review, vulnerability disclosure. Useful as a teaching baseline and a continuous metric.
+- [StepSecurity Harden-Runner](https://github.com/step-security/harden-runner) — Network egress monitoring and runtime security for GitHub Actions runners. Generates an allowlist of outbound connections observed during the build, making unexpected calls visible. Community tier is free; enterprise features are paid.
+- [zizmor](https://github.com/zizmorcore/zizmor) — Static analysis for GitHub Actions workflow files. Detects PPE risks, template injection, overly broad permissions, unpinned Actions, and other configuration vulnerabilities.
 
 ### Commercial
 
-- [GitHub Advanced Security](https://github.com/security/advanced-security) — Secret scanning, code scanning (CodeQL SAST), Dependabot SCA, and supply-chain features (dependency review, signing) integrated into GitHub.
+- [GitHub Advanced Security](https://github.com/security/advanced-security) — Sold as GitHub Secret Protection (secret scanning and push protection) and GitHub Code Security (CodeQL code scanning, Copilot Autofix, dependency review); Dependabot is available to all repositories.
 - [GitLab Ultimate](https://about.gitlab.com/pricing/) — Built-in pipeline security scanning (SAST, DAST, SCA, secrets, container scanning) and compliance pipeline features baked into GitLab CI.
 
 ---

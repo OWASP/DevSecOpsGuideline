@@ -7,7 +7,7 @@ Security benchmarking measures your security posture against an objective standa
 - **Configuration benchmarks** — [CIS Benchmarks](https://www.cisecurity.org/cis-benchmarks) provide prescriptive, consensus hardening baselines for operating systems, cloud, containers, and Kubernetes. Each check is categorized as Level 1 (essential, low-impact) or Level 2 (defense-in-depth, may affect usability). Measuring against them produces a concrete compliance percentage you can track over time.
 - **Supply-chain posture** — [OpenSSF Scorecard](https://github.com/ossf/scorecard) scores open-source and internal repositories on supply-chain security practices: branch protection, pinned dependencies, signed releases, fuzzing, and more. Run it in CI on every pull request and on a regular schedule across all repos.
 - **Maturity models** — [OWASP SAMM](https://owaspsamm.org/), [OWASP DSOMM](https://dsomm.owasp.org/), and [BSIMM](https://www.bsimm.com/) assess how mature your overall program is across many practices, and allow comparison to industry peers.
-- **Cloud security posture** — tools like Prowler and cloud-native services (AWS Security Hub, Azure Defender, GCP Security Command Center) continuously benchmark your cloud configuration against CIS, PCI DSS, ISO 27001, and other standards.
+- **Cloud security posture** — tools like Prowler and cloud-native services (AWS Security Hub, Microsoft Defender for Cloud, GCP Security Command Center) continuously benchmark your cloud configuration against CIS, PCI DSS, ISO 27001, and other standards.
 
 ## Choosing the right benchmark for the job
 
@@ -25,11 +25,11 @@ Security benchmarking measures your security posture against an objective standa
 
 CIS Benchmarks produce a pass/fail result for each check. Consider the CIS Kubernetes Benchmark for a cluster control plane:
 
-```
+```text
 [PASS] 1.1.1 Ensure that the API server pod specification file permissions are set to 644 or more restrictive
 [FAIL] 1.2.6 Ensure that the --authorization-mode argument is not set to AlwaysAllow
 [PASS] 1.2.9 Ensure that the admission control plugin EventRateLimit is set
-[FAIL] 4.2.1 Ensure that the kubelet service file permissions are set to 644 or more restrictive
+[FAIL] 4.1.1 Ensure that the kubelet service file permissions are set to 644 or more restrictive
 ```
 
 A typical run might yield 60/80 checks passing = 75%. The actionable output is not the percentage — it is the list of failing checks, each with a remediation step. Prioritize failing checks by Level (Level 1 first) and by risk impact (auth/authz failures before filesystem permissions).
@@ -38,7 +38,7 @@ Over quarters, track the delta: 75% → 82% → 91%. This is the story that just
 
 ## Using OpenSSF Scorecard — step by step
 
-Scorecard evaluates 20+ checks across a repository. Running it is straightforward:
+Scorecard evaluates around 20 checks across a repository. Running it is straightforward:
 
 ```bash
 # Run against your repo (requires GitHub token with read scope)
@@ -50,7 +50,7 @@ GITHUB_AUTH_TOKEN=<token> scorecard --repo github.com/myorg/myrepo
 
 A sample output with scores per check:
 
-```
+```text
 Maintained:           10 / 10
 Code-Review:           8 / 10  (some PRs merged without review)
 Dangerous-Workflow:   10 / 10
@@ -71,8 +71,8 @@ From this output, actionable priorities are clear: pin Actions to SHA digests (P
 OWASP DSOMM provides a web-based tool and YAML-based data model for tracking pipeline practices. A practical assessment process:
 
 1. **Install the DSOMM application** — run it locally or self-host with Docker.
-2. **Select your dimensions** — DSOMM covers Static Depth, Dynamic Depth, Intensity, Consolidation, and more. Start with Static Depth (SAST, SCA) and Infrastructure (IaC, cloud config).
-3. **Rate each practice** — for each activity (e.g., "Use of multiple SAST tools", "SAST integrated into developer IDE"), select your current level (0–4) based on evidence.
+2. **Select your dimensions** — DSOMM groups activities into dimensions (Build and Deployment, Culture and Organization, Implementation, Information Gathering, Test and Verification), with sub-dimensions such as Static Depth, Dynamic Depth, Intensity, and Consolidation. Start with Test and Verification (SAST, SCA) and Build and Deployment (IaC, pipeline hardening).
+3. **Rate each practice** — for each activity (e.g., "Use of multiple SAST tools", "SAST integrated into developer IDE"), select your current level (1–4) based on evidence.
 4. **Export the gap report** — DSOMM generates a heatmap of current state vs. target level, and a list of gap activities with references to tools and implementation steps.
 5. **Create backlog items** — for each gap, create a ticket. DSOMM links each practice to implementation guidance.
 6. **Re-assess quarterly** — re-run the assessment and compare to the previous export. The delta is the evidence of progress.
@@ -87,7 +87,7 @@ Benchmarks are most valuable when they feed planning:
 4. Re-run on a defined cadence and track delta.
 5. Report trend to leadership quarterly.
 
-Link each benchmark gap back to the framework it addresses — a failing Scorecard "Pinned-Dependencies" check maps to SLSA Supply Chain Threats and OWASP Top 10 CI/CD Risk #8. This cross-referencing is what turns a benchmark score into a compliance argument (see [Compliance Auditing](3-1-1-Compliance-Auditing.md)).
+Link each benchmark gap back to the framework it addresses — a failing Scorecard "Pinned-Dependencies" check maps to SLSA Supply Chain Threats and OWASP Top 10 CI/CD Security Risk CICD-SEC-3 (Dependency Chain Abuse). This cross-referencing is what turns a benchmark score into a compliance argument (see [Compliance Auditing](3-1-1-Compliance-Auditing.md)).
 
 ## Maturity progression
 
@@ -102,7 +102,7 @@ Link each benchmark gap back to the framework it addresses — a failing Scoreca
 - **Checkbox compliance** — reaching a benchmark score by disabling checks or documenting exceptions without fixing the underlying issue. Track the exclusion list as carefully as the score; unexplained gaps attract auditor scrutiny.
 - **Benchmarking only at audit time** — a configuration that passes a benchmark on Monday can drift by Friday. Continuous checks are the only reliable approach.
 - **Ignoring model intent** — SAMM and DSOMM describe practices to *do*, not just policies to *have*. An organization that documents a threat modeling process but runs no threat models scores artificially high.
-- **Comparing incomparable scores** — Scorecard v3 and v4 scores are not directly comparable. BSIMM data changes as the participating firms evolve. Always version your benchmark runs and note the benchmark version in reporting.
+- **Comparing incomparable scores** — Scorecard scores are not directly comparable across major versions as checks are added and reweighted. BSIMM data changes as the participating firms evolve. Always version your benchmark runs and note the benchmark version in reporting.
 
 ## Metrics
 
@@ -122,8 +122,8 @@ Link each benchmark gap back to the framework it addresses — a failing Scoreca
 
 - [kube-bench](https://github.com/aquasecurity/kube-bench) — checks Kubernetes nodes and control plane against the CIS Kubernetes Benchmark. Can run as a Job in-cluster or as a standalone binary. The de facto standard for Kubernetes CIS compliance.
 - [OpenSCAP](https://www.open-scap.org/) — scans Linux systems against SCAP/XCCDF baselines including CIS Benchmarks and DISA STIGs. Produces XML and HTML reports; integrates with Satellite and Ansible for remediation.
-- [OpenSSF Scorecard](https://github.com/ossf/scorecard) — scores repositories on 20+ supply-chain security checks. Run via GitHub Actions or as a CLI; results can be published to the OpenSSF dashboard.
-- [Prowler](https://github.com/prowler-cloud/prowler) — cloud security posture assessment for AWS, Azure, and GCP. Covers CIS Foundations Benchmarks, PCI DSS, HIPAA, GDPR, and more. Strong CLI and CI integration.
+- [OpenSSF Scorecard](https://github.com/ossf/scorecard) — scores repositories on around 20 supply-chain security checks. Run via GitHub Actions or as a CLI; results can be published to the OpenSSF dashboard.
+- [Prowler](https://github.com/prowler-cloud/prowler) — cloud security posture assessment for AWS, Azure, and GCP. Covers CIS Foundations Benchmarks, PCI DSS, HIPAA, GDPR, and more, and has expanded to Kubernetes and Microsoft 365. Strong CLI and CI integration.
 
 ### Commercial
 

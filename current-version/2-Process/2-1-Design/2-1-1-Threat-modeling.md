@@ -22,6 +22,7 @@ These questions are intentionally methodology-agnostic — they work whether you
 - **LINDDUN** — focuses on **privacy** threats (Linkability, Identifiability, Non-repudiation, Detectability, Disclosure of information, Unawareness, Non-compliance). Use alongside STRIDE for applications handling personal data.
 - **Attack trees** — model how an attacker could reach a goal step by step. Excellent for high-value targets or specific threat scenarios where you want to reason about attacker economics.
 - **OCTAVE** — operationally focused, suitable for organizations analyzing risk at the process and asset level rather than the feature level.
+- **AI/ML and agentic systems** — extend your model with threats STRIDE does not name directly: prompt injection, training-data and model poisoning, excessive agency of tools and agents, and data leakage through context. Use the [OWASP Top 10 for LLM Applications](https://genai.owasp.org/llm-top-10/), the [OWASP Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/), and [MITRE ATLAS](https://atlas.mitre.org/) as threat catalogs. See [AI Governance and Risk](../../3-Governance/3-4-AI-Governance-and-Risk.md).
 
 ## Building the data-flow diagram
 
@@ -54,7 +55,7 @@ Traditional threat modeling was a heavyweight, document-driven exercise done onc
 
 - **Right-size it** — model the riskiest features and changes, not every story. A 30-minute whiteboard session beats a 40-page document nobody reads.
 - **Do it continuously** — trigger a lightweight model update for any change that crosses a trust boundary, adds an external integration, or handles new categories of sensitive data.
-- **Threat-model as code** — express models in version-controlled, diffable formats ([pytm](https://github.com/OWASP/pytm), [threagile](https://threagile.io/)) so they evolve with the system and integrate into CI pipelines for automated risk reporting.
+- **Threat-model as code** — express models in version-controlled, diffable formats ([pytm](https://github.com/OWASP/pytm), [Threagile](https://threagile.io/)) so they evolve with the system and integrate into CI pipelines for automated risk reporting.
 - **Make it collaborative** — involve developers, architects, product managers, and security champions; the conversation is often more valuable than the artifact itself.
 - **Close the loop** — every identified threat should produce a ticket in the backlog. Unmitigated threats should have an explicit risk-acceptance decision, not be silently ignored.
 
@@ -89,7 +90,7 @@ Traditional threat modeling was a heavyweight, document-driven exercise done onc
 |---|---|
 | Starting | Ad-hoc whiteboard sessions for highest-risk features; output is a list of threats in the backlog |
 | Developing | STRIDE applied consistently to all new features crossing trust boundaries; DFDs stored in the repo |
-| Defined | Threat-model-as-code (pytm or threagile) integrated into CI; model reviews at sprint milestones |
+| Maturing | Threat-model-as-code (pytm or Threagile) integrated into CI; model reviews at sprint milestones |
 | Advanced | Automated threat generation from architecture diagrams; threat model findings correlated with SAST/DAST/pentest findings |
 
 ---
@@ -98,17 +99,19 @@ Traditional threat modeling was a heavyweight, document-driven exercise done onc
 
 ### Open-source
 
+- [Attack Flow](https://center-for-threat-informed-defense.github.io/attack-flow/) — MITRE CTID project for modeling sequences of adversary actions using ATT&CK techniques. Useful for post-incident and red team threat analysis.
+- [AWS Threat Composer](https://github.com/awslabs/threat-composer) — Lightweight, browser-based tool for writing threat statements and mitigations, with a JSON export for version control. Good for getting a first model done in a short workshop.
 - [OWASP pytm](https://github.com/OWASP/pytm) — A Python-based framework for expressing threat models as code. Generates DFDs, sequence diagrams, and STRIDE reports from a Python definition file. Integrates into CI.
 - [OWASP Threat Dragon](https://owasp.org/www-project-threat-dragon/) — Free, open-source threat modeling tool with a visual DFD editor and STRIDE categorization. Stores models as JSON for version control.
-- [OWASP ThreatAtlas](https://github.com/OWASP/ThreatAtlas) — A community-maintained, structured knowledge base of real-world threats mapped to attack patterns, MITRE ATT&CK techniques, and mitigations. Where Threat Dragon helps you *create* a model, ThreatAtlas helps you *populate* it with curated, evidence-based threat intelligence drawn from documented incidents. Use it during the "what can go wrong?" phase to ensure your threat library reflects the actual attacker landscape rather than only theoretical concerns.
+- [OWASP ThreatAtlas](https://owasp.org/www-project-threatatlas/) — Self-hosted, collaborative threat modeling platform with interactive DFDs, a built-in knowledge base (STRIDE, PASTA, LINDDUN, OWASP and MITRE references), mitigation and risk tracking, Jira integration, and a CI/CD security-gate endpoint. Where pytm and Threagile model as code, ThreatAtlas suits organization-wide, multi-team modeling with shared threat libraries.
 - [Threagile](https://threagile.io/) — Agile, YAML-based threat modeling. Takes a YAML model of your architecture and outputs a risk report with data-flow diagrams. Designed for CI integration.
-- [Attack Flow](https://center-for-threat-informed-defense.github.io/attack-flow/) — MITRE CTID project for modeling sequences of adversary actions using ATT&CK techniques. Useful for post-incident and red team threat analysis.
 
 ### Commercial
 
 - [IriusRisk](https://www.iriusrisk.com/) — Automated threat modeling platform with rules-based threat generation from architecture questionnaires. Integrates with Jira for backlog creation.
-- [SD Elements](https://www.securitycompass.com/sdelements/) — Combines threat modeling with security requirements management; generates tasks directly into the development backlog.
 - [Microsoft Threat Modeling Tool](https://aka.ms/threatmodelingtool) — Free from Microsoft; focuses on DFD-based STRIDE analysis. Best suited to Microsoft-stack environments.
+- [SD Elements](https://www.securitycompass.com/sdelements/) — Combines threat modeling with security requirements management; generates tasks directly into the development backlog.
+- [ThreatModeler](https://www.threatmodeler.ai/) — Enterprise threat modeling platform that builds models from diagrams and infrastructure/IaC inputs and maps threats to controls and compliance frameworks.
 
 ---
 
@@ -120,6 +123,7 @@ Traditional threat modeling was a heavyweight, document-driven exercise done onc
 
 - [Threat Modeling Manifesto](https://www.threatmodelingmanifesto.org/)
 - [OWASP Threat Modeling Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html)
-- [OWASP ThreatAtlas](https://github.com/OWASP/ThreatAtlas)
+- [OWASP ThreatAtlas](https://owasp.org/www-project-threatatlas/)
+- [MITRE ATLAS](https://atlas.mitre.org/)
 - [Adam Shostack — Threat Modeling: Designing for Security](https://www.wiley.com/en-us/Threat+Modeling%3A+Designing+for+Security-p-9781118809990)
 - [STRIDE per Element — Microsoft Security Blog](https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)

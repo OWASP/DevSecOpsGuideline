@@ -21,12 +21,14 @@ By correlating signals across these layers — and back to code — CNAPP priori
 ### Threat detection with eBPF
 
 Modern runtime protection uses **eBPF** (extended Berkeley Packet Filter) to attach observers to the Linux kernel without loadable kernel modules, providing:
+
 - Full syscall visibility at near-zero overhead.
 - Process lineage: which parent spawned which child, with what arguments.
 - Network connection tracking: which process opened which socket to which destination.
 - File access: reads/writes to sensitive paths (`/etc/shadow`, credential files, PKI directories).
 
-Falco uses eBPF to apply declarative rules against this stream:
+[Falco](https://falco.org/) (CNCF graduated) uses eBPF (its modern eBPF probe needs no kernel module or per-kernel driver build) to apply declarative rules against this stream:
+
 ```yaml
 # Falco rule: detect shell spawned inside a container
 - rule: Terminal Shell in Container
@@ -57,20 +59,26 @@ spec:
   policyTypes: [Ingress, Egress]
 ```
 
-Then add explicit allow rules for required communication paths only. Use a service mesh (Istio, Linkerd) for mTLS between services and fine-grained L7 policy.
+Then add explicit allow rules for required communication paths only. Use a service mesh (Istio, Linkerd) or Cilium for mTLS between services and fine-grained L7 policy.
+
+Detection alone does not stop an attack in progress. eBPF-based tools such as Tetragon and KubeArmor can also *enforce* at the kernel level (e.g., kill a process or block a file or network operation that violates policy), complementing detect-only engines like Falco.
 
 ### Drift detection
 
 Alert when the running state diverges from the declared, reviewed GitOps state:
+
 - A Kubernetes admission controller prevented a bad deploy — but a manual `kubectl exec` that modifies a running container is drift.
 - IaC defined a security group — but an operator added an inbound rule in the console. CSPM catches this and alerts.
 - Detect file integrity changes inside containers (writes to binary directories, new executables) as indicators of compromise.
+- Collect and alert on Kubernetes audit logs and cloud control-plane logs (CloudTrail, Azure Activity Log, GCP Audit Logs); these show who changed what, and feed CDR correlation.
 
 ### Workload identity
 
 Static secrets embedded in workloads are a persistent attack surface. Use platform-native workload identity instead:
+
 - **AWS IRSA** (IAM Roles for Service Accounts) — Kubernetes pods assume AWS IAM roles via short-lived OIDC tokens; no AWS access keys stored anywhere.
-- **GCP Workload Identity Federation** — analogous for GCP services.
+- **EKS Pod Identity** — the newer AWS alternative to IRSA that avoids per-cluster OIDC provider setup and simplifies cross-account role assumption.
+- **GCP Workload Identity Federation** and **Azure Workload Identity** — analogous for GCP and Azure workloads.
 - **SPIFFE/SPIRE** — standards-based workload identity for cross-cloud and non-cloud workloads; issues short-lived X.509 SVIDs.
 
 ## Closing the loop
@@ -112,15 +120,20 @@ Runtime findings should not stay in operations — feed them back into [Vulnerab
 
 ### Open-source
 
-- [Falco](https://falco.org/) — CNCF runtime security engine that detects anomalous behavior using eBPF/kernel events; extensive rule library and active community; integrates with SIEM, Slack, and SOAR platforms.
+- [Cilium](https://cilium.io/) — eBPF-based networking and security for Kubernetes; provides network policy enforcement at L3/L4/L7, Hubble observability, transparent node-to-node encryption (WireGuard/IPsec), and SPIFFE-based mutual authentication.
+- [Falco](https://falco.org/) — CNCF graduated runtime security engine that detects anomalous behavior using eBPF/kernel events; extensive rule library and active community; integrates with SIEM, Slack, and SOAR platforms.
 - [Kubescape](https://github.com/kubescape/kubescape) — Kubernetes posture management and compliance scanning against NSA/CISA, CIS, and MITRE ATT&CK frameworks; developer-friendly CLI and IDE integrations.
+- [Tetragon](https://github.com/cilium/tetragon) — eBPF-based security observability and runtime enforcement from the Cilium project; tracks process, file, and network events and can block violating actions in-kernel.
+- [Tracee](https://github.com/aquasecurity/tracee) — Aqua Security's eBPF runtime security and forensics tool; detects suspicious behavior with signatures and captures artifacts for investigation.
 - [Trivy Operator](https://github.com/aquasecurity/trivy-operator) — Continuous vulnerability and misconfiguration scanning inside clusters; generates VulnerabilityReport and ConfigAuditReport CRDs that integrate with dashboards.
 - [Wazuh](https://wazuh.com/) — Open-source security platform with threat detection, file integrity monitoring, and SIEM-like capabilities; useful for VM workloads alongside container-focused tools.
-- [Cilium](https://cilium.io/) — eBPF-based networking and security for Kubernetes; provides network policy enforcement at L3/L4/L7, hubble observability, and transparent mTLS encryption.
 
 ### Commercial
 
-- [Prisma Cloud](https://www.paloaltonetworks.com/prisma/cloud) — Full CNAPP covering CSPM, CWPP, CIEM, and code security in a single platform; strong compliance reporting for regulated industries.
+- [Aqua Security](https://www.aquasec.com/) — CNAPP spanning code to cloud to runtime, with eBPF-based workload protection (Tracee-based) and strong Kubernetes and serverless coverage.
+- [CrowdStrike Falcon Cloud Security](https://www.crowdstrike.com/platform/cloud-security/) — CNAPP combining agent-based runtime protection with agentless posture; strong where CrowdStrike is already the endpoint platform.
+- [Orca Security](https://orca.security/) — Agentless-first CNAPP using SideScanning for posture, vulnerability, and data risk across clouds, with an optional sensor for runtime.
+- [Prisma Cloud](https://www.paloaltonetworks.com/prisma/cloud) — Full CNAPP covering CSPM, CWPP, CIEM, and code security in a single platform; strong compliance reporting for regulated industries. Palo Alto Networks is consolidating it with its CDR capabilities into Cortex Cloud.
 - [Sysdig Secure](https://sysdig.com/products/secure/) — Runtime security and CNAPP built on Falco; adds policy management, incident response, and CSPM to open-source Falco.
 - [Wiz](https://www.wiz.io/) — Agentless CNAPP for cloud posture and risk prioritization; graph-based attack path analysis that connects misconfiguration to blast radius without requiring agents.
 

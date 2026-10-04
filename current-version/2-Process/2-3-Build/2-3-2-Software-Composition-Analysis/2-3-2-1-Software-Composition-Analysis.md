@@ -24,7 +24,7 @@ Log4Shell is the clearest argument for continuous SCA with full transitive depen
 
 A direct dependency is a package your team explicitly chose. A transitive dependency is everything that package depends on — and everything *those* packages depend on. The depth can be surprising:
 
-```
+```text
 your-app
 └── web-framework@4.2.0          (direct)
     └── http-client@2.1.0        (transitive, depth 1)
@@ -38,7 +38,7 @@ In this example, your application never imported Log4j, but it ships inside the 
 
 SCA tools and SBOMs use **Package URLs (PURLs)** to uniquely identify components across ecosystems:
 
-```
+```text
 pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1
 pkg:npm/%40angular/core@16.0.0
 pkg:pypi/requests@2.31.0
@@ -52,12 +52,13 @@ PURLs enable unambiguous cross-tool correlation: when an SBOM, a scanner, and a 
 Most dependency CVEs are never actually exploitable in a given application. Standard SCA flags every known CVE regardless of whether the vulnerable code is called. **Reachability analysis** goes further: it builds a call graph of your application code and determines whether execution can actually reach the vulnerable function.
 
 How it works:
+
 1. Identify the vulnerable function(s) named in the CVE advisory (e.g., `JndiLookup.lookup()` in Log4Shell).
 2. Build a call graph from the application's entry points (API handlers, message consumers, scheduled jobs).
 3. Determine if any path in the call graph reaches the vulnerable function.
 4. If no path reaches it — even though the package is present — the vulnerability is **not reachable** and is deprioritized.
 
-Tools like Endor Labs, Snyk, and Semgrep Supply Chain can reduce actionable SCA findings by 60–85% for typical Java and JavaScript applications using reachability analysis. This dramatically reduces alert fatigue and lets teams focus on genuine risk.
+Tools like Endor Labs, Snyk, and Semgrep Supply Chain can reduce actionable SCA findings substantially — vendors commonly report 60–85% for typical Java and JavaScript applications, though results vary with language support and how well the call graph can be resolved (dynamic dispatch and reflection limit accuracy). This reduces alert fatigue and lets teams focus on genuine risk. Treat "not reachable" as a prioritization signal, not proof of safety: code paths change, so re-evaluate on each release.
 
 ## VEX workflow
 
@@ -71,10 +72,11 @@ Vulnerability Exploitability eXchange (VEX) is a machine-readable statement decl
 | `under_investigation` | Impact assessment is in progress. |
 
 **Step-by-step VEX workflow:**
+
 1. SCA scanner flags CVE-YYYY-NNNN in a dependency.
 2. Developer or security engineer investigates: is the vulnerable code path reachable? Is the affected feature enabled?
 3. If not reachable: create a `not_affected` VEX statement with justification (e.g., "vulnerable HTTP server module never initialized; application uses embedded server").
-4. Attach the VEX document to the SBOM (CycloneDX supports inline VEX; OpenVEX is a standalone format).
+4. Attach or publish the VEX document alongside the SBOM. VEX can be expressed in CycloneDX (inline in the SBOM or as a standalone VEX document), [OpenVEX](https://github.com/openvex/spec), or CSAF; the statuses above follow the OpenVEX/CSAF vocabulary, and CycloneDX uses equivalent states (`not_affected`, `exploitable`, `resolved`, `in_triage`).
 5. Downstream consumers — customers, operators, compliance teams — consume VEX and discard irrelevant findings automatically.
 6. If `under_investigation`: set a resolution deadline (e.g., 5 business days) and assign an owner.
 
@@ -103,11 +105,13 @@ Apply the block policy to pull requests (new findings only, vs. baseline). Apply
 ## SCA in monorepos
 
 Monorepos introduce additional complexity:
+
 - Multiple language ecosystems in one repository (Go services, Python scripts, Node frontends).
 - Shared internal libraries with their own dependency trees.
 - Different release cadences per service within the same repo.
 
 Best practices for monorepo SCA:
+
 - Configure the scanner to detect package manifests recursively (`--recursive` in most tools).
 - Tag findings with the service or module path so ownership is clear.
 - Generate per-service SBOMs, not a single monorepo SBOM — downstream consumers need component scope, not the entire monorepo inventory.
@@ -118,17 +122,21 @@ Best practices for monorepo SCA:
 ```yaml
 # Example: Grype scan in GitHub Actions
 - name: Scan dependencies with Grype
-  uses: anchore/scan-action@v3
+  id: grype
+  uses: anchore/scan-action@v7
   with:
     path: "."
     fail-build: true
     severity-cutoff: high
     output-format: sarif
 - name: Upload SARIF results
-  uses: github/codeql-action/upload-sarif@v3
+  if: always()   # upload findings even when the scan step fails the build
+  uses: github/codeql-action/upload-sarif@v4
   with:
-    sarif_file: results.sarif
+    sarif_file: ${{ steps.grype.outputs.sarif }}
 ```
+
+Pin third-party actions to commit SHAs rather than tags (see [CI/CD Pipeline Security](../2-3-6-Supply-Chain-Security/2-3-6-3-CICD-Pipeline-Security.md)); the tags above are shown for readability.
 
 - **At every dependency change** (lock file update, PR) — catch new vulnerabilities before they merge.
 - **On a schedule** — new CVEs are disclosed daily against existing dependencies; nightly scans catch what wasn't vulnerable at merge time.
@@ -145,6 +153,7 @@ SCA is tightly linked to the [SBOM](../2-3-6-Supply-Chain-Security/2-3-6-1-SBOM.
 - **No license policy** — finding GPL code in a commercial product after it ships is expensive. Define an approved-license list and enforce it as a gate.
 - **Ignoring transitive dependencies** — many exploited vulnerabilities are in transitive, not direct, dependencies. Ensure your SCA tool resolves the full graph.
 - **Alert fatigue from untuned gates** — blocking on every medium CVE in a transitive dependency kills developer trust quickly. Tune to reachable, high/critical findings first.
+- **Trusting a vulnerability database alone for malicious packages** — CVE feeds track vulnerabilities, not malware. Add malicious-package detection (OSV/OpenSSF malicious-packages data, GuardDog, Socket) and consider a dependency cooldown (delay adopting versions published in the last few days) to avoid freshly published, compromised releases.
 - **Not consuming advisories from maintainers** — NVD lags; maintainer advisories (GitHub Advisory Database, npm advisories, PyPI) often arrive days earlier. Use tools that consume both.
 - **No VEX program** — without VEX, every `not_affected` finding must be manually triaged each time it resurfaces. VEX turns that into a one-time documented decision.
 
@@ -154,7 +163,7 @@ SCA is tightly linked to the [SBOM](../2-3-6-Supply-Chain-Security/2-3-6-1-SBOM.
 
 **Intermediate** — Gate pull requests on new high/critical findings. Enforce a license allowlist. Schedule nightly scans of existing artifacts. Feed results into a central tracker (Dependency-Track). Produce SBOMs per service.
 
-**Advanced** — Add reachability analysis to cut noise by 60–85%. Produce and publish VEX statements per release. Continuously monitor SBOMs in Dependency-Track with real-time CVE alerting. Track mean time to remediate by severity and measure the exploitable-to-total-findings ratio.
+**Advanced** — Add reachability analysis to cut noise substantially. Produce and publish VEX statements per release. Continuously monitor SBOMs in Dependency-Track with real-time CVE alerting. Track mean time to remediate by severity and measure the exploitable-to-total-findings ratio.
 
 ## Metrics and KPIs
 
@@ -176,8 +185,11 @@ SCA is tightly linked to the [SBOM](../2-3-6-Supply-Chain-Security/2-3-6-1-SBOM.
 
 - [cdxgen](https://github.com/CycloneDX/cdxgen) — Generates CycloneDX SBOMs for many ecosystems (Node, Python, Java, Go, etc.); the easiest way to produce an SBOM that feeds into SCA tooling. Broad language support makes it ideal for polyglot monorepos.
 - [Grype](https://github.com/anchore/grype) — Vulnerability scanner for container images and filesystems; fast, pairs naturally with Syft for SBOM-first scanning. Best for teams wanting a lightweight, scriptable CLI scanner.
+- [GuardDog](https://github.com/DataDog/guarddog) — CLI from Datadog that scans PyPI, npm, Go, and other packages for malicious behavior using heuristics and Semgrep rules; complements CVE-based SCA.
+- [OSV-Scanner](https://github.com/google/osv-scanner) — Google's scanner backed by the OSV.dev database; scans lockfiles, SBOMs, and container images, supports guided remediation and call-analysis for some ecosystems. Exit code `1` means findings were found (see [Security Gates](../2-3-5-Security-Gates.md)).
 - [OWASP Dependency-Check](https://owasp.org/www-project-dependency-check/) — Long-established CVE scanner across many languages; easy to add to Maven, Gradle, or CI pipelines. Best for Java/JVM-heavy environments.
 - [OWASP Dependency-Track](https://dependencytrack.org/) — Continuous SCA platform that ingests SBOMs and monitors them for new vulnerabilities; best-in-class for SBOM-centric operations and VEX management. The reference platform for SBOM-driven SCA at scale.
+- [Renovate](https://github.com/renovatebot/renovate) — Automated dependency update PRs across many ecosystems with configurable grouping and minimum release age; pairs with a scanner so fixes arrive as reviewable PRs.
 - [Trivy](https://github.com/aquasecurity/trivy) — All-in-one scanner for dependencies, images, and IaC; excellent breadth and ease of setup for teams wanting a single tool. Falls short on reachability analysis compared to commercial alternatives.
 
 ### Commercial
@@ -185,6 +197,7 @@ SCA is tightly linked to the [SBOM](../2-3-6-Supply-Chain-Security/2-3-6-1-SBOM.
 - [Endor Labs](https://www.endorlabs.com/) — SCA with call-graph reachability; dramatically reduces noise by confirming which vulnerable functions are actually reached. Best for large Java/JavaScript organizations with high false-positive fatigue.
 - [Mend (formerly WhiteSource)](https://www.mend.io/) — Comprehensive open-source dependency and license risk management with broad language support. Strong license compliance workflow for legal teams.
 - [Snyk Open Source](https://snyk.io/product/open-source-security-management/) — Developer-first dependency vulnerability and license scanning with fix PR automation; strong for developer adoption. Best-in-class developer experience; reachability available for select ecosystems.
+- [Socket](https://socket.dev/) — Detects malicious and risky behavior in open-source packages (install scripts, obfuscation, network access) in addition to known vulnerabilities, with reachability analysis for select ecosystems. Best for teams concerned about supply-chain attacks such as typosquatting and compromised maintainers.
 - [Sonatype Nexus Lifecycle](https://www.sonatype.com/products/open-source-security-dependency-management) — Component intelligence integrated into the artifact repository; blocks vulnerable components before they enter the build. Best for organizations using Nexus as their artifact registry.
 
 ---

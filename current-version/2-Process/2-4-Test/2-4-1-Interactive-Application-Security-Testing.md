@@ -74,8 +74,8 @@ IAST coverage varies by vendor and runtime. Evaluate agents against your stack b
 | Java / Kotlin (JVM) | Excellent | Most mature; deep framework support (Spring, Struts, Jakarta EE) |
 | .NET / .NET Core | Excellent | Good vendor support; profiler API enables deep instrumentation |
 | Node.js | Good | Hook-based; coverage varies by framework (Express, Fastify) |
-| Python | Moderate | Middleware-based; less deep taint tracking than JVM |
-| Go | Limited | No JVM/profiler API; typically proxy-based only |
+| Python | Moderate | Middleware/instrumentation-based; less deep taint tracking than JVM |
+| Go | Limited | No JVM/profiler API; few in-process agents exist (e.g., Contrast's Go agent), otherwise typically proxy-based |
 | Ruby | Limited | Available from some vendors; less mature |
 
 If your primary stack is Go or Ruby, IAST may not deliver the same depth as on JVM/.NET — supplement with strong SAST and DAST coverage.
@@ -85,7 +85,7 @@ If your primary stack is Go or Ruby, IAST may not deliver the same depth as on J
 Most IAST agents are priced per instrumented application instance (per agent process). Costs to model:
 
 - **Per-instance licensing** — if you run IAST in a multi-replica Kubernetes deployment, each pod with the agent counts. For large-scale testing, this adds up.
-- **Developer-tier / community editions** — some vendors offer free single-application tiers (e.g., Contrast Community Edition) to evaluate before scaling.
+- **Developer-tier / community editions** — some vendors offer free single-application tiers (e.g., Contrast Community Edition) to evaluate before scaling. These are free but proprietary, not open source.
 - **Test-only deployment** — containing IAST to test/staging environments (not production) limits licensing cost while still covering meaningful attack surface.
 
 Before selecting a vendor, clarify: per-agent vs per-application pricing, whether replicas count separately, and whether findings from ephemeral environments (PR preview deployments) are included.
@@ -112,7 +112,8 @@ curl -H "API-Key: $CONTRAST_API_KEY" \
 Run IAST in QA/test environments alongside automated functional and integration tests, and feed its findings into [Security Gates](../2-3-Build/2-3-5-Security-Gates.md) and the central [vulnerability dashboard](../../3-Governance/3-3-Reporting/3-3-2-Central-vulnerability-management-dashboard.md). Pair it with [DAST](2-4-2-Dynamic-Application-Security-Testing.md) for broader runtime coverage.
 
 A practical pipeline integration:
-```
+
+```text
 build → deploy to test env (IAST agent active) → run functional/integration tests → IAST findings exported → gate check → promote or block
 ```
 
@@ -143,16 +144,18 @@ build → deploy to test env (IAST agent active) → run functional/integration 
 
 ## Tools[^1]
 
-### Open-source
+### Free tier
 
-- [Contrast Community Edition](https://www.contrastsecurity.com/contrast-community-edition) — Free IAST/runtime protection for a single Java or .NET application; good starting point for evaluating agent-based approaches without licensing cost.
+- [Contrast Community Edition](https://www.contrastsecurity.com/contrast-community-edition) — Free (proprietary) IAST/runtime protection limited to a single application; good starting point for evaluating agent-based approaches without licensing cost. Not open source; there is no mature open-source IAST agent.
 
 ### Commercial
 
+- [Black Duck Seeker](https://www.blackduck.com/) — Formerly Synopsys Seeker (Black Duck became an independent company in 2024); strong Java/.NET support with compliance reporting for regulated industries; combines with Black Duck SCA for combined SCA+IAST coverage.
 - [Checkmarx](https://checkmarx.com/) — Application security platform with interactive testing capabilities; strong if you already use Checkmarx SAST for unified reporting and a single-vendor AppSec suite.
 - [Contrast Assess](https://www.contrastsecurity.com/) — Instrumentation-based IAST for multiple runtimes; the most mature agent ecosystem with broad language support and runtime protection (RASP) available on the same agent.
+- [Datadog Code Security (IAST)](https://www.datadoghq.com/product/code-security/) — Runtime IAST delivered through the Datadog tracing library already deployed for APM; low extra rollout effort for teams on Datadog.
 - [HCL AppScan](https://www.hcl-software.com/appscan) — Application security suite including interactive testing; well-suited for enterprises with existing HCL tooling and compliance reporting needs.
-- [Seeker (Synopsys)](https://www.synopsys.com/software-integrity/security-testing/interactive-application-security-testing.html) — Strong Java/.NET support with compliance reporting for regulated industries; integrates with Synopsys Black Duck for combined SCA+IAST coverage.
+- [Invicti](https://www.invicti.com/) — IAST sensor that complements its proof-based DAST, so DAST findings can be confirmed with code-level detail.
 
 ---
 
