@@ -127,6 +127,7 @@ Reward levels vary significantly by industry and organization. Financial service
 ### Commercial
 
 - [Bugcrowd](https://www.bugcrowd.com/) — Crowdsourced bug bounty and VDP platform; managed triage services available; strong researcher community across web, mobile, and IoT.
+- [CVD Portal](https://cvdportal.com/) — European coordinated vulnerability disclosure and CRA compliance platform; structured intake, single point of contact, and Article 14 authority reporting.
 - [HackerOne](https://www.hackerone.com/) — Vulnerability disclosure and bug bounty platform; largest researcher community; strong tooling for program management, SLA tracking, and integrations with Jira and Slack.
 - [Intigriti](https://www.intigriti.com/) — European-based bug bounty and VDP platform; GDPR-aligned; strong European researcher community; growing global presence.
 - [Synack](https://www.synack.com/) — Managed crowdsourced security with a vetted researcher pool; higher cost, higher signal-to-noise ratio; popular with financial services and government.
