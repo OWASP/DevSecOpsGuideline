@@ -2,26 +2,56 @@
 
 Deployment moves a released artifact into a running environment. It is the last gate before software is exposed to real traffic, and it is where supply-chain verification, environment configuration, and runtime access converge. Secure deployment ensures that **only verified artifacts** reach production, that they run with **least privilege**, and that the blast radius of any problem is contained.
 
-## Verify before you run: admission control
+## Verify before you run: admission control and deployment gates
 
-The deploy stage is where signing and provenance pay off. Do not allow an artifact to run unless you can cryptographically verify where it came from and that it passed required checks. Enforce policy at admission so that:
+The deploy stage is where signing and provenance pay off. Do not allow an artifact to run unless you can cryptographically verify where it came from and that it passed required checks. Enforce verification across both deployment pipelines and admission control so that:
 
 - Only **signed** artifacts with valid signatures are admitted (see [Artifact Signing and Provenance](../2-3-Build/2-3-6-Supply-Chain-Security/2-3-6-2-Artifact-Signing-and-Provenance.md)).
-- Only artifacts with acceptable **provenance** (SLSA level, build workflow, source repository) run in production.
-- Images that fail policy — unsigned, from untrusted registries, or containing unresolved critical CVEs — are **blocked at admission**, not merely flagged in a dashboard.
+- Only artifacts with verifiable, policy-compliant **provenance** (SLSA level, trusted builder identity, and approved source repository revision) run in production.
+- Verification targets the **exact immutable artifact** identified by its cryptographic digest (`image@sha256:...`), preventing time-of-check to time-of-use (TOCTOU) tampering associated with mutable tags.
+- Verification **fails closed**: if provenance is missing, invalid, or violates policy, deployment is aborted in the pipeline and blocked at admission, never allowed to proceed silently or fail open.
 
-Kubernetes admission controllers (Kyverno, OPA/Gatekeeper with Ratify, Sigstore policy-controller) enforce these rules as code, consistently and automatically. Kubernetes' built-in ValidatingAdmissionPolicy (CEL, GA since v1.30) covers simple non-image rules without an extra controller. Signatures from both cosign and Notation can be verified at admission.
+### Pre-deployment verification in deployment pipelines
+
+Before applying deployment manifests or triggering workload rollouts, the deployment pipeline must verify the immutable artifact digest against trusted builder and source identities. The verification step must fail closed on any policy violation:
+
+```bash
+# Verify provenance for the exact immutable digest before deploying.
+# Fails closed (non-zero exit code) if provenance is missing, invalid, or violates policy.
+slsa-verifier verify-image "myregistry.io/myapp@sha256:${IMAGE_DIGEST}" \
+  --source-uri "github.com/myorg/myrepo" \
+  --builder-id "https://github.com/slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@refs/tags/v2.1.0" || {
+    echo "ERROR: Provenance verification failed against trusted builder and source. Aborting deployment." >&2
+    exit 1
+}
+
+# Alternatively, verify SLSA provenance attestations using cosign:
+cosign verify-attestation \
+  --type slsaprovenance1 \
+  --certificate-identity-regexp "^https://github.com/myorg/myrepo/\.github/workflows/release\.yml@" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  "myregistry.io/myapp@sha256:${IMAGE_DIGEST}" || {
+    echo "ERROR: Provenance attestation missing or invalid. Aborting deployment." >&2
+    exit 1
+}
+```
+
+### Enforcing provenance at admission control
+
+Kubernetes admission controllers (Kyverno, OPA/Gatekeeper with Ratify, Sigstore policy-controller) enforce these rules as code at runtime, providing an automated backstop if pipeline checks are bypassed. Kubernetes' built-in ValidatingAdmissionPolicy (CEL, GA since v1.30) covers simple non-image rules without an extra controller. Signatures from both cosign and Notation can be verified at admission.
+
+Configure admission policies to inspect both the cryptographic signature and the SLSA provenance attestation, enforcing `validationFailureAction: Enforce` so any unverified or non-compliant artifact fails closed at cluster entry:
 
 ```yaml
-# Kyverno policy: require all images to be signed with cosign
+# Kyverno policy: require verified SLSA provenance attestation and fail closed
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: require-image-signature
+  name: require-image-provenance
 spec:
   validationFailureAction: Enforce   # newer Kyverno releases move this to a per-rule failureAction
   rules:
-    - name: check-image-signature
+    - name: check-image-provenance
       match:
         resources:
           kinds: [Pod]
@@ -30,8 +60,15 @@ spec:
           attestors:
             - entries:
                 - keyless:
-                    subject: "https://github.com/myorg/*"
                     issuer: "https://token.actions.githubusercontent.com"
+                    subject: "https://github.com/myorg/myrepo/.github/workflows/release.yml@refs/tags/*"
+          attestations:
+            - predicateType: https://slsa.dev/provenance/v1
+              conditions:
+                - all:
+                    - key: "{{ builder.id }}"
+                      operator: Equals
+                      value: "https://github.com/slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@refs/tags/v2.1.0"
 ```
 
 ## GitOps and declarative deployment
@@ -93,6 +130,7 @@ See [Secrets Management](../2-2-Develop/2-2-1-Pre-commit/2-2-1-2-Secrets-Managem
 - **Manual deployments with shared credentials** — no audit trail, broad permissions, and credentials that are never rotated. Replace with automated pipelines and workload identity.
 - **`latest` tags in production** — a mutable tag means any registry push can change what runs in production. Use digest-pinned references.
 - **Admission control in audit-only mode forever** — many teams set admission controllers to warn but never enforce, defeating the purpose. Set a deadline to switch to enforcement.
+- **Failing open on missing or unverified provenance** — allowing deployment when provenance is absent, timed out, or unverified. Verification must fail closed: if an artifact cannot cryptographically prove its source and builder identity against policy, deployment must be blocked.
 - **Secrets in environment variables or build arguments** — environment variables leak into logs, crash dumps, and `/proc` on Linux. Use mounted secret files or vault agent injection instead.
 - **No rollback plan** — deployment without a tested rollback plan is high-risk. Verify rollback in staging before every major production deploy.
 

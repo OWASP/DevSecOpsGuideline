@@ -80,6 +80,36 @@ permissions:
 
 Attestations on their own give Build Level 2; Level 3 requires running the build in a reusable workflow so the build is isolated from the caller's workflow (see GitHub's guidance on achieving SLSA v1 Build Level 3).
 
+### Generating and publishing provenance with Docker Buildx in GitHub Actions
+
+For container builds using BuildKit and `docker/build-push-action` (v4+), provenance attestations can be generated during build and attached directly to the image index in the registry:
+
+```yaml
+steps:
+  - name: Set up Docker Buildx
+    uses: docker/setup-buildx-action@v3
+
+  - name: Log in to container registry
+    uses: docker/login-action@v3
+    with:
+      registry: myregistry.io
+      username: ${{ secrets.REGISTRY_USER }}
+      password: ${{ secrets.REGISTRY_TOKEN }}
+
+  - name: Build and push container image with provenance
+    id: build
+    uses: docker/build-push-action@v6
+    with:
+      context: .
+      push: true
+      provenance: mode=max
+      tags: myregistry.io/myimage:${{ github.sha }}
+```
+
+- **Set `provenance: mode=max`** — while `docker/build-push-action` defaults to `mode=min` for private repositories, explicitly setting `mode=max` generates comprehensive SLSA provenance capturing the build environment, source materials, invocation parameters, and dependencies.
+- **Push directly to registry** — attestations are stored as OCI attestation manifests attached to the root image index. Because local container engine image stores do not support loading images with attestation manifests, the image must be pushed directly (`push: true`) rather than exported locally (`load: true`).
+- **Protect secrets from provenance leakage** — `mode=max` records build arguments by default. Never pass credentials or sensitive tokens in `build-args`; pass them using BuildKit secret mounts (`--mount=type=secret` or the action's `secrets` input) so sensitive data is not exposed in published provenance metadata.
+
 ## Verify before you trust
 
 Producing signatures and provenance only helps if you **verify** them downstream. Verification should be non-optional:
@@ -88,11 +118,11 @@ Producing signatures and provenance only helps if you **verify** them downstream
 - **At admission/deploy** — only signed, policy-compliant artifacts with acceptable provenance run in the cluster. Use an admission controller to enforce this automatically.
 
 ```bash
-# Verify a container image's signature and provenance
+# Verify a container image's signature by immutable digest
 cosign verify \
   --certificate-identity-regexp "https://github.com/myorg/myrepo/.github/workflows/release.yml" \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-  myregistry/myimage:v1.2.3
+  myregistry/myimage@sha256:<digest>
 
 # Verify SLSA provenance attestation. Use --type slsaprovenance for v0.2 predicates (as emitted by
 # the SLSA GitHub generator) or --type slsaprovenance1 for v1.x predicates (e.g., GitHub artifact attestations)
