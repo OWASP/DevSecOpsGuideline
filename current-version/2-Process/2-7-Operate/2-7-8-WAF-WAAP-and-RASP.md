@@ -125,6 +125,7 @@ IAST agents and RASP agents are often the same technology in different modes; se
 - [AWS WAF](https://aws.amazon.com/waf/) — Managed WAF for CloudFront, ALB, and API Gateway with managed rule groups and bot control.
 - [Cloudflare WAF](https://www.cloudflare.com/application-services/products/waf/) — Edge WAF with managed rules, API Shield, and bot management.
 - [Contrast Protect](https://www.contrastsecurity.com/) — Agent-based RASP built on the same instrumentation as Contrast's IAST.
+- [EyalSec es-python](https://eyalsec.com/) — RASP for Python services on Linux; checks each SQL query, shell command, deserialization and file path as the program performs it, and in Report and Raise mode gives the program an error at that line so the attack fails instead of only being logged.
 - [F5 Distributed Cloud WAAP](https://www.f5.com/cloud/products/web-app-and-api-protection) — WAAP across multi-cloud and edge, including bot and API protection.
 - [Imperva](https://www.imperva.com/) — WAF, API security, bot management, and RASP.
 

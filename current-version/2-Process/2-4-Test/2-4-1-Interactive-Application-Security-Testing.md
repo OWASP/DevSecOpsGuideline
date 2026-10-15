@@ -154,6 +154,7 @@ build → deploy to test env (IAST agent active) → run functional/integration 
 - [Checkmarx](https://checkmarx.com/) — Application security platform with interactive testing capabilities; strong if you already use Checkmarx SAST for unified reporting and a single-vendor AppSec suite.
 - [Contrast Assess](https://www.contrastsecurity.com/) — Instrumentation-based IAST for multiple runtimes; the most mature agent ecosystem with broad language support and runtime protection (RASP) available on the same agent.
 - [Datadog Code Security (IAST)](https://www.datadoghq.com/product/code-security/) — Runtime IAST delivered through the Datadog tracing library already deployed for APM; low extra rollout effort for teams on Datadog.
+- [EyalSec es-python](https://eyalsec.com/) — Python runtime for Linux (Python 3.9 to 3.14) that runs an existing app or its test suite unchanged and follows untrusted data from requests, files and the environment to SQL queries, shell commands, deserialization and file paths; each finding names the operation, the line of code and where the data came in.
 - [HCL AppScan](https://www.hcl-software.com/appscan) — Application security suite including interactive testing; well-suited for enterprises with existing HCL tooling and compliance reporting needs.
 - [Invicti](https://www.invicti.com/) — IAST sensor that complements its proof-based DAST, so DAST findings can be confirmed with code-level detail.
 
