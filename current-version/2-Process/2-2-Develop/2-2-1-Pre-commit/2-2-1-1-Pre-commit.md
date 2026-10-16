@@ -12,10 +12,10 @@ flowchart LR
     LR -- git push --> RR[Remote repo]
 
     style ST fill:#fff176,stroke:#333
-    style PC fill:#4a90e2,stroke:#333,color:#fff
+    style PC fill:#4a90e2,stroke:#333
     style HOOKS fill:#e0e0e0,stroke:#555,stroke-dasharray:4 3
     style LR fill:#aed581,stroke:#333
-    style RR fill:#e8713a,stroke:#333,color:#fff
+    style RR fill:#e8713a,stroke:#333
 ```
 
 ## What pre-commit hooks are
