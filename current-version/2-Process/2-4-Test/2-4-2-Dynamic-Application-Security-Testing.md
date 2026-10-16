@@ -2,6 +2,15 @@
 
 Dynamic Application Security Testing examines a **running application from the outside** — a black-box technique that sends crafted requests and observes responses, exactly as an attacker would. Because it tests the deployed, integrated application, DAST finds vulnerabilities that only appear at runtime: configuration issues, authentication and session flaws, and problems arising from how components interact.
 
+```mermaid
+sequenceDiagram
+    participant D as DAST scanner
+    participant T as Target application
+    D->>T: 1. Request with SQL payload: userId="select * from table"
+    T-->>D: 2. Response "SQL.Error unknown table..."
+    Note over D: Error signature suggests a<br/>possible injection point — verify
+```
+
 ## What DAST finds
 
 - Injection flaws (SQL, command, XSS) observable in responses

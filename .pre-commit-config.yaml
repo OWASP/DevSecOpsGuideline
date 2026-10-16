@@ -37,6 +37,8 @@ repos:
         name: "general | check XML files"
       - id: check-yaml
         name: "general | check YAML files"
+        # mkdocs.yml uses the !!python/name tag for the Mermaid superfence
+        args: [--unsafe]
       - id: end-of-file-fixer
         name: "general | fix end of file"
       - id: forbid-new-submodules

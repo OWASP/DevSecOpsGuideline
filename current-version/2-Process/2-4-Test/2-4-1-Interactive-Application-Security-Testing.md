@@ -17,6 +17,15 @@ The combination of inside-view (like SAST) and runtime-view (like DAST) is what 
 
 ## How it works
 
+```mermaid
+flowchart LR
+    EXT([External request]) --> APP
+    subgraph WAS["Web application server"]
+        APP[Target application] -- "Analyze stack and report<br/>back dangerous patterns" --> AGENT[IAST agent]
+    end
+    AGENT -- Potential vulnerability --> CONSOLE[IAST console]
+```
+
 An IAST agent is loaded into the application runtime — as a Java agent (`-javaagent`), a .NET profiler, a Node.js hook, or a Python middleware. From there it:
 
 1. **Instruments** method calls, framework hooks, and I/O operations at runtime.

@@ -2,6 +2,14 @@
 
 Static Application Security Testing analyzes an application's **source code, bytecode, or binaries without executing it** — a white-box technique that examines the code from the inside. Because it runs early (in the IDE, at pre-commit, and in CI) and needs no running application, SAST is a cornerstone of shift-left security.
 
+```mermaid
+sequenceDiagram
+    participant S as SAST scanner
+    participant C as Application<br/>source code / bytecode / binaries
+    S->>C: Query for dangerous patterns
+    C-->>S: Potential vulnerability
+```
+
 ## How SAST works mechanically
 
 SAST tools use one or more of these techniques depending on their depth and language support:

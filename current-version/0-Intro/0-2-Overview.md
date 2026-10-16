@@ -25,6 +25,63 @@ A reasonable progression of controls to introduce:
 - **Compliance checks** — continuously verify controls against policy and regulation using policy-as-code tools so compliance state is always known, not discovered at audit time.
 - **AI-assisted development guardrails** — apply the same scanning gates to AI-generated code, restrict what coding agents and MCP servers can access, and verify suggested dependencies. See [IDE and AI-Assisted Development Security](../2-Process/2-2-Develop/2-2-2-IDE-and-AI-assisted-development.md).
 
+## The secure pipeline at a glance
+
+The diagram below shows how those controls fit together across an application pipeline and an infrastructure pipeline. Every scanner reports into a central vulnerability management platform, and scanning does not stop at deployment — registries, staging, and production are scanned continuously.
+
+```mermaid
+flowchart LR
+    subgraph APP["Application pipeline"]
+        subgraph APPCI["CI"]
+            A0[(Git<br/>AppCode)] --> A1[Pipeline init] --> A2[Secret<br/>scanning] --> A3[SAST] --> A4[SCA] --> A5[Container<br/>scanning]
+        end
+        subgraph APPCD["CD"]
+            A6[Deploy<br/>staging] --> A7[IAST] --> A8[DAST] -- No vulnerability --> A9[Deploy<br/>prod]
+        end
+        A5 -- "No vulnerability:<br/>push image" --> REG[(Container<br/>registry)] -- Pull image --> A6
+    end
+
+    subgraph INFRA["Infrastructure pipeline"]
+        subgraph INFCI["CI"]
+            I0[(Git<br/>InfraCode)] --> I1[Pipeline init] --> I2[Secret<br/>scanning] --> I3[IaC<br/>scanning]
+        end
+        subgraph INFCD["CD"]
+            I4[Deploy<br/>staging] --> I5[Infra<br/>scanning] -- No vulnerability --> I6[Deploy<br/>prod]
+        end
+        I3 -- No issue --> I4
+    end
+
+    subgraph ENV["Environments"]
+        STG((Staging))
+        PRD((Production))
+        PRD --> RT[Runtime<br/>security]
+        PRD --> CSI[Continuous<br/>infra scanning]
+    end
+
+    CVM[["Central Vulnerability Management"]]
+
+    A6 & I4 --> STG
+    A9 & I6 --> PRD
+    A8 -. Scan staging .-> STG
+    I5 -. Scan infra .-> STG
+
+    APPCI & APPCD & INFCI & INFCD -. Findings .-> CVM
+    REG -. Continuous<br/>image scanning .-> CVM
+    RT & CSI -. Findings .-> CVM
+
+    style CVM fill:#f5f5f5,stroke:#333,stroke-width:2px
+    style REG fill:#fde9d9,stroke:#e8713a
+    style STG fill:#fde9d9,stroke:#e8713a
+    style PRD fill:#fde9d9,stroke:#e8713a
+```
+
+Key takeaways from the picture:
+
+- **Two pipelines, same discipline** — infrastructure code gets secret scanning and IaC scanning just as application code gets SAST and SCA.
+- **Gates between CI and CD** — images and infrastructure only move to staging when the build-time scans pass, and only move to production when the test-time scans (IAST, DAST, infra scanning) pass.
+- **One place for findings** — every tool feeds a [central vulnerability management dashboard](../3-Governance/3-3-Reporting/3-3-2-Central-vulnerability-management-dashboard.md) so risk can be prioritized across sources.
+- **Scanning continues after deploy** — the registry, staging, and production are re-scanned as new CVEs are published, and runtime security watches production for active threats.
+
 ## A recommended introduction order
 
 | Priority | Control | Why first |
