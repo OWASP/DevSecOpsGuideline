@@ -8,7 +8,7 @@ sequenceDiagram
     participant T as Target application
     D->>T: 1. Request with SQL payload: userId="select * from table"
     T-->>D: 2. Response "SQL.Error unknown table..."
-    Note over D: Error signature confirms<br/>an injection point
+    Note over D: Error signature suggests a<br/>possible injection point — verify
 ```
 
 ## What DAST finds
