@@ -88,9 +88,13 @@ Pull requests from forks are a common PPE vector. Apply these controls:
 
 The pipeline definition (`.github/workflows/`, `Jenkinsfile`, `.gitlab-ci.yml`) is executable code. Treat it accordingly:
 
-- Require pull request reviews for workflow file changes.
-- Use `CODEOWNERS` to route changes to security-aware reviewers.
-- Scan workflow files with zizmor or Semgrep CI rules to catch common vulnerabilities (script injection, unsafe `pull_request_target` usage).
+- **User role separation and least privilege** — separate permissions across user types. Contributors should have permissions to submit changes via branches and pull requests, but no direct write access to default branch workflows, runner configurations, or environment secrets. Reserve administrative permissions (such as managing runners, organization secrets, and webhooks) to platform or DevSecOps teams with MFA and SSO enforced.
+- **Protected branches for pipeline definitions** — enforce branch protection on all default and release branches (`main`, `master`, `release/*`) hosting pipeline definitions. Prohibit direct pushes, force pushes, and branch deletions. Configure protection rules so administrators and repository owners cannot bypass review requirements.
+- **Appropriate review and approval requirements** — require pull request reviews before merging any pipeline changes. Mandate at least one independent, qualified approver (using `CODEOWNERS` to route changes to platform or security teams), and prohibit author self-approval.
+- **Dismiss stale approvals on commit** — automatically invalidate previously granted pull request approvals whenever new commits are pushed, preventing unreviewed changes from slipping into the pipeline.
+- **Require passing status checks** — require automated validation checks (linters, syntax validation, and static analysis with tools like zizmor or Semgrep CI rules) to pass before pipeline changes can merge.
+- **Environment deployment approval gates** — protect sensitive and production environments with deployment protection rules requiring explicit, authorized human sign-off before jobs can assume deployment roles or access environment secrets.
+- **Centralized and reusable pipeline definitions** — maintain standard build and security gate definitions in centralized, read-only repositories (such as GitHub Reusable Workflows, GitLab CI/CD components, or Jenkins Shared Libraries). Application repositories reference these templates by immutable commit SHA or version tag, preventing individual teams from bypassing or disabling required security controls.
 
 ## Measure and enforce continuously
 
@@ -108,6 +112,7 @@ The same principles apply beyond GitHub Actions: in GitLab CI use protected bran
 
 ## Common pitfalls and anti-patterns
 
+- **Direct write access or admin bypass on pipeline configurations** — allowing direct commits to pipeline files or permitting authors to approve their own workflow changes undermines all CI/CD security controls.
 - **Secrets stored as plain-text environment variables in pipeline config** — anyone who can read the pipeline file can read the secret. Use the platform's secret store, not inline values.
 - **One long-lived AWS/GCP key for all CI jobs** — a single leaked key compromises every environment. Move to OIDC with per-environment roles.
 - **`pull_request_target` with unchecked-out code from the fork** — this gives fork PRs access to secrets. This is the most common PPE vulnerability in GitHub Actions.
