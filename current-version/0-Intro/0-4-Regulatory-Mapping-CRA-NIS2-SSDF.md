@@ -14,46 +14,54 @@
 | NIS2 (Directive (EU) 2022/2555) | Applies through **national transposition laws**, which vary by Member State | Check your jurisdiction |
 | DORA (Regulation (EU) 2022/2554) | Applies to EU financial entities | 17 January 2025 |
 | EU AI Act (Regulation (EU) 2024/1689) | High-risk obligations were postponed by the Digital Omnibus: stand-alone systems to 2 December 2027, AI embedded in regulated products to 2 August 2028 | Verify against the Official Journal; this was reported by secondary sources |
-| NIST SSDF (SP 800-218) | v1.1 is final (February 2022); Rev. 1 (SSDF 1.2) was published as an initial public draft on 17 December 2025 | No final version confirmed at time of writing |
+| NIST SSDF (SP 800-218) | v1.1 is final (February 2022); Rev. 1 (SSDF 1.2) was published as an initial public draft on 17 December 2025, with comments closed on 30 January 2026 | No final version confirmed at time of writing |
 
 ## EU Cyber Resilience Act (CRA)
 
 Applies to manufacturers of products with digital elements placed on the EU market. Classes of products and conformity-assessment routes differ; the pipeline controls below are common to all.
 
-| Obligation (CRA reference) | Pipeline or process control | Evidence |
-| --- | --- | --- |
-| Report actively exploited vulnerabilities and severe incidents: early warning in 24 hours, notification in 72 hours, final report later (Article 14) | Incident response runbook with a CRA reporting step; asset-to-product mapping so you know which products are affected; on-call ownership. See [Vulnerability Management](../2-Process/2-7-Operate/2-7-4-Vulnerability-Management.md) | Tested runbook, tabletop records, report timestamps |
-| Products delivered without known exploitable vulnerabilities and with secure-by-default configuration (Annex I, Part I) | [SAST](../2-Process/2-3-Build/2-3-1-Static-Analysis/2-3-1-1-Static-Application-Security-Testing.md), [SCA](../2-Process/2-3-Build/2-3-2-Software-Composition-Analysis/2-3-2-1-Software-Composition-Analysis.md), DAST, [security gates](../2-Process/2-3-Build/2-3-5-Security-Gates.md) before release | Scan reports per release, gate decisions, documented exceptions |
-| Identify and document components, including an SBOM in a machine-readable format (Annex I, Part II) | Generate an SBOM for every release build. See [SBOM](../2-Process/2-3-Build/2-3-6-Supply-Chain-Security/2-3-6-1-SBOM.md) | SBOM stored with the release artifact |
-| Address and remediate vulnerabilities without delay, provide security updates (Annex I, Part II) | Vulnerability triage SLAs; VEX statements to record exploitability decisions; patch release process | Ticket history, SLA metrics, VEX documents, release notes |
-| Regular security testing; coordinated vulnerability disclosure policy and contact (Annex I, Part II) | Recurring tests in CI; published disclosure policy. See [VDP and Bug Bounty](../2-Process/2-7-Operate/2-7-5-VDP-and-Bug-bounty.md) | Test history, policy URL, `security.txt` |
-| Technical documentation and risk assessment kept up to date (Article 13 and annexes) | Threat modeling at design; living design records. See [Threat Modeling](../2-Process/2-1-Design/2-1-1-Threat-modeling.md) | Versioned threat models and design records |
+| Obligation (CRA reference) | Pipeline or process control | Related SSDF 1.1 practices | Evidence |
+| --- | --- | --- | --- |
+| Report actively exploited vulnerabilities (Article 14(1) and (2)): early warning within 24 hours, vulnerability notification within 72 hours, final report no later than 14 days after a corrective or mitigating measure is available | Incident response runbook with a CRA reporting step; asset-to-product mapping so you know which products are affected; a named owner who decides that a vulnerability is actively exploited. See [Vulnerability Management](../2-Process/2-7-Operate/2-7-4-Vulnerability-Management.md) | None (SSDF has no reporting to authorities) | Timed drill records, report timestamps |
+| Report severe incidents (Article 14(3) and (4)): early warning within 24 hours, incident notification within 72 hours, final report within one month after the incident notification | Same runbook, with a separate trigger for incidents that affect the security of the product | None | Timed drill records, report timestamps |
+| No known exploitable vulnerabilities and secure-by-default configuration (Annex I, Part I, points (2)(a) and (2)(b)) | [SAST](../2-Process/2-3-Build/2-3-1-Static-Analysis/2-3-1-1-Static-Application-Security-Testing.md), [SCA](../2-Process/2-3-Build/2-3-2-Software-Composition-Analysis/2-3-2-1-Software-Composition-Analysis.md), DAST, [security gates](../2-Process/2-3-Build/2-3-5-Security-Gates.md) before release; hardened default configuration | PW.4.4, PW.7, PW.8, PW.9, RV.1, RV.2 | Scan reports per release, gate decisions, documented exceptions, default configuration baseline |
+| Exploitation mitigation and limited attack surface (Annex I, Part I, points (2)(j) and (2)(k)) | Compiler and build hardening flags; removal of unused interfaces and services | PW.1, PW.2, PW.6 | Build configuration, design review records |
+| Identify and document components, including an SBOM in a commonly used, machine-readable format covering at the very least the top-level dependencies (Annex I, Part II, point (1)) | Generate an SBOM for every release build. See [SBOM](../2-Process/2-3-Build/2-3-6-Supply-Chain-Security/2-3-6-1-SBOM.md) | PS.3.2 | SBOM stored with the release artifact |
+| Due diligence when integrating third-party components, including free and open-source software (Article 13(5)) | Dependency intake review; SCA policy; component health checks | PO.1.3, PW.4.4 | Intake decisions, SCA policy, component review records |
+| Address and remediate vulnerabilities without delay, provide security updates, separately from functionality updates where technically feasible (Annex I, Part II, point (2)) | Vulnerability triage SLAs; VEX statements to record exploitability decisions; patch release process | RV.2, RV.3 | Ticket history, SLA metrics, VEX documents, release notes |
+| Effective and regular security tests and reviews (Annex I, Part II, point (3)) | Recurring tests in CI; periodic manual review | PW.7, PW.8, RV.1 | Test history, review records |
+| Coordinated vulnerability disclosure policy and a contact address for reports (Annex I, Part II, points (5) and (6)) | Published disclosure policy and intake channel. See [VDP and Bug Bounty](../2-Process/2-7-Operate/2-7-5-VDP-and-Bug-bounty.md) | RV.1.1, RV.1.3 | Policy URL, `security.txt`, intake records |
+| Public advisories for fixed vulnerabilities, secure update distribution and free security updates with advisory messages (Annex I, Part II, points (4), (7) and (8)) | Signed releases; advisory publication step in the release pipeline | PS.2, RV.2 (the SSDF 1.2 draft adds PS.4, robust and reliable updates) | Signatures, advisories, release notes |
+| Cybersecurity risk assessment, taken into account across planning, design, development, production, delivery and maintenance (Article 13(2) to (4)) | Threat modeling at design; living design records. See [Threat Modeling](../2-Process/2-1-Design/2-1-1-Threat-modeling.md) | PO.1, PW.1 | Versioned threat models and design records |
+| Technical documentation kept up to date (Article 31 and Annex VII) | Documentation generated or versioned with each release | PS.3 | Release-linked documentation |
 
-Notes and uncertainty: the Article 14 reporting channel is ENISA's Single Reporting Platform; one secondary source noted it was not yet live in mid-2026, so check its current status. Exact scope of the SBOM (for example, top-level dependencies as a minimum) should be confirmed against Annex I and Commission guidance.
+Notes: Article 14 reports go through ENISA's [Single Reporting Platform](https://www.enisa.europa.eu/news/the-cra-single-reporting-platform-is-launched), launched on 11 September 2026, to the CSIRT designated as coordinator of the Member State of main establishment, with ENISA receiving them at the same time. The SSDF column is an engineering aid: no authority has published an official CRA to SSDF mapping, and SSDF 1.1 predates the CRA.
 
 ## NIS2 (Directive (EU) 2022/2555)
 
-Applies to in-scope essential and important entities, not to products as such. Article 21(2) lists minimum risk-management measures. Two points are most relevant to a pipeline:
+Applies to in-scope essential and important entities, not to products as such. Article 21(2) lists minimum risk-management measures. These points are most relevant to a pipeline:
 
 | Article reference | Pipeline or process control | Evidence |
 | --- | --- | --- |
-| 21(2)(d) supply chain security, including relationships with direct suppliers and service providers | Dependency and vendor intake review, SBOM requests from suppliers, artifact signing and provenance. See [Artifact Signing and Provenance](../2-Process/2-3-Build/2-3-6-Supply-Chain-Security/2-3-6-2-Artifact-Signing-and-Provenance.md) | Supplier assessments, SBOMs received, signature verification logs |
+| 21(2)(d) supply chain security, including relationships with direct suppliers and service providers; 21(3) asks entities to consider each direct supplier's vulnerabilities and secure development procedures | Dependency and vendor intake review, SBOM requests from suppliers, artifact signing and provenance. See [Artifact Signing and Provenance](../2-Process/2-3-Build/2-3-6-Supply-Chain-Security/2-3-6-2-Artifact-Signing-and-Provenance.md) | Supplier assessments, SBOMs received, signature verification logs |
 | 21(2)(e) security in acquisition, development and maintenance, including vulnerability handling and disclosure | Secure SDLC controls (SAST, SCA, gates), vulnerability management, disclosure policy | Same as CRA rows above |
 | 21(2)(f) policies to assess effectiveness of risk-management measures | Metrics, internal audits, security benchmarking | Dashboards, audit reports |
-| 23 incident reporting (early warning 24 hours, notification 72 hours, final report within one month) | Incident response plan with regulator notification step | Runbook, drills |
+| 23(4) significant incident reporting (early warning within 24 hours, incident notification within 72 hours, intermediate report on request, final report no later than one month after the incident notification) | Incident response plan with regulator notification step | Runbook, timed drills |
 
-Some Member States and sector rules (for example Implementing Regulation (EU) 2024/2690 for certain digital service providers) add technical detail. National transposition status varies, so confirm which law applies to you.
+Implementing Regulation (EU) 2024/2690 adds technical detail for digital infrastructure and digital providers only, such as DNS, cloud, data centre and managed (security) service providers. Its Annex section 6 covers secure development (6.2), security testing (6.5), patch management (6.6) and vulnerability handling and disclosure (6.10). National transposition status varies, so confirm which law applies to you.
+
+CRA Recitals 24 and 125 state that the CRA facilitates the NIS2 supply chain obligations. No provision makes a CRA report count as a NIS2 report, or the other way round, so a manufacturer that is also a NIS2 entity runs both duties, with different triggers and recipients.
 
 ## NIST SSDF (SP 800-218)
 
-SSDF is a baseline of outcomes and is the most direct mapping target for pipeline controls. Practice IDs below follow SSDF 1.1; the 1.2 draft adds and renumbers some practices, so re-check when it is finalized.
+SSDF is a baseline of outcomes and is the most direct mapping target for pipeline controls. Practice IDs below follow SSDF 1.1. The 1.2 initial public draft adds two practices, PO.6 (continuous process improvement plan) and PS.4 (robust and reliable software updates), and renumbers none, so re-check when it is finalized.
 
-| SSDF group | Pipeline or process control | Evidence |
-| --- | --- | --- |
-| PO (Prepare the Organization) | Roles, training, secure toolchain, [security gates](../2-Process/2-3-Build/2-3-5-Security-Gates.md) defined as policy | Policy documents, training records, gate configuration |
-| PS (Protect the Software) | [Repository hardening](../2-Process/2-2-Develop/2-2-1-Pre-commit/2-2-1-4-Repository-Hardening.md), protected branches, signed artifacts, provenance, SBOM | Branch rules export, signatures, attestations, SBOMs |
-| PW (Produce Well-Secured Software) | Threat modeling, code review, SAST, SCA, DAST, secrets scanning | Scan results, review records, test reports |
-| RV (Respond to Vulnerabilities) | Vulnerability intake, triage, remediation SLAs, root-cause analysis, disclosure program | Tickets, SLA reports, advisories |
+| SSDF group | Practices (v1.1) | Pipeline or process control | Evidence |
+| --- | --- | --- | --- |
+| PO (Prepare the Organization) | PO.1 to PO.5 | Roles, training, secure toolchain, [security gates](../2-Process/2-3-Build/2-3-5-Security-Gates.md) defined as policy | Policy documents, training records, gate configuration |
+| PS (Protect the Software) | PS.1 to PS.3 (PS.3.2 is SBOM and provenance) | [Repository hardening](../2-Process/2-2-Develop/2-2-1-Pre-commit/2-2-1-4-Repository-Hardening.md), protected branches, signed artifacts, provenance, SBOM | Branch rules export, signatures, attestations, SBOMs |
+| PW (Produce Well-Secured Software) | PW.1, PW.2, PW.4 to PW.9 (PW.3 was retired; its tasks moved to PO.1.3 and PW.4.4) | Threat modeling, code review, SAST, SCA, DAST, secrets scanning, secure defaults | Scan results, review records, test reports |
+| RV (Respond to Vulnerabilities) | RV.1 to RV.3 (RV.1.3 is the disclosure policy) | Vulnerability intake, triage, remediation SLAs, root-cause analysis, disclosure program | Tickets, SLA reports, advisories |
 
 ## Brief pointers: DORA and EU AI Act
 
@@ -73,6 +81,7 @@ SSDF is a baseline of outcomes and is the most direct mapping target for pipelin
 - Assuming NIS2 or CRA applies uniformly. Check role, product class, and national law.
 - Generating an SBOM once and never updating it, or having no VEX process, which leaves every CVE in a component looking exploitable.
 - No owner for the 24-hour reporting clock. Define who decides that a vulnerability is actively exploited.
+- Treating a tabletop exercise as proof of the 24-hour clock. Keep timed records of drills, from first awareness to submitted early warning.
 - Mapping to SSDF 1.1 identifiers without a plan for the 1.2 changes.
 
 ## Maturity progression
@@ -92,5 +101,7 @@ SSDF is a baseline of outcomes and is the most direct mapping target for pipelin
 - [NIS2 Directive (EUR-Lex)](https://eur-lex.europa.eu/eli/dir/2022/2555/oj)
 - [NIST SSDF project](https://csrc.nist.gov/Projects/ssdf)
 - [NIST SP 800-218 Rev. 1 initial public draft](https://csrc.nist.gov/pubs/sp/800/218/r1/ipd)
+- [Implementing Regulation (EU) 2024/2690 (EUR-Lex)](https://eur-lex.europa.eu/eli/reg_impl/2024/2690/oj)
+- [ENISA/JRC Cyber Resilience Act Requirements Standards Mapping](https://www.enisa.europa.eu/publications/cyber-resilience-act-requirements-standards-mapping-joint-research-centre-enisa-joint)
 - [DORA (EUR-Lex)](https://eur-lex.europa.eu/eli/reg/2022/2554/oj)
 - [EU AI Act (EUR-Lex)](https://eur-lex.europa.eu/eli/reg/2024/1689/oj)
