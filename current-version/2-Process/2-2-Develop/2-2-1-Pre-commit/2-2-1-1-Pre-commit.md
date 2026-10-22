@@ -2,6 +2,22 @@
 
 Pre-commit hooks are the **earliest possible shift-left gate** — they run on the developer's machine *before* code is even committed, giving feedback in seconds rather than minutes (CI) or days (review). Catching a leaked secret, a syntax error, or an obvious vulnerability here is the cheapest fix in the entire lifecycle.
 
+```mermaid
+flowchart LR
+    WD([Working directory]) -- git add --> ST([Staging])
+    ST -- git commit --> PC([pre-commit])
+    PC -.-> HOOKS["Secret scanning<br/>Linting<br/>..."]
+    HOOKS -. No issue .-> LR([Local repo])
+    HOOKS -. Issue: fix and re-stage .-> ST
+    LR -- git push --> RR[Remote repo]
+
+    style ST fill:#fff176,stroke:#333
+    style PC fill:#4a90e2,stroke:#333
+    style HOOKS fill:#e0e0e0,stroke:#555,stroke-dasharray:4 3
+    style LR fill:#aed581,stroke:#333
+    style RR fill:#e8713a,stroke:#333
+```
+
 ## What pre-commit hooks are
 
 Git supports client-side hooks that fire on events like `commit`, `push`, and `merge`. Managing these by hand across a team is painful and inconsistent: hooks live in `.git/hooks/`, which is not committed to the repository, so every developer's environment diverges over time.
