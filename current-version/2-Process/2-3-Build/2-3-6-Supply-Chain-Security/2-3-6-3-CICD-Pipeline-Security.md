@@ -96,6 +96,48 @@ The pipeline definition (`.github/workflows/`, `Jenkinsfile`, `.gitlab-ci.yml`) 
 - **Environment deployment approval gates** — protect sensitive and production environments with deployment protection rules requiring explicit, authorized human sign-off before jobs can assume deployment roles or access environment secrets.
 - **Centralized and reusable pipeline definitions** — maintain standard build and security gate definitions in centralized, read-only repositories (such as GitHub Reusable Workflows, GitLab CI/CD components, or Jenkins Shared Libraries). Application repositories reference these templates by immutable commit SHA or version tag, preventing individual teams from bypassing or disabling required security controls.
 
+### Reusable pipeline definitions and centralized governance
+
+Maintaining separate, copy-pasted pipeline configurations across dozens or hundreds of application repositories violates the DRY (Don't Repeat Yourself) principle and introduces severe governance risks: security scanner configs drift out of date, mandatory compliance checks are accidentally or intentionally omitted, and remediation requires editing hundreds of repositories individually. Managing shared pipeline definitions in a dedicated, centrally governed repository provides a secure, scalable "paved road".
+
+#### Key benefits
+
+- **Pipeline integrity** — Prevents individual repository contributors or compromised repository-level credentials from tampering with, weakening, or bypassing mandatory build and security checks.
+- **Consistent security enforcement** — Standardizes required security steps (secret scanning, SAST, SCA, container scanning, artifact signing, and SBOM generation) across the entire organization.
+- **Reduced duplication (DRY)** — Common build, test, and release logic is authored and maintained once. Vulnerability patches, tool upgrades, and compliance updates propagate efficiently.
+- **Scalability** — A centralized platform or security team can maintain and harden enterprise delivery workflows without requiring per-repository maintenance from application teams.
+
+#### Consumption mechanisms and trade-offs
+
+Organizations should choose a consumption mechanism suitable for their tooling landscape while balancing security and operational trade-offs:
+
+- **Native CI platform reuse mechanisms** (e.g., GitHub Actions Reusable Workflows and Composite Actions, GitLab CI `include:file` and CI/CD Components, Azure Pipelines templates, Tekton Pipelines):
+  - *Strengths:* Provide native parameter validation, isolated job execution environments, and native credential scoping.
+  - *Trade-offs:* Tightly coupled to specific CI platforms. Organizations must configure organizational policies or rulesets to prevent projects from bypassing or overriding the required workflow templates.
+- **Git submodules or subtrees**:
+  - *Strengths:* Well-suited for sharing modular build scripts, security hook bundles, or pipeline definitions across heterogeneous, on-premises, or legacy CI systems that lack native remote workflow inclusion. Git submodules naturally lock to a specific commit SHA in the parent repository.
+  - *Trade-offs:* Submodules are not mandatory and introduce developer friction: they require explicit initialization (`git submodule update --init`) in CI runners and local checkouts, complicate branching, and carry risks of URL tampering or recursive checkout abuse if `.gitmodules` is not strictly controlled and reviewed.
+- **Containerized / packaged task runners**:
+  - *Strengths:* Bundling pipeline tasks into signed, containerized CLI tools creates reproducible, platform-agnostic execution.
+  - *Trade-offs:* Requires maintaining and securing the container build pipeline, registry access controls, and base image vulnerability management.
+
+#### Version pinning and tampering prevention
+
+Shared pipelines represent a concentrated point of failure; an untrusted modification to a shared template affects every downstream project:
+
+- **Pin to immutable commit SHAs** — Always reference centralized workflows by an exact commit SHA or cryptographically signed, immutable release tag. Avoid referencing mutable branch heads (e.g., `@main`, `@master`) or moving tags, which expose consumers to silent supply-chain tampering and unexpected breaking changes.
+- **Tier-0 repository protection** — Host shared definitions in a dedicated repository with strict access controls: mandate multi-party code review with CODEOWNERS from security and platform teams, enforce signed commits, and prohibit direct pushes.
+- **Controlled update rollouts** — Treat pipeline updates like software dependencies. Use automated dependency management tools (e.g., Dependabot, Renovate) to propose pinned version bumps via pull requests, allowing teams to validate updates in staging pipelines before merging.
+- **Prevent downstream overrides** — Structure reusable workflows so that critical security steps and parameters cannot be disabled, shadowed, or bypassed by caller repositories.
+
+#### Observability, tracking, and measurable enforcement
+
+Centralization requires visibility into actual adoption and mechanisms to detect non-compliance:
+
+- **Pipeline consumption tracking and auditing** — Maintain an automated inventory of which repositories and branches consume shared workflows, including the specific versions or commit SHAs in use. Regularly query CI audit logs to detect stale, unauthorized, or deprecated pipeline usage.
+- **Policy enforcement and mandatory templates** — Implement organization-level guardrails (e.g., GitHub Repository Rulesets, GitLab required compliance pipelines, or custom admission webhooks) that require production services to execute approved, centralized pipeline templates before allowing merges or deployments.
+- **Automated compliance alerting** — Alert platform and security teams when builds run with unauthorized custom workflows or when repositories fail to update deprecated pipeline versions within defined grace periods.
+
 ## Measure and enforce continuously
 
 Use automated tooling to keep the pipeline hardened over time — egress monitoring on runners, workflow static analysis, and repository security scoring — and feed the results into your governance program. A hardened pipeline today can drift back to a vulnerable state without continuous enforcement.
@@ -119,14 +161,16 @@ The same principles apply beyond GitHub Actions: in GitLab CI use protected bran
 - **Third-party Actions from unverified authors** — an Action with write access to the workspace and access to secrets can exfiltrate credentials. Audit every third-party Action used.
 - **No egress control on runners** — a compromised runner with unrestricted internet access can quietly exfiltrate secrets or establish C2 connections.
 - **Security scans disabled "temporarily" in CI** — "temporary" disables become permanent. Protect security step configurations in CODEOWNERS just as you protect workflow files.
+- **Copy-pasted pipeline configurations across repositories** — leads to configuration drift, unpatched scanner configurations, and bypassing of mandatory security steps. Maintain shared templates in a central repository.
+- **Referencing reusable pipelines via mutable refs** — referencing shared workflows by `@main` or floating tags allows unreviewed upstream changes or compromises to execute immediately across all consuming repositories.
 
 ## Maturity progression
 
 **Starter** — Enable branch protection on main (require PR reviews, status checks). Move cloud credentials to OIDC workload identity. Set explicit `permissions:` blocks on all workflow jobs. Audit the list of third-party Actions in use.
 
-**Intermediate** — Pin all third-party Actions to SHA digests (use Dependabot to manage). Add CODEOWNERS for `.github/workflows/`. Deploy StepSecurity Harden-Runner with egress monitoring. Add zizmor or Semgrep CI rules to scan workflow files. Score repositories with OpenSSF Scorecard and set minimum score targets.
+**Intermediate** — Pin all third-party Actions to SHA digests (use Dependabot to manage). Adopt centralized, reusable pipeline templates pinned to immutable commit SHAs for core build and security steps. Add CODEOWNERS for `.github/workflows/`. Deploy StepSecurity Harden-Runner with egress monitoring. Add zizmor or Semgrep CI rules to scan workflow files. Score repositories with OpenSSF Scorecard and set minimum score targets.
 
-**Advanced** — Enforce egress allowlists (block mode) on all runners. Use ephemeral, isolated self-hosted runners for sensitive builds. Sign all pipeline outputs (see [Artifact Signing and Provenance](2-3-6-2-Artifact-Signing-and-Provenance.md)). Automate Allstar policy enforcement across the GitHub organization. Report pipeline security score trends to engineering leadership quarterly.
+**Advanced** — Enforce egress allowlists (block mode) on all runners. Enforce mandatory centralized pipeline templates organization-wide (e.g., via repository rulesets or compliance pipelines) and continuously audit template adoption. Use ephemeral, isolated self-hosted runners for sensitive builds. Sign all pipeline outputs (see [Artifact Signing and Provenance](2-3-6-2-Artifact-Signing-and-Provenance.md)). Automate Allstar policy enforcement across the GitHub organization. Report pipeline security score trends to engineering leadership quarterly.
 
 ## Metrics and KPIs
 
@@ -135,6 +179,7 @@ The same principles apply beyond GitHub Actions: in GitLab CI use protected bran
 | % of repositories with branch protection on main | 100% |
 | % of CI jobs using OIDC (no long-lived cloud keys) | 100% |
 | % of third-party Actions pinned to SHA digest | 100% |
+| % of repositories consuming approved, SHA-pinned reusable pipelines | 100% |
 | OpenSSF Scorecard average across organization | > 7.0 / 10 |
 | Repositories with unreviewed workflow file changes | 0 |
 | Egress violations detected on runners | Tracked; alerts on anomalies |
