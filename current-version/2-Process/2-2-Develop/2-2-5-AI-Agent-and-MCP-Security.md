@@ -125,6 +125,7 @@ deny[msg] {
 ### Open-source
 
 - [Cedar](https://www.cedarpolicy.com/) — Policy language and engine for fine-grained authorization decisions, usable to authorize tool calls.
+- [Context Firewall (ctxfw)](https://github.com/heuristicolab/ctxfw) — Open-source local `stdio` MCP server and proxy that scans tool outputs and instruction files for indirect prompt injection and hidden Unicode characters, enforces path/command allowlists, and logs tool calls to a tamper-evident SHA-256 SQLite ledger.
 - [Docker MCP Gateway](https://github.com/docker/mcp-gateway) — Runs and mediates MCP servers in containers with centralized configuration.
 - [Open Policy Agent](https://www.openpolicyagent.org/) — General-purpose policy engine for expressing agent and MCP rules as code.
 - [promptfoo](https://github.com/promptfoo/promptfoo) — Testing and red-teaming framework for LLM applications and agents, including prompt injection scenarios.
