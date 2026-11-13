@@ -66,6 +66,23 @@ Keep a human decision at the points where harm is hard to undo: pushing code, me
 - Avoid approval fatigue: reduce prompts by safely allowlisting low-risk actions and sandboxing, rather than by approving everything.
 - Never let an agent approve or merge its own pull requests; require independent human review (see [Secure Code Review](2-2-3-Secure-Code-Review.md)).
 
+## Pre-execution checks on every action
+
+Permission prompts and sandboxes are not enough on their own. Prompts get approved out of habit ([Anthropic reports](https://www.anthropic.com/engineering/claude-code-auto-mode) that Claude Code users approve 93% of permission prompts), and a sandbox only covers the tools it wraps. Add a check that runs before each action executes and that the agent cannot edit or skip.
+
+- **Use the agent's pre-execution hook.** Many coding agents let an external program see a pending tool call (shell command, file edit, MCP call) and allow or deny it, or send it to a human, before it runs: Claude Code's `PreToolUse` hook ([Claude Code hooks reference](https://code.claude.com/docs/en/hooks)), Cursor's `beforeShellExecution` and related hooks ([Cursor hooks](https://cursor.com/docs/hooks)), and Codex's `PreToolUse` hook ([Codex hooks](https://developers.openai.com/codex/hooks)). Run the checker as a separate process, not as an instruction in the prompt or a rule in the agent's own context.
+- **Deploy it as managed policy.** Push hook configuration through device management or the agent's managed settings (for example, Claude Code's [`allowManagedHooksOnly`](https://code.claude.com/docs/en/settings-reference#allowmanagedhooksonly)) so a developer or the agent itself cannot remove it. Review any change to hook and settings files the way you review CI config.
+- **Check the action, not its description.** Parse the command and follow data from source to sink. A secret read from a file or environment variable that ends up in a network call (`curl`, `git push` to a new remote, a package publish) is a dangerous flow, whatever the command is named. Decode base64 and hex before analysis, and send genuinely dynamic code (`eval`, `exec`) to a human.
+- **Judge secrets by content.** A filename only nominates a file. Read the bytes: a `.pem` holding a public certificate is fine, one holding a private key is not.
+- **Check where a command executes.** A destructive string inside a commit message or a quoted argument is not the same as `rm -rf /` run as a command.
+- **Fail closed.** If the checker cannot run or times out, the action does not run. Some agents let the action proceed when a hook fails unless you [configure it to block](https://code.claude.com/docs/en/hooks#block-the-action-when-a-hook-fails), so set that and test it.
+- **Return a reason on deny.** Let the agent see why it was blocked so it can retry safely instead of looping.
+- **Keep it fast and deterministic.** The check runs before every action, so its latency adds up across a session. Keep the verdict path deterministic; if you add a model for context-dependent risks, let it only tighten a verdict.
+- **Start in log-only mode.** Record what agents do for a few weeks, then enforce the rules that would have fired on real incidents.
+- **Log every decision** (action, verdict, reason, session, user) to a store the agent cannot write to.
+
+Limits to state plainly: a hook is a layer, not a perimeter. Exfiltration split across several calls is hard to catch, and a process that is already malicious is not contained by it. Keep least privilege, scoped short-lived credentials and an egress allowlist underneath.
+
 ## Audit logging and monitoring
 
 - Log every tool call, command, file write, and network request with the agent identity, the initiating user, the session, and the resulting diff.
