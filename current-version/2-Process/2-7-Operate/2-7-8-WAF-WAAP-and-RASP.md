@@ -114,6 +114,7 @@ IAST agents and RASP agents are often the same technology in different modes; se
 
 - [BunkerWeb](https://github.com/bunkerity/bunkerweb) — NGINX-based open-source WAF with ModSecurity and CRS integration (AGPL-3.0).
 - [Coraza](https://coraza.io/) — OWASP Go WAF engine compatible with SecLang and the Core Rule Set; embeds in proxies and runs as a library.
+- [CrowdSec](http://github.com/crowdsecurity/crowdsec): open-source security engine whose AppSec component is a WAF running ModSecurity/CRS v4-compatible rules and free virtual patches, plugged into Nginx, Traefik, HAProxy, Envoy and other proxies (MIT).
 - [ModSecurity](https://github.com/owasp-modsecurity/ModSecurity) — The long-standing open-source WAF engine, now maintained under OWASP, with v2 (Apache) and v3 (NGINX and others) lines.
 - [NAXSI](https://github.com/wargio/naxsi) — Allow-list-style NGINX WAF module with low rule maintenance (GPL-3.0); the original nbs-system repository was archived and this fork continues it.
 - [OWASP Core Rule Set](https://github.com/coreruleset/coreruleset) — Generic attack-detection rules for ModSecurity-compatible engines.
