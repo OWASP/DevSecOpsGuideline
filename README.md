@@ -108,6 +108,7 @@ However, when using CI/CD tools to provide automation, keep in mind that the too
     - [2-4-4-API-Security](current-version/2-Process/2-4-Test/2-4-4-API-Security.md)
     - [2-4-5-Misconfiguration-Check](current-version/2-Process/2-4-Test/2-4-5-Misconfiguration-Check.md)
     - [2-4-6-AI-LLM-Application-Security-Testing](current-version/2-Process/2-4-Test/2-4-6-AI-LLM-Application-Security-Testing.md)
+    - [2-4-7-Fuzz-Testing](current-version/2-Process/2-4-Test/2-4-7-Fuzz-Testing.md)
   - [2-5-Release](current-version/2-Process/2-5-Release)
     - [2-5-1-Release](current-version/2-Process/2-5-Release/2-5-1-Release.md)
   - [2-6-Deploy](current-version/2-Process/2-6-Deploy)
