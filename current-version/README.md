@@ -85,6 +85,7 @@ If you need earlier editions, see the [old-versions](https://github.com/OWASP/De
     - [2-7-8-WAF-WAAP-and-RASP](2-Process/2-7-Operate/2-7-8-WAF-WAAP-and-RASP.md)
     - [2-7-9-Serverless-and-PaaS-Runtime-Security](2-Process/2-7-Operate/2-7-9-Serverless-and-PaaS-Runtime-Security.md)
     - [2-7-10-Incident-Response-and-Detection-Engineering](2-Process/2-7-Operate/2-7-10-Incident-Response-and-Detection-Engineering.md)
+    - [2-7-11-Security-Chaos-Engineering](2-Process/2-7-Operate/2-7-11-Security-Chaos-Engineering.md)
 - 3-Governance
   - 3-1-Compliance-Auditing
     - [3-1-1-Compliance-Auditing](3-Governance/3-1-Compliance-Auditing/3-1-1-Compliance-Auditing.md)

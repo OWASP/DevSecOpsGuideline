@@ -124,6 +124,7 @@ However, when using CI/CD tools to provide automation, keep in mind that the too
     - [2-7-8-WAF-WAAP-and-RASP](current-version/2-Process/2-7-Operate/2-7-8-WAF-WAAP-and-RASP.md)
     - [2-7-9-Serverless-and-PaaS-Runtime-Security](current-version/2-Process/2-7-Operate/2-7-9-Serverless-and-PaaS-Runtime-Security.md)
     - [2-7-10-Incident-Response-and-Detection-Engineering](current-version/2-Process/2-7-Operate/2-7-10-Incident-Response-and-Detection-Engineering.md)
+    - [2-7-11-Security-Chaos-Engineering](current-version/2-Process/2-7-Operate/2-7-11-Security-Chaos-Engineering.md)
 - [3-Governance](current-version/3-Governance)
   - [3-1-Compliance-Auditing](current-version/3-Governance/3-1-Compliance-Auditing)
     - [3-1-1-Compliance-Auditing](current-version/3-Governance/3-1-Compliance-Auditing/3-1-1-Compliance-Auditing.md)
