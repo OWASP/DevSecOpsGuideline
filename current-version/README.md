@@ -69,6 +69,7 @@ If you need earlier editions, see the [old-versions](https://github.com/OWASP/De
     - [2-4-4-API-Security](2-Process/2-4-Test/2-4-4-API-Security.md)
     - [2-4-5-Misconfiguration-Check](2-Process/2-4-Test/2-4-5-Misconfiguration-Check.md)
     - [2-4-6-AI-LLM-Application-Security-Testing](2-Process/2-4-Test/2-4-6-AI-LLM-Application-Security-Testing.md)
+    - [2-4-7-Fuzz-Testing](2-Process/2-4-Test/2-4-7-Fuzz-Testing.md)
   - 2-5-Release
     - [2-5-1-Release](2-Process/2-5-Release/2-5-1-Release.md)
   - 2-6-Deploy
