@@ -248,6 +248,7 @@ DAST belongs in the Test stage against a running build, and can also run continu
 - [Burp Suite DAST](https://portswigger.net/burp/dast) — PortSwigger's enterprise DAST built on the Burp scanning engine; scheduled and CI-driven scans with authenticated crawling of modern single-page applications.
 - [Escape](https://escape.tech/) — DAST focused on APIs and modern web applications; strong GraphQL support and CI-native; best for API-first applications and teams prioritizing developer experience.
 - [Invicti (Acunetix/Netsparker)](https://www.invicti.com/) — Automated DAST with proof-based scanning that reduces false positives by confirming exploitability; good for web apps and APIs at scale with compliance reporting.
+- [Keybrum](https://keybrum.com/) — Automated penetration test for live web apps built with AI coding tools (Lovable, Bolt, Cursor, Replit, v0); attacks the deployed app with no account, then as a new user, then as a second user asking for the first user's data, and retests after each fix and on every deploy. Covers Supabase, Firebase and Next.js apps; runs only on apps whose owner has proved ownership.
 - [Rapid7 InsightAppSec](https://www.rapid7.com/products/insightappsec/) — Cloud-based DAST with an attack replay feature and integration with the broader Rapid7 platform; best when you already use Rapid7 for vulnerability management.
 - [StackHawk](https://www.stackhawk.com/) — Developer-friendly DAST built for CI/CD; runs in Docker with simple YAML configuration; best for developer-owned scanning integrated into GitHub/GitLab workflows.
 
