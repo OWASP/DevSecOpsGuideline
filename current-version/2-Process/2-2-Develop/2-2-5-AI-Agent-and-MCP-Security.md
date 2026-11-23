@@ -129,6 +129,7 @@ deny[msg] {
 - [Docker MCP Gateway](https://github.com/docker/mcp-gateway) — Runs and mediates MCP servers in containers with centralized configuration.
 - [Open Policy Agent](https://www.openpolicyagent.org/) — General-purpose policy engine for expressing agent and MCP rules as code.
 - [promptfoo](https://github.com/promptfoo/promptfoo) — Testing and red-teaming framework for LLM applications and agents, including prompt injection scenarios.
+- [vibeshield-mod](https://github.com/zColdWater/vibeshield-claude-mod) — Open-source local Claude Code `PreToolUse` function-hooks guardrail (zero dependencies, zero network calls) that blocks client-bundle secret exposure (`NEXT_PUBLIC_*`/`VITE_*`), hardcoded live API keys, and accidental `git add .env` during agentic coding.
 - [Sandbox Runtime (Anthropic)](https://github.com/anthropic-experimental/sandbox-runtime) — Experimental OS-level filesystem and network sandbox for arbitrary processes, including MCP servers.
 
 ### Commercial
